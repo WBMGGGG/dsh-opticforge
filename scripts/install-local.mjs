@@ -129,7 +129,7 @@ async function main() {
   await makeLink();
 
   log("");
-  log("完成。重启 DSH 后生效，然后用 opticforge_docs / opticforge_search / opticforge_get 验证。");
+  log("完成。重启 DSH 后生效，然后用 opticforge_assist / opticforge_verify / opticforge_search 验证。");
   log("以后升级：直接改这个仓库（数据、代码），重启 DSH 就加载最新版本。");
 }
 

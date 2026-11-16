@@ -1,36 +1,109 @@
 # OpticForge
 
-An optical-engineering knowledge base plugin for DeepSeek Harness (DSH).
+A **task assistant plugin** for optical engineers, built for DeepSeek Harness (DSH).
+Give it one concrete problem; it returns an executable package: brief, knowledge evidence, capability routing, staged plan, targeted search queries and acceptance checks.
 
-Pure Node.js. Zero runtime dependencies. Works as soon as it is installed. **Since 0.2.0 this is a knowledge base only — the calculators are gone. 0.2.1 adds scenario-focused sections.**
+Pure Node.js, zero runtime dependencies. **1.1.0 turns a retrieval plugin into a task-assistance layer; retrieval stays as the evidence layer.**
 
 > 中文文档见 [README.zh.md](README.zh.md)。
 
 ---
 
-## What it is
+## Why it exists
 
-Optical design, alignment and acceptance work is rarely blocked by formulas. It is blocked by **specific engineering criteria scattered across vendor manuals, standards and papers**: how a clear aperture is defined, which number to read off a tolerance report, how many pixels a spectrometer needs, which confocal range actually fits, why a metalens has chromatic aberration.
+Optical design, alignment and acceptance work is blocked less by formulas than by three things:
 
-OpticForge turns those into retrievable fact entries, so the model cites a source instead of guessing.
+1. **Scattered evidence** — clear-aperture conventions, which tolerance number matters, pixel count for a spectrometer, confocal range selection: all buried in manuals, standards and papers.
+2. **Unclear path** — you know you need to search, compute, draw and write, but not in what order, with which Skill, or what can run in parallel.
+3. **Weak delivery** — a report that looks right until someone checks citations, units, assumptions and gaps.
 
----
+OpticForge handles all three:
 
-## Three tools
-
-| Tool | Purpose |
-|---|---|
-| `opticforge_docs` | List 34 sections and every entry title. Look here before searching |
-| `opticforge_search` | BM25 retrieval; returns chunk_id, score, matched terms, excerpt, source, section |
-| `opticforge_get` | Full 9-field entry for one chunk_id |
-
-All three share one envelope: `{ ok, kb_version, action, ... }`. Search supports `top_k`, `offset`, `max_per_doc`, `doc_filter` and reports `total_matched` / `has_more`.
+- **Evidence layer**: 40 sections, 324 source-attributed fact entries; hits carry chunk_id, source and excerpt; no basis is stated as such.
+- **Routing layer**: classify the problem against a playbook, inspect local Skills / MCP / workspace assets, and produce a capability-tagged plan.
+- **Verification layer**: before delivery, check citations, quantity claims, assumptions, gaps and reproducibility.
 
 ---
 
-## Knowledge base (0.2.1)
+## Three layers
 
-**40 sections, 324 entries, 308 of them usable** (`status=present`):
+```
+Problem
+ │
+ ├─ opticforge_assist ── intake & routing
+ │    ├─ brief           goal / deliverable / constraints / questions
+ │    ├─ evidence        KB chunks + coverage matrix + gaps
+ │    ├─ capabilities    local Skills / MCP / workspace assets
+ │    ├─ plan            staged steps bound to capability classes
+ │    ├─ search_pack     standards / papers / vendors / troubleshooting queries
+ │    └─ acceptance      checklist + risks + handoff Markdown
+ │
+ ├─ execution layer (agent) ── follows the plan
+ │    ├─ Skills: sheet / word / ppt / seedream / browser …
+ │    ├─ MCP: desktop, browser, GitHub …
+ │    ├─ Local: PowerShell / Python / file I/O
+ │    └─ Search: general_search + web_fetch
+ │
+ └─ opticforge_verify ── pre-delivery check
+      ├─ citations: chunk_id exists and is present
+      ├─ quantities: numbers carry a citation or a calculation note
+      ├─ structure: assumptions / gaps / reproduction / sources
+      └─ wording: absolute or marketing claims
+```
+
+**Boundary**: the plugin does not access the network or perform external actions. It decides *how* to do the work; the execution layer actually does it.
+
+---
+
+## Five tools
+
+| Tool | Layer | Purpose |
+|---|---|---|
+| `opticforge_assist` | assist | **Primary entry**. Problem → brief + evidence + routing + plan + search pack + acceptance + handoff |
+| `opticforge_verify` | assist | Pre-delivery check. Pass `text` or a `.md/.txt/.json/.csv` path; returns a 0–100 score and issue list |
+| `opticforge_search` | evidence | BM25 retrieval with chunk_id, score, matched terms, excerpt, source, section |
+| `opticforge_get` | evidence | Full 9-field entry for one chunk_id |
+| `opticforge_docs` | evidence | Catalogue of 40 sections and entry titles |
+
+Shared envelope: `{ ok, kb_version, action, ... }`. `assist` and `verify` echo `kb_version` too.
+
+### One call
+
+```json
+{
+  "problem": "Design a 400–1000 nm pushbroom hyperspectral imager: 5 nm spectral resolution, 0.5 m @ 1 km GSD, 30 km swath. Give the dispersion architecture, budgets and calibration flow.",
+  "deliverable": "design report",
+  "workspace": "D:/AI/projects/hyperspectral",
+  "known_capabilities": ["sheet", "word", "general_search"]
+}
+```
+
+The returned `plan` splits the task into: clarify → evidence → local inventory → specifications → architecture → budgets → calibration → external verification → delivery → self-check → close-out. Each step carries:
+
+- `capability`: `kb` / `calc` / `skill_sheet` / `skill_doc` / `web_search` / `verify` …
+- `actions`: concrete moves such as `opticforge_search("pushbroom ground sample distance")` or "build the budget table with the sheet Skill"
+- `routing`: candidate Skills, tools, MCP servers, plus fallbacks
+- `output`: what this step must produce
+
+`handoff` is Markdown ready to hand to a sub-agent: goal, evidence, execution order, acceptance.
+
+---
+
+## Capability discovery
+
+`opticforge_assist` performs three read-only scans:
+
+1. **Skills**: common roots (`~/.dsh/skills`, `~/.agents/skills`, `~/Doubao/skills`, the Doubao workspace `.skills` / `.user_skills`), reading `name` / `description` from `SKILL.md`.
+2. **MCP**: common `.mcp.json` / `mcp.json` files; server names only, no credentials.
+3. **Local assets**: with `workspace`, scans two levels for drawings, data, code and documents, ranked by filename relevance; names and sizes only.
+
+Failures degrade to empty lists with a note, never block the task. `known_capabilities` lets the caller declare what is actually available this session; `known_mcp` does the same for MCP servers. Declared names rank first.
+
+---
+
+## Knowledge base (1.1.0)
+
+**40 sections, 324 entries, 308 usable** (`status=present`):
 
 | Series | Sections | Content | Entries |
 |---|---|---|---|
@@ -38,28 +111,50 @@ All three share one envelope: `{ ok, kb_version, action, ... }`. Search supports
 | F | 10 | Foundations: geometric optics, interference/diffraction, polarization, lasers, radiometry & colorimetry, thin films, detection & noise, spectroscopy, interferometry, materials & fabrication | 83 |
 | G | 7 | Engineering: opto-mechanics, tolerance & uncertainty, thermal optics, spectral/radiometric calibration, inspection & image processing, COMSOL, SolidWorks | 53 |
 | H | 8 | Frontier: metasurfaces & DOEs, waveguides & photonic integration, quantum optics, hyperspectral imaging, laser triangulation/confocal/lidar, field failures, frontier topics, semiconductor sources | 61 |
-| I | 6 | Scenario-focused (0.2.1): aberration judgement, physical optics & transfer functions, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny-Turner and Offner spectrometer design | 60 |
+| I | 6 | Scenario-focused: aberration judgement, physical optics & transfer functions, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny-Turner and Offner spectrometer design | 60 |
 
-A–E also carry 16 **declared gaps**: 11 `missing_source` (full text unavailable), 5 `substitute` (a comparable public source, explicitly marked as not the original).
+### Gaps
 
-Gaps are a feature: the model is told "no source here" instead of inventing one.
+**Only three source-level gaps remain**: A03 (Acta Optica Sinica peak-localization review, 1 entry), C01 (ZYGO CSI white paper, 5 entries) and E01 (JJF 1990-2022, 6 entries). Their verbatim clauses were never obtained. In total 16 non-present entries: 11 `missing_source`, 5 `substitute` (comparable public material, explicitly marked as not the original).
+
+`opticforge_assist` lists them as `library_gaps`; `opticforge_verify` treats a citation to a non-present entry as an error.
+
+Two topics remain intentionally out of scope: lithography process and space optics. An empty result means no basis — nothing is invented.
 
 ### Accuracy rules
 
-Two section types, two rule sets, both enforced by `scripts/build-kb.mjs`:
+Two section types, two rule sets, enforced by `scripts/build-kb.mjs`:
 
 **A–E (source-backed, 67 entries)**
 
-- `chunk_id` set must equal the vendor snapshot exactly — citation anchors cannot drift
+- `chunk_id` set must equal the vendor snapshot exactly
 - Rewritten as fact entries (`is_original_excerpt = false`), text starts with `【title】`
-- **Every number must appear verbatim in the source chunk** — if the source says "three cycles", the entry says 三个循环, never `3`
+- **Every number must appear verbatim in the source chunk**
 - No verbatim vendor text ships publicly; `_kb-raw/` stays local
 
 **F/G/H/I (compiled, 257 entries)**
 
-- No single source; content is the consensus of textbooks, standards and reviews, each `source` field naming a real, checkable reference
-- Text ≥ 300 chars, at least three field lines (definition / formula / criterion / limits / engineering notes), `disclaimer` must state "非原文摘录"
-- **No product model numbers or vendor specifications** — those appear only in A–E, where a snapshot backs them
+- No single source; consensus of textbooks, standards and reviews, each `source` naming a real reference
+- Text ≥ 300 chars, at least three field lines, `disclaimer` must state "非原文摘录"
+- **No product model numbers or vendor specifications**
+
+---
+
+## Layout
+
+```
+lib/index.js           tool registration (5)
+lib/assist.js          intake, evidence, routing, plan, acceptance
+lib/capabilities.js    read-only Skill / MCP / asset scan
+lib/verify.js          pre-delivery check
+lib/kb-engine.js       BM25 engine
+lib/kb-data.js         data loading
+data/kb/               40 section files
+data/kb-data.json      merged runtime artefact
+data/kb-meta.json      version, sha256, sections, gap topics
+data/assist-playbooks.json  task playbooks (triggers / steps / search facets)
+docs/ARCHITECTURE.zh.md     architecture and extension points
+```
 
 ---
 
@@ -70,26 +165,26 @@ Two section types, two rule sets, both enforced by `scripts/build-kb.mjs`:
 **Local link install** (development):
 
 ```bash
-node scripts/install-local.mjs            # profile dependency + bundle entry + directory link
+node scripts/install-local.mjs
 node scripts/install-local.mjs --dry-run
 node scripts/install-local.mjs --uninstall
 ```
 
-Restart DSH afterwards. Editing this repo and restarting is enough to pick up changes — no reinstall.
+Restart DSH afterwards. Editing this repo and restarting picks up changes.
 
 ---
 
 ## Development
 
 ```bash
-node test/run.mjs                                  # integration tests
-node scripts/verify-all.mjs                        # release gate
-node scripts/build-kb.mjs --all --version 0.2.0    # rebuild artefacts
+node test/run.mjs                          # 26 integration tests
+node scripts/verify-all.mjs                # 32 release gates
+node scripts/build-kb.mjs --all --version 1.1.0
+node scripts/build-kb.mjs --check
 ```
 
-Editing the knowledge base: edit `data/kb/<section>.json` → `--doc` validate → `--all` rebuild → run tests.
-
-`docs/KB-OUTLINE.zh.md` is the section/entry contract; `docs/KB-SPEC.zh.md` and `docs/KB-SPEC-COMPILED.zh.md` are the two writing specs.
+Editing the knowledge base: edit `data/kb/<section>.json` → `--doc` validate → `--all` rebuild → tests.
+Editing playbooks: edit `data/assist-playbooks.json`; no code change needed.
 
 `.github/workflows/test.yml` runs the same gates on Ubuntu and Windows for Node 20 and 22.
 
@@ -97,10 +192,12 @@ Editing the knowledge base: edit `data/kb/<section>.json` → `--doc` validate �
 
 ## Boundaries
 
-- Only the 40 sections above; lithography process and space optics are explicitly not covered, and any unlisted topic is treated the same way — no answer is invented for it
-- Compiled entries are engineering summaries of textbook consensus — verify against the `source` field before citing externally
+- Only the 40 sections above; lithography process and space optics are not covered
+- Compiled entries are engineering summaries — verify against `source` before citing externally
 - Vendor numbers appear only where a snapshot exists
-- Gap entries tell you something is missing; they are not evidence
+- The 16 gap entries state what is missing; they are not evidence
+- The plugin does not access the network or perform actions
+- `verify` is text-level only; export docx/pdf to text first
 
 ## License
 

@@ -4,8 +4,8 @@
 
 | 命令 | 内容 | 用时 |
 |---|---|---|
-| `node test/run.mjs` | 集成用例（node:test） | 约 1 秒 |
-| `node scripts/verify-all.mjs` | 28 项发布前验收 | 约 5 秒（含 npm pack） |
+| `node test/run.mjs` | 26 个集成用例（node:test） | 约 1 秒 |
+| `node scripts/verify-all.mjs` | 32 项发布前验收 | 约 5 秒（含 npm pack） |
 
 CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑这两套。
 
@@ -15,7 +15,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 **A. 注册契约**
 
-插件可加载，`apply/inject/name` 正确，恰好注册 3 个工具（docs / search / get）；每个工具 `parameters` 是标准 JSON Schema（根 `type=object`、`required` 名字都在 `properties` 里、不残留内部 DSL 的 `required` 布尔位），`output.schema` 与 `output.render` 齐备且可调用。
+插件可加载，`apply/inject/name` 正确，恰好注册 5 个工具（assist / verify / docs / search / get）；每个工具 `parameters` 是标准 JSON Schema（根 `type=object`、`required` 名字都在 `properties` 里、不残留内部 DSL 的 `required` 布尔位），`output.schema` 与 `output.render` 齐备且可调用。
 
 **B. 数据统计**
 
@@ -23,7 +23,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 **C. 检索端到端**
 
-命中 A01/C02；`doc_filter` 生效；`top_k` 上限；0 覆盖主题（空间光学、光刻工艺）短路；有依据的查询不被误判为空白；分页不重不漏；同板块条数受限；三个工具共享 `ok/kb_version/action` 信封；非 present 块从不进入检索结果。
+命中 A01/C02；`doc_filter` 生效；`top_k` 上限；0 覆盖主题（空间光学、光刻工艺）短路；有依据的查询不被误判为空白；分页不重不漏；同板块条数受限；五个工具共享 `ok/kb_version/action` 信封；非 present 块从不进入检索结果。
 
 **D. 目录与取用**
 
@@ -33,6 +33,10 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 `data/kb-data.json` 必须等于 `data/kb/*.json` 的合并结果；`kb-meta.json` 的 `content_sha256` 必须与数据实际内容匹配；`total_chunks` / `present_chunks` 对得上；空白词表与覆盖锚点非空。
 
+**F. 辅助层**
+
+`opticforge_assist` 对高光谱问题必须识别剧本、给出证据、≥8 步计划、能力路由、检索包、验收与 handoff；声明不覆盖主题必须进 `gaps` 且证据只含 present；`known_capabilities` 必须并入能力清单且排在前面，`workspace` 盘点不阻断任务；`opticforge_verify` 对有效引用通过、对不存在引用/无来源数量/营销词判问题；`kb_version` 为 1.1.0；`library_gaps` 恰好是 A03/C01/E01。
+
 ---
 
 ## verify-all 的六组
@@ -41,7 +45,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 - **B 零宿主依赖**：`lib/` 全部文件不得出现 `@deepseek-ai/`，否则 link 安装会解析失败
 - **C 产物一致**：跑 `build-kb.mjs --check`
 - **D 集成测试**：跑 `test/run.mjs`，必须是全绿
-- **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/`、`data/kb-data.json`、`data/kb-meta.json`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
+- **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/` 全部模块、`data/kb-data.json`、`data/kb-meta.json`、`data/assist-playbooks.json`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
 - **F 版本一致**：`package.json` 与 `kb-meta.kb_version` 相同
 
 任一项失败即退出码 1，不做"警告后继续"。

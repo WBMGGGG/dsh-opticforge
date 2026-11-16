@@ -1,5 +1,44 @@
 # 变更记录
 
+## 1.1.0
+
+架构升级：从“检索插件”改为“任务辅助插件”。输入一个具体问题，输出可直接执行的作战包；检索退为证据层。
+
+### 新增辅助层
+
+- **`opticforge_assist`**：任务受理 + 取证 + 能力路由 + 分阶段计划 + 定向检索包 + 验收清单 + 可交接 Markdown
+  - `brief`：目标、领域、意图、交付物、约束、待澄清（≤3 问）
+  - `evidence`：≤10 条 present 条目，带 chunk_id、来源、摘录、命中的检索面
+  - `coverage_matrix` / `gaps` / `library_gaps`：检索面覆盖、主题缺口、A03/C01/E01 原文缺口
+  - `capabilities`：扫描本机 Skill 与 MCP，支持 `known_capabilities` 声明校正
+  - `local_assets`：`workspace` 内图纸/数据/代码/文档清单（只读文件名与大小）
+  - `plan`：每步 phase/goal/capability/actions/output/routing，含关键路径与可并行步骤
+  - `search_pack`：标准、论文、厂商、误差预算、成本五类定向检索词
+  - `handoff`：可直接交给子 agent 的执行块
+- **`opticforge_verify`**：交付自检
+  - 引用是否存在、是否 present（error）
+  - 数量断言是否有引用或计算说明（warning，strict 下 error）
+  - 假设 / 缺口 / 复现 / 来源段是否齐备
+  - 绝对化与营销词
+  - 输出 0–100 分、`pass`、问题清单与 checklist
+
+### 新增模块与数据
+
+- `lib/assist.js`：受理、取证、路由、计划、验收
+- `lib/capabilities.js`：Skill / MCP / 本地素材只读扫描
+- `lib/verify.js`：文本级交付自检
+- `data/assist-playbooks.json`：9 类任务剧本（高光谱、光学设计、检测装调、共焦、光谱仪、成像相机、薄膜、排障、调研）+ 交付物模板
+- 新增 `docs/ARCHITECTURE.zh.md`
+
+### 版本与基线
+
+- `package.json` 与 `kb_version` → **1.1.0**
+- 知识库内容不变：40 板块 / 324 条 / 308 present
+- 原文缺口固定为 A03（1 条）、C01（5 条）、E01（6 条），assist 单列 `library_gaps`
+- 集成测试 3 项 → **26 项**（新增 assist/verify/能力发现/版本一致性）
+- 发布门禁 28 项 → **32 项**（打包清单增加 4 个新文件）
+- 五个工具统一 `{ ok, kb_version, action }` 信封
+
 ## 0.2.1
 
 场景深化，按使用场景补强几何光学、物理光学、光学检测、光学设计、高光谱成像与分光系统设计。**40 个板块 / 324 条 / 308 present。**

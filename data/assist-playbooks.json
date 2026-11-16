@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "note": "任务路由剧本。每条 playbook 描述一类光电任务：触发词、知识板块、专业步骤、检索面。改这里即可扩展任务类型，不必改代码。",
+  "capability_classes": {
+    "clarify": "向用户补齐阻塞信息（最多 3 个问题）",
+    "kb": "检索并取用本地知识库条目，形成可引用依据",
+    "local_scan": "盘点本地工作目录中的图纸、数据、代码、文档",
+    "calc": "用脚本/表格做数值计算、预算、误差分配",
+    "skill_doc": "调用文档类 Skill 产出报告/方案/SOP",
+    "skill_sheet": "调用表格类 Skill 产出指标表、预算表、公差表",
+    "skill_ppt": "调用幻灯片类 Skill 产出汇报材料",
+    "skill_code": "写/改代码并用本地运行时验证",
+    "skill_image": "生成或编辑图像、示意图、版式",
+    "mcp_desktop": "调用桌面/浏览器 MCP 操作本机应用与网页",
+    "web_search": "用定向检索词查找标准、厂商资料、论文、报错",
+    "web_fetch": "精读检索到的网页/PDF，抽取可引用事实",
+    "analysis": "对数据做统计、拟合、图像处理并给出判据",
+    "verify": "按验收清单复核引用、单位、假设与缺口",
+    "deliver": "整理文件、命名、版本与交付说明"
+  },
+  "playbooks": [
+    {
+      "id": "hyperspectral",
+      "label": "高光谱成像",
+      "keywords": ["高光谱", "成像光谱", "推扫", "快照", "数据立方", "Czerny", "Turner", "Offner", "Littrow", "smile", "keystone", "光谱成像", "波段", "成像光谱仪"],
+      "sections": ["I05", "I06", "G01", "G02", "F08", "A02"],
+      "aspects": ["推扫几何 速高比 幅宽", "快照 积分视场 编码孔径", "Czerny-Turner 消像散", "Offner 凸面光栅", "smile keystone 配准", "信噪比 辐亮度 定标"],
+      "focus": [
+        "先把光谱分辨率、空间分辨率、幅宽、速高比、SNR 拆成互相约束的指标，确认哪一个是指标瓶颈",
+        "分光方案在 Czerny-Turner、Offner、Littrow、透射光栅之间按体积、像差、成本做取舍",
+        "推扫要算积分时间与运动模糊，快照要算光通量与重构误差，两条路线不能套同一套预算",
+        "定标链分波长定标与辐射定标，smile/keystone 要在装配后实测，不能只靠设计值"
+      ],
+      "steps": [
+        { "phase": "指标", "goal": "把需求拆成光谱/空间/辐射/运动四组指标并检查互斥", "capability": "calc", "output": "指标表（含单位、来源、余量）" },
+        { "phase": "方案", "goal": "选定分光架构并给出一版初始结构参数", "capability": "kb", "output": "架构对比表 + 初始参数" },
+        { "phase": "预算", "goal": "做光通量、SNR、积分时间、运动模糊与数据率预算", "capability": "calc", "output": "预算表与瓶颈结论" },
+        { "phase": "定标", "goal": "设计波长定标、辐射定标与 smile/keystone 实测流程", "capability": "analysis", "output": "定标方案与判据" }
+      ],
+      "search": [
+        { "facet": "标准", "zh": "成像光谱仪 定标 规范", "en": "hyperspectral imager calibration standard" },
+        { "facet": "论文", "zh": "Offner 凸面光栅 成像光谱仪 设计", "en": "Offner convex grating imaging spectrometer design" },
+        { "facet": "厂商", "zh": "推扫式 高光谱 相机 参数", "en": "pushbroom hyperspectral camera datasheet" }
+      ]
+    },
+    {
+      "id": "optical_design",
+      "label": "光学设计",
+      "keywords": ["光学设计", "镜头", "初始结构", "优化", "像差", "MTF", "zemax", "code v", "公差", "非球面", "自由曲面", "光路", "物镜", "扩束", "远心"],
+      "sections": ["I01", "I02", "I04", "B01", "B02", "F09"],
+      "aspects": ["规格分解 视场 F数 波段", "初始结构 镜头型式", "像差平衡 优化", "公差 补偿器", "非球面 自由曲面 可制造性", "热 鬼像 杂散光"],
+      "focus": [
+        "先把 F/#、视场、波段、畸变、后截距写成可判定规格，再谈结构",
+        "初始结构决定上限，优化只能逼近；局部极小要用换结构或换评价函数跳出",
+        "公差先分配后优化，补偿器自由度要写进装配流程，不能事后补",
+        "非球面/自由曲面要同步问加工与检测能力，设计值不等于可验收值"
+      ],
+      "steps": [
+        { "phase": "规格", "goal": "输出可判定的设计规格表并标注优先级", "capability": "skill_sheet", "output": "规格表" },
+        { "phase": "结构", "goal": "选镜头型式、给出初始结构参数与一阶量核算", "capability": "kb", "output": "初始结构说明" },
+        { "phase": "优化", "goal": "设定评价函数、约束与优化顺序，记录每次迭代的取舍", "capability": "calc", "output": "优化记录 + MTF/点列图判读" },
+        { "phase": "公差", "goal": "做灵敏度/蒙特卡洛公差，分配补偿器与装调余量", "capability": "calc", "output": "公差表 + 合格率" },
+        { "phase": "可制造", "goal": "核对材料、镀膜、加工与检测可行性，列出降本替代", "capability": "web_search", "output": "可制造性清单" }
+      ],
+      "search": [
+        { "facet": "标准", "zh": "ISO 10110 光学图纸 标注", "en": "ISO 10110 optical drawing indication" },
+        { "facet": "论文", "zh": "自由曲面 离轴 三反 设计", "en": "freeform off-axis three mirror design" },
+        { "facet": "厂商", "zh": "非球面 加工 检测 能力", "en": "asphere manufacturing metrology capability" }
+      ]
+    },
+    {
+      "id": "testing_alignment",
+      "label": "光学检测与装调",
+      "keywords": ["检测", "装调", "装配", "标定", "干涉仪", "面形", "波前", "偏心", "间隔", "MTF 测量", "透过率", "杂散光", "对准", "工装"],
+      "sections": ["I03", "B01", "C01", "C02", "F09", "E01"],
+      "aspects": ["面形 波前 子孔径", "MTF 畸变 焦距 测量", "偏心 间隔 装调", "透过率 杂散光", "环境 振动 热稳定", "判据 记录 溯源"],
+      "focus": [
+        "先确定测什么量、用什么基准、允许多大不确定度，再选仪器",
+        "装调要把敏感面排优先级，先定基准面/基准轴，再逐面收敛",
+        "检测数据必须带环境与基准说明，否则无法复现",
+        "判据要写成通过/不通过，而不是“看起来可以”"
+      ],
+      "steps": [
+        { "phase": "量值", "goal": "列出待测参数、基准、量程、不确定度与判据", "capability": "skill_sheet", "output": "检测参数表" },
+        { "phase": "方法", "goal": "为每个参数选测量原理与仪器，给替代方案", "capability": "kb", "output": "方法对照表" },
+        { "phase": "流程", "goal": "编排装调顺序、工装、补偿器与复测节点", "capability": "kb", "output": "装调/检测 SOP" },
+        { "phase": "记录", "goal": "设计记录表与原始数据归档方式", "capability": "skill_sheet", "output": "记录模板" }
+      ],
+      "search": [
+        { "facet": "标准", "zh": "光学元件 面形 检测 标准", "en": "optical surface form metrology standard" },
+        { "facet": "规范", "zh": "JJF 1990-2022 校准规范", "en": "JJF 1990-2022 calibration specification" },
+        { "facet": "厂商", "zh": "干涉仪 波前 测量 选型", "en": "wavefront interferometer selection" }
+      ]
+    },
+    {
+      "id": "confocal_sensing",
+      "label": "共焦与位移传感",
+      "keywords": ["共焦", "色散共焦", "位移传感", "测距", "光谱共焦", "探头", "量程", "线性度", "分辨率", "IFC", "confocal"],
+      "sections": ["A01", "D01", "F06", "G01"],
+      "aspects": ["共焦色散 位移解码", "量程 分辨率 线性度", "探头 数值孔径 光斑", "控制器 采样 带宽", "标定 温漂 补偿"],
+      "focus": [
+        "量程与分辨率是一对约束，先定量程再谈分辨率，别拿最高分辨率套全量程",
+        "线性度要看全量程误差曲线，不是单点重复性",
+        "温漂与材料热膨胀要进预算，长时测量必须做零点复核",
+        "控制器带宽、采样率与运动速度要匹配，否则数据是糊的"
+      ],
+      "steps": [
+        { "phase": "选型", "goal": "按量程/分辨率/工作距离/被测面形选探头与控制器", "capability": "kb", "output": "选型表" },
+        { "phase": "核算", "goal": "算光斑、NA、景深、采样带宽与运动匹配", "capability": "calc", "output": "参数核算" },
+        { "phase": "标定", "goal": "设计标定件、点位与温漂复核流程", "capability": "analysis", "output": "标定方案" }
+      ],
+      "search": [
+        { "facet": "厂商", "zh": "光谱共焦 位移传感器 量程 分辨率", "en": "chromatic confocal displacement sensor range resolution" },
+        { "facet": "论文", "zh": "色散共焦 位移测量 误差", "en": "chromatic confocal displacement measurement error" }
+      ]
+    },
+    {
+      "id": "spectrometer",
+      "label": "光谱仪与光栅",
+      "keywords": ["光谱仪", "光栅", "衍射", "RCWA", "闪耀", "级次", "分辨率", "杂散光", "单色仪", "分光", "VHG", "SRG"],
+      "sections": ["A02", "C02", "I06", "I02", "F08"],
+      "aspects": ["光栅方程 级次 色散", "Czerny-Turner 结构", "Offner 同心", "衍射效率 RCWA", "分辨率 狭缝 像差", "杂散光 鬼线"],
+      "focus": [
+        "先算光栅方程与角色散，确定级次、刻线密度与波段是否冲突",
+        "分辨率受狭缝、像差、探测器采样三者共同限制，别只算理论值",
+        "衍射效率决定信噪比，RCWA 参数要写清偏振与入射角",
+        "杂散光来自多次衍射、鬼线和表面散射，要留实测环节"
+      ],
+      "steps": [
+        { "phase": "参数", "goal": "算光栅方程、色散、级次与波段重叠", "capability": "calc", "output": "参数核算" },
+        { "phase": "结构", "goal": "选定 CT/Offner/Littrow 并做初始几何", "capability": "kb", "output": "结构方案" },
+        { "phase": "效率", "goal": "评估衍射效率与偏振依赖，必要时做 RCWA", "capability": "calc", "output": "效率曲线/结论" },
+        { "phase": "杂散光", "goal": "列出鬼线、多次衍射与散射源，给抑制措施", "capability": "kb", "output": "杂散光清单" }
+      ],
+      "search": [
+        { "facet": "标准", "zh": "衍射光栅 术语 标准", "en": "diffraction grating terminology standard" },
+        { "facet": "论文", "zh": "Czerny-Turner 消像散 设计", "en": "Czerny-Turner astigmatism correction design" }
+      ]
+    },
+    {
+      "id": "imaging_camera",
+      "label": "成像与相机系统",
+      "keywords": ["相机", "成像", "探测器", "sensor", "cmos", "ccd", "镜头选型", "视场", "景深", "曝光", "帧率", "机器视觉", "工业相机"],
+      "sections": ["D01", "F05", "F06", "F07", "I01", "I03"],
+      "aspects": ["探测器 QE 噪声 动态范围", "镜头 视场 景深 分辨率匹配", "曝光 增益 帧率", "光照 对比度 偏振", "标定 畸变 平场"],
+      "focus": [
+        "先算像素对应的物方分辨率，再选镜头与探测器，避免采样不足或过采样",
+        "QE、读出噪声、暗电流共同决定弱光能力，不能只看像素数",
+        "曝光与帧率受带宽和光照限制，运动场景先算模糊",
+        "镜头与探测器之间还有滤光片、窗口、CRA 匹配，别漏接口"
+      ],
+      "steps": [
+        { "phase": "链路", "goal": "算物方分辨率、视场、景深与探测器采样匹配", "capability": "calc", "output": "链路核算" },
+        { "phase": "选型", "goal": "选探测器与镜头，核对接口、CRA、滤光片", "capability": "kb", "output": "选型表" },
+        { "phase": "光照", "goal": "做照度/曝光/信噪比预算，给打光方案", "capability": "calc", "output": "光照预算" }
+      ],
+      "search": [
+        { "facet": "厂商", "zh": "工业相机 量子效率 读出噪声", "en": "industrial camera quantum efficiency read noise" },
+        { "facet": "标准", "zh": "机器视觉 镜头 接口 标准", "en": "machine vision lens interface standard" }
+      ]
+    },
+    {
+      "id": "thin_film",
+      "label": "薄膜与镀膜",
+      "keywords": ["薄膜", "镀膜", "膜系", "增透", "高反", "滤光片", "热漂移", "应力", "附着", "GDD", "coating"],
+      "sections": ["F03", "F04", "F10", "F05", "C02"],
+      "aspects": ["膜系设计 材料 折射率", "热漂移 温漂", "应力 附着 环境", "镀膜误差 良率", "滤光片 光谱特性"],
+      "focus": [
+        "先定波段、入射角、偏振与接收角，再选材料对",
+        "热漂移要按实际温度区间算，不能只给室温指标",
+        "应力与附着力决定能不能过环境试验，设计阶段就要问工艺",
+        "镀膜误差会漂中心波长，公差要写进膜系评价"
+      ],
+      "steps": [
+        { "phase": "指标", "goal": "写清波段、入射角、偏振、吸收与温漂指标", "capability": "skill_sheet", "output": "膜系指标表" },
+        { "phase": "设计", "goal": "选材料与层数，给初始膜系与评价函数", "capability": "calc", "output": "膜系方案" },
+        { "phase": "工艺", "goal": "核对镀膜工艺、误差、应力与环境试验", "capability": "web_search", "output": "工艺可行性" }
+      ],
+      "search": [
+        { "facet": "标准", "zh": "光学薄膜 环境试验 标准", "en": "optical coating environmental test standard" },
+        { "facet": "论文", "zh": "薄膜 热漂移 低应力", "en": "optical coating thermal drift low stress" }
+      ]
+    },
+    {
+      "id": "troubleshooting",
+      "label": "故障排查与调试",
+      "keywords": ["故障", "异常", "报错", "不收敛", "噪声", "漂移", "抖动", "偏差", "排查", "调试", "失效", "debug"],
+      "sections": ["I03", "I01", "F06", "F09", "G06"],
+      "aspects": ["现象 复现 边界条件", "测量链 基准 漂移", "光路 装调 偏心", "电子 噪声 接地", "环境 温漂 振动"],
+      "focus": [
+        "先固化复现条件与现象，不要一边改一边猜",
+        "把测量链拆成基准、传感器、采集、算法四段，逐段隔离",
+        "优先查基准与漂移，再查光路与电子学，最后才怀疑算法",
+        "每次只改一个变量，留前后对比数据"
+      ],
+      "steps": [
+        { "phase": "复现", "goal": "写清现象、发生条件、频率与已排除项", "capability": "clarify", "output": "故障记录" },
+        { "phase": "隔离", "goal": "按测量链分段替换/旁路，定位到子系统", "capability": "analysis", "output": "隔离结论" },
+        { "phase": "根因", "goal": "用数据验证根因，给临时与长期措施", "capability": "kb", "output": "根因报告" }
+      ],
+      "search": [
+        { "facet": "报错", "zh": "光谱仪 波长漂移 排查", "en": "spectrometer wavelength drift troubleshooting" },
+        { "facet": "论文", "zh": "光学系统 杂散光 鬼像 排查", "en": "optical system stray light ghost analysis" }
+      ]
+    },
+    {
+      "id": "literature",
+      "label": "技术调研与选型",
+      "keywords": ["调研", "选型", "对比", "综述", "前沿", "方案评估", "供应商", "报价", "可行性", "literature", "survey"],
+      "sections": ["F01", "F02", "F09", "G01", "G07", "H01"],
+      "aspects": ["技术路线 成熟度", "关键指标 对比", "供应链 成本", "专利 标准 风险", "验证方法"],
+      "focus": [
+        "先定义比较维度与权重，再收集资料，避免资料堆砌",
+        "区分实验室指标、产品指标与量产指标，不混用",
+        "每条结论标来源与时间，厂商参数注明型号与条件",
+        "给出推荐方案与弃选理由，不只列优缺点"
+      ],
+      "steps": [
+        { "phase": "维度", "goal": "定比较维度、权重与淘汰线", "capability": "skill_sheet", "output": "评估矩阵" },
+        { "phase": "收集", "goal": "按标准/论文/厂商三类来源定向检索并抽取", "capability": "web_search", "output": "来源清单" },
+        { "phase": "比较", "goal": "按统一口径填矩阵，标注不确定项", "capability": "analysis", "output": "对比表" },
+        { "phase": "结论", "goal": "给推荐方案、风险与验证计划", "capability": "skill_doc", "output": "选型报告" }
+      ],
+      "search": [
+        { "facet": "综述", "zh": "技术 综述 2024 2025", "en": "technology review 2024 2025" },
+        { "facet": "厂商", "zh": "产品 参数 datasheet", "en": "product datasheet specifications" },
+        { "facet": "专利", "zh": "专利 检索 关键方案", "en": "patent search key approach" }
+      ]
+    }
+  ],
+  "deliverables": [
+    { "id": "report", "keywords": ["报告", "方案", "分析", "论证", "汇报"], "skill": "skill_doc", "suffix": "docx", "acceptance": ["结论先行", "每条关键数字有来源或计算过程", "假设与缺口单列"] },
+    { "id": "sheet", "keywords": ["表格", "清单", "预算", "指标", "公差", "选型"], "skill": "skill_sheet", "suffix": "xlsx", "acceptance": ["单位列完整", "公式可追溯", "异常值标注"] },
+    { "id": "slides", "keywords": ["ppt", "汇报", "演示", "答辩"], "skill": "skill_ppt", "suffix": "pptx", "acceptance": ["一页一个结论", "图表有来源", "页数与时长匹配"] },
+    { "id": "code", "keywords": ["代码", "脚本", "程序", "算法", "仿真"], "skill": "skill_code", "suffix": "py", "acceptance": ["可复现运行", "输入输出示例", "边界条件处理"] },
+    { "id": "doc", "keywords": ["sop", "流程", "规范", "作业指导", "记录"], "skill": "skill_doc", "suffix": "docx", "acceptance": ["步骤可执行", "判据明确", "记录可追溯"] }
+  ]
+}

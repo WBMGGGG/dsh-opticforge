@@ -1,32 +1,105 @@
 # OpticForge
 
-光电工程师的本地知识库，DeepSeek Harness（DSH）插件。
+光电工程师的**任务辅助插件**，DeepSeek Harness（DSH）。
+输入一个具体问题，输出一套能直接执行的作战包：任务简报、知识证据、能力路由、分阶段计划、定向检索词、验收清单。
 
-纯 Node.js，零运行时依赖，装完即用。**0.2.0 起只做知识库，不再带计算器；0.2.1 增补场景深化板块。**
+纯 Node.js，零运行时依赖。**1.1.0 起从“检索插件”升级为“任务辅助层”，检索退为证据层。**
 
 ---
 
 ## 它解决什么
 
-做光机设计、装调、验收时，真正卡人的不是公式，而是那些**散落在手册、标准和论文里的具体判据**：镜片口径怎么换算、公差分析该看哪个数、光谱仪该配多少像素、共焦传感器量程怎么选、超透镜为什么有色差。
+做光机设计、装调、验收时，真正卡人的不是公式，而是三件事：
 
-这些东西查一次要半小时，下次还得再查。OpticForge 把它们整理成可检索的事实条目，让模型直接查到依据，而不是凭记忆编。
+1. **依据散**：口径怎么换算、公差看哪个数、光谱仪配多少像素、共焦量程怎么选——散在手册、标准和论文里。
+2. **路径乱**：知道要查资料、要算、要画图、要写报告，但不确定先做什么、该调哪个 Skill、哪些能并行。
+3. **交付虚**：报告写完没人核对引用、单位、假设和缺口，数字看着都对，一追问就露。
 
----
+OpticForge 把这三件事收进一个插件：
 
-## 三个工具
-
-| 工具 | 用途 |
-|---|---|
-| `opticforge_docs` | 列出 40 个板块与每块的标题。先看目录再检索，减少盲目搜索 |
-| `opticforge_search` | BM25 检索，返回 chunk_id、分数、命中词、摘录、来源、章节 |
-| `opticforge_get` | 按 chunk_id 取完整条目（9 个字段全给），引用与核对数值时用 |
-
-三个工具统一信封：`{ ok, kb_version, action, ... }`。检索结果的 `kb_version` 会回显，方便确认用的是哪版数据。
+- **证据层**：40 个板块、324 条带来源的事实条目，检索命中给 chunk_id + 来源 + 摘录，没依据就明说。
+- **路由层**：按问题类型选剧本，盘点本机 Skill / MCP / 工作目录素材，生成带能力标签的执行计划。
+- **验收层**：交付前检查引用是否真实、数量断言是否有来源、假设/缺口/复现是否单列。
 
 ---
 
-## 知识库现状（0.2.1）
+## 三层架构
+
+```
+问题
+ │
+ ├─ opticforge_assist ── 受理与路由
+ │    ├─ brief          目标 / 交付物 / 约束 / 待澄清
+ │    ├─ evidence       知识库证据 + 覆盖矩阵 + 缺口
+ │    ├─ capabilities   本机 Skill / MCP / 工作目录素材
+ │    ├─ plan           分阶段步骤，每步绑定能力类别与候选工具
+ │    ├─ search_pack    标准 / 论文 / 厂商 / 排错 定向检索词
+ │    └─ acceptance     验收清单 + 风险 + 可交接 Markdown
+ │
+ ├─ 执行层（agent）── 按 plan 调用
+ │    ├─ Skill：sheet / word / ppt / seedream / browser …
+ │    ├─ MCP：桌面、浏览器、GitHub 等
+ │    ├─ 本地：PowerShell / Python / 文件读写
+ │    └─ 检索：general_search + web_fetch
+ │
+ └─ opticforge_verify ── 交付自检
+      ├─ 引用：chunk_id 是否存在、是否 present
+      ├─ 数量：数字是否有引用或计算说明
+      ├─ 结构：假设 / 缺口 / 复现 / 来源
+      └─ 措辞：绝对化与营销词
+```
+
+**边界**：插件本身不联网、不执行外部动作。它负责“想清楚怎么干”，执行层负责“真的去干”。
+
+---
+
+## 五个工具
+
+| 工具 | 层 | 用途 |
+|---|---|---|
+| `opticforge_assist` | 辅助 | **主入口**。问题 → 简报 + 证据 + 能力路由 + 计划 + 检索包 + 验收 + handoff |
+| `opticforge_verify` | 辅助 | 交付自检。传 `text` 或 `.md/.txt/.json/.csv` 路径，给 0–100 分与问题清单 |
+| `opticforge_search` | 证据 | BM25 检索，返回 chunk_id、分数、命中词、摘录、来源、章节 |
+| `opticforge_get` | 证据 | 按 chunk_id 取完整条目（9 个字段），引用与核数值时用 |
+| `opticforge_docs` | 证据 | 列出 40 个板块与每块标题，先看目录再检索 |
+
+统一信封：`{ ok, kb_version, action, ... }`。`assist` 与 `verify` 也回显 `kb_version`。
+
+### 一次典型调用
+
+```json
+{
+  "problem": "设计一台 400–1000 nm 推扫式高光谱成像仪，光谱分辨率 5 nm，空间分辨率 0.5 m@1 km，幅宽 30 km，给出分光方案、指标预算和定标流程",
+  "deliverable": "方案报告",
+  "workspace": "D:/AI/projects/hyperspectral",
+  "known_capabilities": ["sheet", "word", "general_search"]
+}
+```
+
+返回的 `plan` 会把任务拆成：澄清 → 取证 → 本地盘点 → 指标 → 方案 → 预算 → 定标 → 外部核验 → 交付 → 自检 → 收口。每步都有：
+
+- `capability`：`kb` / `calc` / `skill_sheet` / `skill_doc` / `web_search` / `verify` …
+- `actions`：具体动作，例如“opticforge_search('推扫 速高比')”“调用表格 Skill 建预算表”
+- `routing`：候选 Skill、工具、MCP，以及不可用时的降级方案
+- `output`：这一步必须产出什么
+
+`handoff` 是一段可直接交给子 agent 的 Markdown，包含目标、依据、执行顺序与验收。另附 `execution_contract`：必须做什么、可调哪些 Skill/MCP/工具、什么情况必须停下。
+
+---
+
+## 能力发现
+
+`opticforge_assist` 会做三件只读扫描：
+
+1. **Skill**：扫常见根目录（`~/.dsh/skills`、`~/.agents/skills`、`~/Doubao/skills`、豆包 workspace 的 `.skills` / `.user_skills`），读 `SKILL.md` 的 name/description。
+2. **MCP**：读常见 `.mcp.json` / `mcp.json` 配置，只取服务器名，不读凭据。
+3. **本地素材**：给了 `workspace` 就扫两层目录，按扩展名识别图纸、数据、代码、文档，按文件名相关度排序；只读文件名与大小，不读内容。
+
+扫描失败只降级为空列表并写 note，不阻断任务。`known_capabilities` 可把当前会话实际可用的 Skill 名传进来，`known_mcp` 可声明实际可用的 MCP 服务器，声明项会排在候选列表最前。
+
+---
+
+## 知识库现状（1.1.0）
 
 **40 个板块、324 条条目，其中 308 条可作为依据**（`status=present`）。
 
@@ -36,15 +109,15 @@
 | F | 10 | 基础理论：几何光学、干涉衍射、偏振、激光、辐射度与色度、薄膜、探测与噪声、光谱学、干涉计量、材料工艺 | 83 |
 | G | 7 | 工程系统：光机装调、公差与不确定度、热光学、光谱/辐射定标、检测与图像处理、COMSOL、SolidWorks | 53 |
 | H | 8 | 前沿交叉：超表面与 DOE、光波导与光子集成、量子光学、高光谱、激光三角/共焦/雷达、失效现场、前沿专题、半导体光源 | 61 |
-| I | 6 | 场景深化（0.2.1）：几何光学像差判读、物理光学与传递函数、光学检测、光学设计、高光谱推扫/快照、Czerny-Turner 与 Offner 分光系统 | 60 |
+| I | 6 | 场景深化：像差判读、物理光学与传递函数、光学检测、光学设计、高光谱推扫/快照、Czerny-Turner 与 Offner 分光系统 | 60 |
 
-A–E 里有 16 条**如实标注的知识缺口**：11 条 `missing_source`（原文没拿到，如 A03 综述、E01 规范条文）、5 条 `substitute`（用同类公开资料补一般原理，并注明非原出处）。
+### 缺口
 
-缺口不是缺陷，是设计。模型看到缺口会告诉你"这里没有依据"，而不是编一个。
+**原文层只剩三处**：A03（《光学学报》峰值定位综述，1 条）、C01（ZYGO CSI 白皮书，5 条）、E01（JJF 1990-2022，6 条）的原始条文未取得。合计 16 条非 present：11 条 `missing_source`、5 条 `substitute`（用同类公开资料补一般原理，并注明非原出处）。
 
-### 当前已知空白
+`opticforge_assist` 会把这三处单列为 `library_gaps`，`opticforge_verify` 会把引用非 present 条目直接判错。
 
-光刻工艺与光刻胶、空间光学与热控 —— 这两类主题没有覆盖，检索返回空是正确行为。其余主题若检索为空，同样说明本库没有依据，不要用通用常识硬答。
+主题层另有两条按维护者要求不纳入：光刻工艺与光刻胶、空间光学与热控。检索为空即无依据，不编造；其他未列主题同理。
 
 ---
 
@@ -56,27 +129,32 @@ A–E 里有 16 条**如实标注的知识缺口**：11 条 `missing_source`（�
 
 - 每条对应一段厂商原文快照，`chunk_id` 集合必须与原文完全一致，引用锚点不可漂移
 - 正文改写为事实条目（`is_original_excerpt=false`），以`【标题】`开头
-- **数字逐字回查原文**：写进去的每个数字都必须能在同块原文里找到。原文写 `three cycles` 就必须写"三个循环"，不能自己写成 `3`
-- 公开仓库里没有逐字原文长段，`_kb-raw/` 只留本地
+- **数字逐字回查原文**：写进去的每个数字都必须能在同块原文里找到
+- 公开仓库不放逐字原文长段，`_kb-raw/` 只留本地
 
 **F/G/H/I（编译型，257 条）**
 
 - 无单一原文，来源是教材、标准与综述的通用结论，`source` 必须是可核对的真实来源
-- 正文 ≥300 字、至少 3 个字段行（定义/公式/判据/边界/工程要点），`disclaimer` 必须注明"非原文摘录"
-- **不写任何具体产品型号与厂商指标**——那类内容只在有原文的 A–E 里出现
+- 正文 ≥300 字、至少 3 个字段行，`disclaimer` 必须注明“非原文摘录”
+- **不写具体产品型号与厂商指标**——那类内容只出现在有原文的 A–E 里
 
-数字校验抓过真问题：改写 B01 时把原文的 "three cycles""four standard deviations""twice"写成 `3 / 4 / 2`，校验器全部报错——这些数字原文里不存在。
+---
 
-### 目录结构
+## 目录结构
 
 ```
-data/kb/            40 个板块的事实条目（人可读、git diff 可审）
-data/kb-data.json   合并产物，插件运行时读它
-data/kb-meta.json   版本、内容 sha256、板块清单、空白词表
-_kb-raw/            厂商原文快照，仅本地保留，不进仓库（.gitignore）
-docs/KB-OUTLINE.zh.md   板块与条目总纲（chunk_id 契约）
-docs/KB-SPEC.zh.md      原文型板块写作规范
-docs/KB-SPEC-COMPILED.zh.md  编译型板块写作规范
+lib/index.js          工具注册（5 个）
+lib/assist.js         任务受理、取证、能力路由、计划、验收
+lib/capabilities.js   Skill / MCP / 本地素材只读扫描
+lib/verify.js         交付自检
+lib/kb-engine.js      BM25 检索引擎
+lib/kb-data.js        数据加载与统计
+data/kb/              40 个板块的事实条目（人可读、git diff 可审）
+data/kb-data.json     合并产物，运行时读它
+data/kb-meta.json     版本、sha256、板块清单、缺口词表
+data/assist-playbooks.json  任务剧本（触发词/步骤/检索面）
+docs/KB-OUTLINE.zh.md 板块与条目总纲（chunk_id 契约）
+docs/ARCHITECTURE.zh.md 架构与扩展点
 ```
 
 ---
@@ -95,19 +173,21 @@ node scripts/install-local.mjs --dry-run  # 只打印，不动文件
 node scripts/install-local.mjs --uninstall
 ```
 
-重启 DSH 生效。之后改仓库里的代码或数据，重启即加载最新版本，不用重新安装。
+重启 DSH 生效。之后改仓库代码或数据，重启即加载最新版本。
 
 ---
 
 ## 开发
 
 ```bash
-node test/run.mjs                      # 集成测试
-node scripts/verify-all.mjs            # 发布前验收（契约、数据、测试、打包、版本）
-node scripts/build-kb.mjs --all --version 0.2.0   # 重建知识库
+node test/run.mjs                        # 集成测试（26 项）
+node scripts/verify-all.mjs              # 发布前验收（32 项）
+node scripts/build-kb.mjs --all --version 1.1.0
+node scripts/build-kb.mjs --check
 ```
 
-改知识库的流程：编辑 `data/kb/<板块>.json` → `--doc` 自检 → `--all` 重建 → 跑测试。
+改知识库：编辑 `data/kb/<板块>.json` → `--doc` 自检 → `--all` 重建 → 跑测试。
+改任务剧本：编辑 `data/assist-playbooks.json`，加触发词、板块、步骤或检索面，不必改代码。
 
 CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑同一套检查。
 
@@ -115,10 +195,12 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 ## 边界
 
-- 只覆盖上面列出的 40 个板块，光刻工艺、空间光学明确不覆盖；未列出的主题也不会凭空作答
-- 编译型条目是教材通用结论的工程整理，引用时请按 `source` 回到原始文献核对
+- 只覆盖上面列出的 40 个板块；光刻工艺、空间光学明确不覆盖
+- 编译型条目是教材通用结论的工程整理，引用时按 `source` 回原始文献核对
 - 厂商指标只出现在 A–E 且有原文快照，其余板块不写具体型号参数
-- 16 条缺口条目只用来告诉你"这里没有依据"，不能当事实引用
+- 16 条缺口只用来告诉你“这里没有依据”，不能当事实引用
+- 插件不联网、不执行动作；外部检索与 Skill/MCP 调用由执行层完成
+- `verify` 只做文本级检查，不解析 docx/pdf；需先导出为文本
 
 ## 许可
 

@@ -44,15 +44,15 @@ function requireModule(m, label) {
 // =====================================================================
 // A. 原生注册契约校验（不依赖 @deepseek-ai/dsh-tools）
 // =====================================================================
-test("A1 插件可加载：apply/inject/name 正确，注册 3 个工具", async () => {
+test("A1 插件可加载：apply/inject/name 正确，注册 5 个工具", async () => {
   await booted;
   assert.equal(typeof plugin.apply, "function", "lib/index.js 未导出 apply");
   assert.equal(plugin.name, "opticforge", "lib/index.js name 应为 opticforge");
   assert.deepEqual(plugin.inject, ["tools"], "lib/index.js inject 应为 [tools]");
-  assert.equal(registered.length, 3, "应恰好注册 3 个工具，实际 " + registered.length);
+  assert.equal(registered.length, 5, "应恰好注册 5 个工具，实际 " + registered.length);
   assert.deepEqual(
     registered.map((d) => d.name).sort(),
-    ["opticforge_docs", "opticforge_get", "opticforge_search"]
+    ["opticforge_assist", "opticforge_docs", "opticforge_get", "opticforge_search", "opticforge_verify"]
   );
 });
 
@@ -412,6 +412,120 @@ test("D5 编译型板块可被检索：几何光学与干涉衍射主题命中 F
   const diff = await execSearch({ query: "艾里斑 衍射 分辨", top_k: 5 });
   assert.ok(diff.total_hits > 0, "衍射查询应命中");
   assert.ok(diff.results.some((r) => ["F02", "F01", "I02"].includes(r.doc_id)), "应命中 F02/F01/I02，实际：" + JSON.stringify(diff.results.map((r) => r.chunk_id)));
+});
+
+// =====================================================================
+// F. 辅助层：assist 作战包与 verify 自检
+// =====================================================================
+function execAssist(args) {
+  return tool("opticforge_assist").execute(args, {});
+}
+function execVerify(args) {
+  return tool("opticforge_verify").execute(args, {});
+}
+
+test("F1 opticforge_assist：高光谱问题输出简报/证据/能力路由/分阶段计划/检索包/验收", async () => {
+  await booted;
+  const v = await execAssist({
+    problem: "设计一台 400-1000 nm 推扫式高光谱成像仪，光谱分辨率 5 nm，空间分辨率 0.5 m@1 km，幅宽 30 km，请给出分光方案、指标预算和定标流程",
+    deliverable: "方案报告"
+  });
+  assertOutputShape("opticforge_assist", v);
+  assert.equal(v.ok, true, "assist 应返回 ok=true：" + (v.error || ""));
+  assert.equal(v.action, "assist");
+  assert.equal(v.brief.domain.id, "hyperspectral", "应识别为高光谱剧本，实际 " + v.brief.domain.id);
+  assert.ok(v.brief.intents.length > 0, "应识别任务意图");
+  assert.ok(v.brief.deliverable.label.length > 0, "应推断交付物");
+  assert.ok(v.evidence.length > 0, "高光谱问题应检索到证据");
+  assert.ok(
+    v.evidence.some((e) => ["I05", "I06", "G01", "F08", "A02"].includes(e.doc_id)),
+    "证据应来自高光谱/分光相关板块，实际：" + JSON.stringify(v.evidence.map((e) => e.chunk_id))
+  );
+  assert.ok(v.plan.steps.length >= 8, "计划应有至少 8 步，实际 " + v.plan.steps.length);
+  for (const s of v.plan.steps) {
+    assert.ok(s.id && s.phase && s.goal && s.capability, "步骤字段不全：" + JSON.stringify(s));
+    assert.ok(Array.isArray(s.actions) && s.actions.length > 0, "步骤缺少可执行动作：" + s.id);
+    assert.ok(s.routing && Array.isArray(s.routing.recommended_tools), "步骤缺少能力路由：" + s.id);
+  }
+  assert.ok(v.plan.critical_path.length > 0, "应有关键路径");
+  assert.ok(v.execution_contract && Array.isArray(v.execution_contract.must) && v.execution_contract.must.length > 0, "应有执行契约");
+  assert.ok(v.search_pack.length >= 4, "应有定向检索包");
+  assert.ok(v.search_pack.every((p) => Array.isArray(p.queries) && p.queries.length > 0), "检索面包字段不全");
+  assert.ok(v.acceptance.length >= 5, "应有验收清单");
+  assert.ok(v.risks.length > 0, "应有风险清单");
+  assert.ok(typeof v.handoff === "string" && v.handoff.includes("## 执行顺序"), "handoff 应含执行顺序");
+  assert.equal(typeof v.kb_version, "string", "assist 应回显 kb_version");
+});
+
+test("F2 opticforge_assist：声明不覆盖的主题不伪造证据，并把缺口写进 gaps", async () => {
+  await booted;
+  const v = await execAssist({ problem: "空间光学 热控 仿真，给出低轨相机热控方案与在轨验证流程" });
+  assertOutputShape("opticforge_assist", v);
+  assert.equal(v.ok, true);
+  assert.ok(
+    v.gaps.some((g) => g.kind === "声明不覆盖" && String(g.aspect).includes("空间光学")),
+    "应把空间光学列为声明不覆盖，实际：" + JSON.stringify(v.gaps)
+  );
+  assert.ok(
+    v.evidence.every((e) => e.status === "present"),
+    "assist 证据只能来自 present 条目"
+  );
+  assert.ok(v.risks.some((r) => r.type === "知识缺口"), "风险里应有知识缺口");
+});
+
+test("F3 opticforge_assist：本地能力发现与 material 盘点不阻断任务", async () => {
+  await booted;
+  const v = await execAssist({
+    problem: "帮我把现有高光谱数据做波长定标和 smile 评估，输出报告",
+    workspace: PLUGIN,
+    known_capabilities: ["sheet", "word", "general_search"],
+    known_mcp: ["windows-mcp"]
+  });
+  assertOutputShape("opticforge_assist", v);
+  assert.equal(v.ok, true, "assist 不应因能力扫描失败而中断");
+  assert.ok(v.capabilities.skills.length > 0, "应至少包含调用方声明的能力");
+  assert.ok(v.capabilities.skills.some((s) => s.name === "sheet"), "known_capabilities 应合并进 skills");
+  assert.ok(v.capabilities.mcp_servers.includes("windows-mcp"), "known_mcp 应合并进 mcp_servers");
+  assert.ok(v.local_assets && v.local_assets.workspace, "应回显 workspace");
+  assert.ok(Array.isArray(v.local_assets.files), "应返回素材清单");
+  assert.ok(v.local_assets.files.length > 0, "仓库目录应能扫到文件");
+});
+
+test("F4 opticforge_verify：有效引用通过，无效引用与无来源数量判问题", async () => {
+  await booted;
+  const good = await execVerify({
+    text: "## 结论\n按 F01-01 的薄透镜公式计算，焦距 100 mm（计算值，假设 n=1.5）。\n\n## 假设\n仅适用于近轴条件。\n\n## 缺口\n空间光学无依据。\n\n## 复现\n见输入清单与命令。\n\n## 来源\nF01-01。"
+  });
+  assertOutputShape("opticforge_verify", good);
+  assert.equal(good.ok, true);
+  assert.equal(good.action, "verify");
+  assert.equal(good.citations.total, 1, "应识别 1 条引用");
+  assert.deepEqual(good.citations.invalid, [], "有效引用不应进 invalid");
+  assert.equal(good.pass, true, "结构完整的文本应通过，实际 issues=" + JSON.stringify(good.issues));
+
+  const bad = await execVerify({
+    text: "## 结论\n系统精度 0.1 mm，绝对完美。\n\n## 参考\nA99-99 给出了该指标。"
+  });
+  assert.equal(bad.ok, true);
+  assert.equal(bad.pass, false, "不存在的引用应判失败");
+  assert.ok(bad.citations.invalid.includes("A99-99"), "应标出不存在的 A99-99");
+  assert.ok(bad.issues.some((i) => i.type === "unsupported_quantity"), "应标出无来源数量断言");
+  assert.ok(bad.issues.some((i) => i.type === "marketing_word"), "应标出绝对化表述");
+  assert.ok(bad.score < 100, "有问题时分数应低于 100");
+});
+
+test("F5 版本一致：assist/verify 与 KB 同版本 1.1.0", async () => {
+  await booted;
+  const m = requireModule(kbData, "lib/kb-data.js");
+  const meta = await m.getKBMeta();
+  assert.equal(meta.kb_version, "1.1.0", "kb_version 应为 1.1.0，实际 " + meta.kb_version);
+  const v = await execAssist({ problem: "共焦位移传感器选型" });
+  assert.equal(v.kb_version, "1.1.0", "assist 应回显 1.1.0");
+  assert.deepEqual(
+    v.library_gaps.map((g) => g.doc_id).sort(),
+    ["A03", "C01", "E01"],
+    "原文层缺口应只有 A03/C01/E01，实际：" + JSON.stringify(v.library_gaps)
+  );
 });
 
 // =====================================================================
