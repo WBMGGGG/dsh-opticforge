@@ -1,0 +1,125 @@
+{
+  "kb_version": "0.1.0",
+  "built_at": "2026-11-16T03:20:45.377Z",
+  "content_sha256": "37a53a3e18533f32d38e87d42f556b2f89b55e2bf131c693fc105bff51a84070",
+  "total_chunks": 67,
+  "present_chunks": 51,
+  "docs": [
+    {
+      "doc_id": "A01",
+      "chunks": 13,
+      "present": 12,
+      "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/"
+    },
+    {
+      "doc_id": "A02",
+      "chunks": 9,
+      "present": 7,
+      "source": "How to build a spectrometer - theory | https://optics.ansys.com/hc/en-us/articles/42661659061779-How-to-build-a-spectrometer-theory"
+    },
+    {
+      "doc_id": "A03",
+      "chunks": 1,
+      "present": 0,
+      "source": "《光学学报》峰值定位综述（未取得原文） | （站点 opticsjournal.net；站点返回反爬页，无可用原文 URL）"
+    },
+    {
+      "doc_id": "B01",
+      "chunks": 11,
+      "present": 11,
+      "source": "How to perform a sequential tolerance analysis | https://optics.ansys.com/hc/en-us/articles/42661666289043-How-to-perform-a-sequential-tolerance-analysis"
+    },
+    {
+      "doc_id": "B02",
+      "chunks": 4,
+      "present": 4,
+      "source": "How to design DOE lens or metalens in OpticStudio | https://optics.ansys.com/hc/en-us/articles/42661666194323-How-to-design-DOE-lens-or-metalens-in-OpticStudio"
+    },
+    {
+      "doc_id": "C01",
+      "chunks": 5,
+      "present": 0,
+      "source": "ZYGO CSI (Coherence Scanning Interferometry) white paper | https://www.zygo.com.cn/（zygo.com 全站 403；zygo.com.cn 仅为官网壳）"
+    },
+    {
+      "doc_id": "C02",
+      "chunks": 7,
+      "present": 7,
+      "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method"
+    },
+    {
+      "doc_id": "D01",
+      "chunks": 11,
+      "present": 9,
+      "source": "Technical note / Si photodiodes (Hamamatsu) | https://www.hamamatsu.com/eu/en/product/optical-sensors/photodiodes/si-photodiodes.html"
+    },
+    {
+      "doc_id": "E01",
+      "chunks": 6,
+      "present": 1,
+      "source": "JJF 1990-2022 校准规范正文 | （jjf.net.cn 无法访问；https://std.samr.gov.cn/ 查询 JJF 1990 返回 0 条）"
+    }
+  ],
+  "zero_coverage_topics": [
+    "量子计算",
+    "量子信息",
+    "量子光学",
+    "量子比特",
+    "COMSOL",
+    "SolidWorks",
+    "图像处理",
+    "缺陷检测",
+    "热光学",
+    "无热化",
+    "热稳定",
+    "多物理场",
+    "波动光学",
+    "工程图",
+    "衍射光波导",
+    "光波导",
+    "光子集成",
+    "白光干涉",
+    "非球面",
+    "自由曲面",
+    "光谱定标",
+    "辐射度学",
+    "黑体",
+    "红外测温",
+    "信号解调",
+    "光谱与信号解调",
+    "激光三角",
+    "光学测厚",
+    "光机结构",
+    "不确定度",
+    "公差链",
+    "物理光学",
+    "光学检测"
+  ],
+  "covered_anchors": [
+    "共焦色散",
+    "共焦",
+    "色散",
+    "IFS2402",
+    "IFS",
+    "RCWA",
+    "光栅",
+    "衍射效率",
+    "镀膜",
+    "膜系",
+    "热漂移",
+    "dn/dT",
+    "公差分析",
+    "Monte Carlo",
+    "RSS",
+    "均方根",
+    "公差分配",
+    "photodiode",
+    "光电二极管",
+    "数值孔径",
+    "Airy",
+    "Rayleigh",
+    "线性度",
+    "量程",
+    "分辨率"
+  ]
+}

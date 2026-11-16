@@ -1,0 +1,101 @@
+[
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【LGL 近轴光谱仪基础（可见区 400–700 nm）】\n建模方式：先用近轴元件建模 LGL（透镜-光栅-透镜）光谱仪，忽略像差与优化问题，用于理解基本物理概念与分辨率。\n光路：多色光经入射狭缝成发散光，准直透镜转平行光，透射光栅按波长分光，聚焦透镜把不同波长会聚到探测器不同位置；测探测器上强度随位置分布即得光谱。\n波段：λmin 400 nm 到 λmax 700 nm，带宽 Δλ = 300 nm；设三个波长 400 / 550 / 700 nm，550 nm 为主波长。\n准直：近轴透镜焦距 30 mm，置于狭缝后 30 mm；再留 30 mm 厚度作准直镜到光栅的间距。\n分光原理：光栅本质是一排等距平行狭缝组成的光阑，相邻狭缝间距 d；双缝光程差随入射角 α 与衍射角 β 变化；光程差等于一个波长时相长干涉；多缝把特定波长光集中到衍射角方向，提高衍射效率。\n取值：实施时取中心波长入射角等于衍射角；本例 d = 0.5 µm，得 α = 33.367°。\nOpticStudio 实现：坐标转断 Tilt About X 设 33.367°；光栅面 Lines/µm 设为 2（即 d 的倒数），衍射级次 –1；再加坐标转断并用主光线求解，让坐标自动跟随主波长。",
+    "source": "How to build a spectrometer - theory | https://optics.ansys.com/hc/en-us/articles/42661659061779-How-to-build-a-spectrometer-theory",
+    "page_or_section": "Basic setup of an LGL spectrometer / Diffraction grating / equation (1)",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 近轴 入射狭缝 准直透镜 透射光栅 聚焦透镜 光程差 双缝 光栅常数 d 入射角 衍射角 相长干涉 坐标转断 Lines/µm 衍射级次",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【探测器宽度 L 与波长映射（400–700 nm）】\n决定量：探测器宽度由带宽 Δλ = λmax – λmin、光栅常数 d、聚焦透镜焦距 ff 三者决定；Δλ 与 d 通常先定，再选 ff 匹配探测器尺寸。\n角度：按方程 1 算得 400 nm 与 700 nm 对应衍射角 βmin = 14.48°、βmax = 58.21°；可在 Single Ray Trace 数据中追迹最小/最大波长的边缘光线验证。\n探测器宽度：两边缘衍射角经聚焦镜后在探测器上的间距，本例 L = 24.16 mm；近似可用 3D Layout 的 Measure 工具直接量；探测器越大要求 ff 越大。\n建模校验：用 REAY 操作数读第 9 面（探测器）上 400 nm 与 700 nm 两个波长（wave 1 与 wave 3）的实际光线 y 坐标，再用 DIFF 操作数求差，应与解析值一致。\n重映射：波长在波长范围内均匀分布，但在探测器上位置非线性（方程 1 含正弦），需把探测器位置重映射回波长；用 ZPL 宏 Mapping_Function_Resolution.ZPL，先取 WAVL 系统波长，再用 RAYY 读探测器上 y 坐标，经多重配置扫波长画映射函数。\n光谱分辨率 R：单位探测器宽度 ΔL 上的带宽份额 δλ，等于映射函数导数的倒数；再乘探测器像素宽度得整机分辨率。增大 ff 只是把光谱铺到更宽探测器，受衍射斑尺寸限制，不能真正提高分辨率。",
+    "source": "How to build a spectrometer - theory | https://optics.ansys.com/hc/en-us/articles/42661659061779-How-to-build-a-spectrometer-theory",
+    "page_or_section": "Spectrometer resolution / Detector width / Remapping / Spectral resolution",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 探测器宽度 L 焦距 ff δλ 光谱分辨率 REAY DIFF 操作数 ZPL 波长映射",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【衍射极限：艾里斑、瑞利判据与参数取舍】\n成像本质：光谱仪把入射狭缝（点源）映射到探测器；光线追迹高效但不与现实完全一致——点源像会因衍射而模糊，模糊程度由点扩散函数描述，Spot Diagram 中画出艾里斑（衍射极限斑）并标注其数值。\n瑞利判据：两个点源间距大于艾里斑半径才可分辨；在光谱仪里，点源间距对应带宽份额 δλ。\n像素判据：像素小于艾里斑半径一半时只会过采样衍射极限分辨率，没有意义，直接影响像素尺寸选择。\nF# 关系：工作 F# = 聚焦镜焦距 ff 除以系统孔径。\n推论：衍射极限分辨率随波长变化，光学设计无法消除；加大 ff 会增大 F# 从而增大艾里斑，同时探测器宽度 L 也增大，结果只是大艾里斑配大探测器，不提高分辨率；加大系统孔径会减小 F#、缩小艾里斑。\n可调参数取舍：带宽与光栅预设后，可调系统孔径与 ff；孔径尽量取大以获得小艾里斑；ff 必须照亮整个探测器（方程 2），探测器小则 ff 小、结构紧凑但像差增多，因此探测器应尽量取大；衍射极限分辨率不受聚焦镜影响，因为艾里斑随探测器宽度同比例变化。",
+    "source": "How to build a spectrometer - theory | https://optics.ansys.com/hc/en-us/articles/42661659061779-How-to-build-a-spectrometer-theory",
+    "page_or_section": "Diffraction limit / Airy disk / Rayleigh criterion / F# / Choice of system parameters",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 艾里斑 瑞利判据 艾里斑半径 点扩散函数 F# 系统孔径 像素尺寸 过采样",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【OCT 用 LGL 光谱仪实现（855–905 nm）】\n用途：眼科 OCT，带宽 855–905 nm，匹配 OCT 光源光谱（利于人眼检查）。\n光栅：Wasatch Photonics WP-HD1800/840-25.4 体积相位全息光栅，1800 l/mm，专为 OCT 应用开发并在所给波长范围优化；直径 1 英寸，兼作系统孔径；配 Thorlabs 30 mm 笼式件与 1 英寸透镜。\n相机：Teledyne e2V AVIIVA EV71YEM4CL2010-BA9 线阵相机，2048 像素，每像素 10 µm 宽、20 µm 高；聚焦镜焦距 125 mm 基本照亮靶面，中心波长艾里斑半径 9.2 µm，与像素宽同量级。\n设置：单模光纤入射，入射狭缝可建模为点源；孔径类型 Object Space NA，值 0.12（对应光纤接收角）；高斯切趾 Factor 1.0（计光束强度分布）；波长 0.855 / 0.880 / 0.905 µm，0.880 为主波长。\n准直：Thorlabs 消色差双合透镜，直径 1 英寸、EFL 60 mm，带适合波段的镀膜；选 60 mm 是为让准直光束直径照亮整个光栅（大孔径利于探测器上小衍射斑）；透镜按无限共轭优化，反向使用；面 0 厚 60 mm，准直镜到光栅 30 mm（光束已准直，此值不敏感），面 1 为光阑；Quick Adjust 后面 0 厚改 55.718 mm（厂家规定的后焦距）。\n聚焦：先用单片 Thorlabs AC254-100-B（EFL 100 mm），光栅到透镜 60 mm、透镜到探测器 97.1 mm（该透镜后焦距）；Matrix Spot 显示中心波长 880 nm 接近衍射极限，但周边波长不是——周边波长光斑焦距比中心短，即场曲。\n策略：用商用现货透镜（比定制便宜、供货快）；用单透镜不用双合（光栅已分光，色差靠倾斜探测器吸收）；用最佳形式透镜（专为聚焦准直光优化）；光焦度分到两片（面曲率低像差小，且多出一个可设为变量的厚度）；会聚镜后加一片发散镜作场镜消场曲。\n优化：各镜间距与光纤到准直镜间距设变量，探测器前加坐标转断使其可倾；先 Global Search 求全局最优，再 Hammer 锤形优化。\n评价函数：FTLT/FTGT 限镜间距与狭缝位置，权重使透镜不重叠（6、8、10 行）、光纤位置不跑（2、3 行），光栅到镜 1 上限防周边波长渐晕；PMLT/PMGT 限探测器倾角（12、13 行）；REAY/DIFF 配 ABGT/ABLT 限探测器宽度（15–19 行），权重防过照；EFL 只监测不参与优化（权重 0）；锤形阶段删去光斑最小化行，改用 DENC 相对三个波长各自质心优化 y 方向最大能量。\n监测：按 10 µm 像素宽，监测距质心 y 向 5 µm 处的包围能量，仅比衍射极限低几个百分点。\n结果：衍射极限斑 9.3 µm（对 10 µm 像素），探测器照亮 18.5 mm / 20.5 mm，包围能量接近衍射极限。",
+    "source": "How to build a spectrometer - implementation | https://optics.ansys.com/hc/en-us/articles/42661705172243-How-to-build-a-spectrometer-implementation",
+    "page_or_section": "Introduction / System setup / Optimisation",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 实现 优化 Hammer 全局搜索 包围能量 像差 透镜组 OCT 体积相位全息光栅 WP-HD1800 线阵相机 Object Space NA 高斯切趾 Quick Adjust 场镜 DENC",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光谱仪分辨率：衍射极限 25 pm 与像素极限 50 pm（880 nm）】\n衍射极限：880 nm 处艾里斑半径 9.3 µm；已照亮探测器宽度 18.5 mm，约可分辨 2000 个波长；带宽 50 nm，故衍射极限分辨率 25 pm。\n验证：设两波长差 25 pm，Huygens PSF 截面图上两峰分别在 0 µm 与约 –9 µm，仍可辨认为两个峰。\n像素极限：Huygens PSF 的 Image Delta 设为 10，即在 10 µm 宽度上平均（线阵像素宽），两峰不再可分。\nNyquist-Shannon 判据：分辨艾里斑半径至少需两个采样点；两 PSF 间距至少 20 µm（像素宽 10 µm 的两倍），对应光谱分辨率 50 pm。\n验证：把第二波长设为 0.880050 µm，两峰在 Huygens PSF 截面图中重新可分，故像素极限分辨率为 50 pm。\n结论：整机分辨率受线阵像素尺寸限制，而非衍射；若要充分采样衍射斑需 4000 像素、每像素 5 µm 的相机，目前没有；另一条路是放大衍射斑，但会过照探测器、损失带宽。",
+    "source": "How to build a spectrometer - implementation | https://optics.ansys.com/hc/en-us/articles/42661705172243-How-to-build-a-spectrometer-implementation",
+    "page_or_section": "Spectral resolution / Diffraction limited resolution / Pixel limited resolution",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 25 pm 瑞利判据 25pm 像素限制 Nyquist-Shannon 采样定理 线阵相机 10µm 像素 Huygens PSF 50pm",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【探测器像素对整机 MTF 的影响（Cooke 三片镜示例）】\n问题：MTF 描述光学系统成像，但常忽略探测器分辨率；像素明显大于可分辨光斑时称整机为探测器限制，系统 MTF 低于光学本体 MTF。\n方法：用部分相干图像分析把小型条形靶经系统成像到像素化探测器，直接算 MTF；靶要小，使光学传递函数在靶面内不显著变化。\n示例：基于 Cooke 三片镜示例文件；全像宽 0.5 mm，光学性能在此视场内不显著变化；先用 500 × 1 µm 宽像素；截面图上十个条形周期约占 200 µm，即 50 cycles/mm（部分相干图像分析中只约 50 cycles/mm）。\nMTF 估法：截面至少取 5 个清晰峰；在第二个到倒数第二个局部峰之间找强度最大最小（取这两峰间数据以减小边缘效应）；MTF =（Imax – Imin）/（Imax + Imin）；条形靶给出的是方波调制而非正弦波。\n结果一：1 µm 像素时，部分相干图像分析与 FFT MTF 在 50 cycles/mm 处都约为 0.66；因 1 µm 像素小于 5 µm RMS 斑与 3.5 µm 艾里斑半径，属光学限制而非探测器限制。\n结果二：改用 100 × 100、每像素 5 µm 后 MTF 降到 0.42。\n位移影响：像素接近分辨率极限时，整机 MTF 对约一个像素的对位敏感；探测器沿 x 偏心半个像素，明暗区被探测器阵列积分时串扰减少，MTF 反而升到 0.58。",
+    "source": "How to include detector resolution in MTF calculations | https://optics.ansys.com/hc/en-us/articles/42661980366867-How-to-include-detector-resolution-in-MTF-calculations",
+    "page_or_section": "Introduction / An example (detector resolution in MTF)",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF MTF 调制传递函数 部分相干图像分析 条形靶 像素宽度 5µm 1µm 串扰 0.66 0.42 0.58 方波调制 半像素位移",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【LGL 光谱仪杂散光分析（非序列，855–905 nm）】\n危害：光学优化到位后性能仍可被杂散光劣化——杂散光横向散射出光路损失功率，或落到线阵相机上与该波长无关的像素上。\n转换：在 OpticStudio 中于非序列模式做杂散光分析（发射大量光线，含光线与功率拆分）；打开 Spectrometer.ZAR，经 File…NSC Group 转非序列（本案例不用 Design Lockdown 与 Critical Rayset Generator），手删转换出的光源与探测器后重建。\n光源：Object 2 为高斯发散点源，模拟单模光纤出射；100 Layout Rays、100,000 Analysis Rays（兼顾计算与渲染速度）；源功率取 100 W（任选，方便把功率表示为相对源的百分比）；X/Y-Divergence 6.892 度、X/Y-SuperGauss 1（光纤特性参数）。\n探测器：Object 15 为吸收条，2000 像素、高 20 µm、宽 20 mm。\n光栅：由两片连续光栅组成，各 0.9 lines/µm（相当于一块 1.8 lines/µm）；两片均厚 1.49 mm、Diff Order –1；Object 7 的 Z 位设 1.49 mm、Object 8 的 Z 位设 1.51 mm；单片把 87% 光衍射到 –1 级、13% 到 0 级，两片合效率 75%；在前后表面镀膜，第一片转 180 度使其正面成为元件背面，厂家反射 0.5%，用透过率 0.995 的简单理想膜实现。\n追迹：开 Use Polarization 与 Split NSC Rays（光线遇面即拆分并分功率）、Ignore Errors（光线无法计算如撞到物体边缘时继续追迹）；因计算随机，每次损失能量会变；误差损失可忽略，约 0.5 W 因低于功率阈值被切（系统资源管理器默认 0.1%）。\n结果：探测器上出现 855 / 880 / 905 nm 三个峰，与序列模式仿真一致；总功率 59.5 W / 100 W；光栅损失 25%，其余约 20% 来自透镜与聚焦不足。\n机壳：加六个物体——两个圆筒镜筒、两端两个圆面、光栅附近两个矩形面；机壳两个作用：挡横向散射光、兼作探测器看光散向何处；Objects 16–21 全部开启涂层散射并设为探测器：95% 吸收、1% 镜面反射、4% Lambertian 后向散射（光吸收黑漆材料的典型值）。NSC 3D Layout 只是定性评估。\n定量：NSDD、NSTR（线 3、5）起动非序列追迹；线 7 为光谱仪探测器、线 8–13 为机壳各物体，线 14 求和约 100 W；光栅前（Objects 16–18）杂散光低，光栅后（Objects 19、20）高（吸收的是光栅 0 级光），探测器周围（Object 21）有相当分量（聚焦不足）；需控制光栅 0 级光，可用光陷阱而非仅吸收面。\n单色污染：约 60% 入射强度聚焦到探测器、10% 散到周围 Object 21；先只留 880 nm（关 855、905 nm），删 Object 21 椭圆与 Object 15 探测器，Analysis Rays 提到 10⁸；设三个探测器：880 nm 单像素、其余像素阵列（设 2001 像素以保对称）、探测器周围表面；开 Scatter NSC Rays 重追（光线多，可能逾一小时）。\n判读：中心像素附近辐照强（斑聚焦不足，注意纵轴为对数坐标），远端像素弱，探测器后整个表面上杂散光主要落在相机远处；本步用几何追迹、未计衍射，解读需谨慎。",
+    "source": "How to build a spectrometer – Stray Light Analysis | https://optics.ansys.com/hc/en-us/articles/42661776652819-How-to-build-a-spectrometer-Stray-Light-Analysis",
+    "page_or_section": "Introduction / Automatic conversion / Stray-light analysis on the detector",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 杂散光 非序列 光线追迹 探测器 机壳 光功率 总功率 评价函数 NSDD NSTR 光陷阱 0级衍射 100000光线",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-08",
+    "status": "substitute",
+    "is_original_excerpt": false,
+    "text": "【光栅衍射一般原理（替代资料，非 Zemax 原文）】\n光栅：含有周期性结构的元件，使入射光按不同衍射级次偏折。\n光栅方程：m·λ = d·（sin θ_in + sin θ_out）。d 为光栅周期，m 为衍射级次，符号随级次与方向约定变化。\n作用：方程给出各波长对应的衍射角，这是光谱仪色散与波长定标的基础。\n级次：自由光谱范围由级次 m 决定；级次越高，相邻级越容易重叠。\n效率：闪耀光栅通过控制槽形把能量集中到指定级次；Littrow 配置下入射与衍射同向。\n边界：本块是一般原理补充，不是 A02 板块的 Zemax KB 原文，不能当作 Zemax 操作步骤引用。",
+    "source": "Diffraction Gratings – reflection, transmission gratings, diffraction orders, blazed gratings, Littrow configuration, high diffraction efficiency, fabrication methods, applications | https://www.rp-photonics.com/diffraction_gratings.html",
+    "page_or_section": "RP Photonics supplement: general diffraction-grating principle",
+    "keywords_zh": "光谱仪 光栅方程 分辨率 衍射角 艾里斑 瑞利判据 探测器 像素 带宽 杂散光 LGL 焦距 F数 MTF 光栅方程 grating equation 入射角 输出角 光栅周期 衍射级次 m 相对波长分辨率 1/(mN) 闪耀光栅 Littrow",
+    "disclaimer": "这是 RP Photonics 一般性原理补充资料，不是 A02 Zemax KB 原文"
+  },
+  {
+    "doc_id": "A02",
+    "chunk_id": "A02-09",
+    "status": "substitute",
+    "is_original_excerpt": false,
+    "text": "【光谱仪一般原理（替代资料，非 Zemax 原文）】\n功能：把入射光的谱成分在空间或时间上分开并测量。\n类型：扫描式光谱仪、摄谱仪（光谱仪）、分光辐射计、傅里叶变换光谱仪。\n关键指标：光谱范围、光谱分辨率、带宽、杂散光水平。\n色散元件：光栅或棱镜，工程上以光栅为主。\n分辨率来源：色散能力叠加入射狭缝宽度与探测器像元尺寸；刻线数与衍射级次越高，理论分辨率越高。\n定标：波长定标与响应度定标（积分球、定标灯等），各自的不确定度需单独评定。\n边界：本块是一般原理补充，不是 A02 板块的 Zemax KB 原文。",
+    "source": "Spectrometers – scanning, spectrographs, spectroradiometers, resolution, spectral range, diffraction gratings, Fourier transform | https://www.rp-photonics.com/spectrometers.html",
+    "page_or_section": "RP Photonics supplement: general spectrometer / calibration principle",
+    "keywords_zh": "光谱仪 分辨率 光谱范围 波长定标 响应度定标 积分球 定标灯 校准 不确定度 一般原理 干涉 傅里叶变换",
+    "disclaimer": "这是 RP Photonics 一般性原理补充资料，不是 A02 Zemax KB 原文"
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-01",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：JJF 1990-2022 校准规范正文条文】\n缺什么：JJF 1990-2022 的全文条文，含适用范围、计量特性、校准条件、校准项目与方法、不确定度评定示例及给出的具体数值/限差。\n为什么缺：jjf.net.cn 无法访问；国家标准全文公开系统（openstd.samr.gov.cn）查 JJF 1990 返回 0 条（检索结果为 0 条），该系统只收 GB 国标，不收 JJF 计量技术规范。\n需要什么才能补：JJF 1990-2022 正式文本 PDF（或授权扫描件）；在此之前不得编造条文与数值。",
+    "source": "JJF 1990-2022 校准规范正文 | （jjf.net.cn 无法访问；https://std.samr.gov.cn/ 查询 JJF 1990 返回 0 条）",
+    "page_or_section": "JJF 1990-2022 规范正文（缺失占位）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS JJF 1990 2022 规范条文 计量特性 校准方法 不确定度评定 0条",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-02",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：DN = Gain·L + Offset 线性标定式的规范出处】\n缺什么：把 DN = Gain·L + Offset 归属于 JJF 1990-2022 的原文依据，以及该规范给出的 Gain、Offset 定义、标定步骤与不确定度分量。\n为什么缺：DN = Gain·L + Offset 是通用线性标定式，取证材料中没有任何规范原文把它写成条文；不得伪称来自该规范。\n需要什么才能补：含该式及其上下文的规范原文页；在此之前不得把它当作规范条文出题。",
+    "source": "DN = Gain·L + Offset 线性标定式（缺失占位） | （无可用规范原文；该式为通用线性标定形式，不来自 JJF 1990-2022）",
+    "page_or_section": "DN = Gain·L + Offset 的规范出处（缺失占位）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS DN Gain Offset 线性标定 标定式 不确定度 不得伪称规范",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-03",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：ISO 10110 光学元件制图指示符条文】\n缺什么：ISO 10110 关于光学元件制图指示符（3/、4/、5/、6/ 等）的正式条文与数值。\n为什么缺：ISO 标准正文付费，取证材料只有 Zemax KB 对 ISO Element Drawing 的转述（B01_iso_drawing），并非 ISO 10110 正文；不得据此冒充标准条文。\n需要什么才能补：正版 ISO 10110 正文或授权摘录。",
+    "source": "ISO 10110 full text | （ISO 标准正文付费；无可用公开全文 URL）",
+    "page_or_section": "ISO 10110 正文（缺失占位）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS ISO 10110 制图 指示符 3/ 4/ 5/ 标准正文 付费",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-04",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：GB/T 13323-2009《光学制图》标准正文】\n缺什么：GB/T 13323-2009《光学制图》的标准正文条文与图例。\n为什么缺：公开检索页只提供元数据（标准号、名称、状态、发布/实施日期、ICS 分类），不含正文；本目录另有该元数据块，但不得当作正文使用。\n需要什么才能补：GB/T 13323-2009 正文 PDF 或授权摘录。",
+    "source": "GB/T 13323《光学制图》正文 | https://std.samr.gov.cn/",
+    "page_or_section": "GB/T 13323 标准正文（缺失占位）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS GB/T 13323 光学制图 标准正文 条文 图例 仅元数据",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-05",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：ISO 25178 表面纹理参数条文】\n缺什么：ISO 25178 面形/表面纹理参数的正式条文与数值限。\n为什么缺：ISO 标准正文付费，取证材料中没有全文。\n需要什么才能补：正版 ISO 25178 正文或授权摘录。",
+    "source": "ISO 25178 full text | （ISO 标准正文付费；无可用公开全文 URL）",
+    "page_or_section": "ISO 25178 正文（缺失占位）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS ISO 25178 表面纹理 标准正文 付费",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "E01",
+    "chunk_id": "E01-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【GB/T 13323《光学制图》标准检索元数据（openstd.samr.gov.cn 检索页：2009 现行 / 1991 废止）】\n页面性质：标准检索结果元数据，不是标准正文；来源为国家标准全文公开系统（openstd.samr.gov.cn）的检索结果页。\n现行版记录：GB/T 13323-2009《光学制图》，推荐性国家标准（推标），状态「现行」，发布日期 2009-11-15，实施日期 2010-02-01。\n废止版记录：GB/T 13323-1991《光学制图》，推荐性国家标准（推标），状态「废止」，发布日期 1991-12-14，实施日期 1992-10-01。\nICS 归类：检索结果按 ICS 分类归到「37_成像技术」，页面 ICS 筛选器 id=37，计数 1。\n边界：本块仅为检索页面元数据，不含标准正文；正文缺失见同 doc_id 的 missing_source 占位块。",
+    "source": "国家标准全文公开系统 标准检索结果（GB/T 13323 元数据） | https://std.samr.gov.cn/",
+    "page_or_section": "openstd.html 检索结果表（仅元数据，无正文）",
+    "keywords_zh": "积分球定标 不确定度 JJF 1990-2022 校准规范 线性标定 Gain Offset DN 光学制图 GB/T 13323 ISO 10110 ISO 25178 ICS GB/T 13323-2009 光学制图 推标 现行 2009-11-15 2010-02-01 GB/T 13323-1991 废止 ICS 37 成像技术 元数据",
+    "disclaimer": ""
+  }
+]

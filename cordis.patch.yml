@@ -1,4 +1,3 @@
 - insert:
     - id: opticforge
-      name: '@deepseek-ai/dsh-opticforge'
-
+      name: 'dsh-opticforge'

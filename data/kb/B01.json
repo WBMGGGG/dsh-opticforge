@@ -1,0 +1,123 @@
+[
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【顺序模式公差分析流程（扩束器案例）】\n案例设定：氩离子激光，2.5 mm 的 1/e2 全宽，扩束 3 倍，要求在 5 mm 光束直径（两个全光束宽度）内波前误差不超过 1/20 RMS。\n标称性能：RMS 波前 2.15 × 10^-3 waves，峰谷 OPD 小于 1/200；孔径用高斯切趾，入瞳直径 5 mm，切趾因子 2，边缘强度降到峰值的 1/e4 = 1.8%。\n两类公差：Surface 公差指面本身的半径、不规则度等；Element 公差指元件装进系统后的位置公差。\n半径公差：用测试板双程干涉条纹测量，He-Ne 光源，测试波长 0.6328（系统工作波长 0.5145），允许 1 条纹差。\n其他默认：中心厚度公差 0.2 mm；楔形按边厚变化，x、y 各 0.2 mm，合成 SQRT(0.2² + 0.2²) = 0.28 mm；表面不规则度取 1/5；单波长使用，只公差折射率本身、不公差阿贝数。\n补偿设置：两片镜间距 200 mm 可在装配与使用中调整；厚度公差用“调整面”吸收；本例定义 -0.2 至 +0.2 mm 的厚度补偿器。\n装夹前提：平凸镜的平面为装夹面，被装夹面的 TIRX/TIRY 要删除，否则楔形重复计入。",
+    "source": "How to perform a sequential tolerance analysis | https://optics.ansys.com/hc/en-us/articles/42661666289043-How-to-perform-a-sequential-tolerance-analysis",
+    "page_or_section": "Introduction / Manufacturing tolerances / Mechanical mounts and compensation",
+    "keywords_zh": "公差分析 扩束器 RMS 波前 1/20 高斯切趾 表面公差 元件公差 测试板 干涉条纹 测试波长 中心厚度 楔形 调整面 补偿器",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【公差设置的自检与四种运行模式】\n自检：先只生成 Monte Carlo 文件（文件名前缀 test，MC_Txxxx），逐个打开检查改动是否合理。变形规律：TE** 元件公差被转成坐标断点；STANDARD 面被转成 IRREGULAR 面；厚度、半径、玻璃类型被扰动；镜间距变成变量。\n四种模式：\nSensitivity：对每个公差的极值计算判据变化量。\nInverse Limit：给定目标判据值，反求各公差应取多大。\nInverse Increment：给定目标判据增量，反求公差。\nSkip Sensitivity：跳过灵敏度，直接蒙特卡洛。\n判据（Criterion）：通常纯光学，可从 spot radius、wavefront error、MTF、boresight error、angular radius 中选，也可自建评价函数。\n本例：判据取 RMS 波前，目标 1/20 = 0.05 waves；镜间距用 DLS 优化，只做三个循环（车间不会充分调）。\n蒙特卡洛：所有扰动同时施加；默认正态分布，极值之间跨四个标准差；分布模型可用 STAT 命令改。",
+    "source": "How to perform a sequential tolerance analysis | https://optics.ansys.com/hc/en-us/articles/42661666289043-How-to-perform-a-sequential-tolerance-analysis",
+    "page_or_section": "Testing the setup / Set-Up tab (Sensitivity, Inverse Limit, Inverse Increment) / Criterion / Monte Carlo tab",
+    "keywords_zh": "公差设置 自检 Sensitivity Inverse Limit Inverse Increment Skip Sensitivity 判据 波前误差 蒙特卡洛 正态分布 4σ STAT 坐标断点 IRREGULAR",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【首次运行结果与 RSS 估计】\n20 个蒙特卡洛文件的 OPD 明显达不到 0.05 waves RMS。\n标称判据：0.0023（约 1/400）；要求量产 1/20（0.05 waves）。\n单项致命项：第二片透镜的折射率公差单独就把波前劣化到 0.058 waves（已调补偿器）。\nRSS 估计：预测实作性能 0.0597 waves，对比规格 0.05；蒙特卡洛结果与之一致，但 20 个样本过于粗糙。\n良率：波前 RMS 低于 0.05 的镜片良率不足 80%。\nRSS 算法：每项公差相对标称的变化取平方，在 min 与 max 之间取平均（两者不会同时发生，直接求和会过于悲观），再求和开方。\n反灵敏度：把每项公差的允许劣化定为 0.0075（即不劣于 1/130），RSS 与蒙特卡洛结果都明显改善。\n采样数量：n 个公差至少要 n² 个蒙特卡洛文件；24 个公差 → 至少 24² = 576 个，实际取 1000 个。1000 次在 8 CPU 机器上耗时 18 秒；每个评价函数都是完整光线追迹，不含一阶近似。",
+    "source": "How to perform a sequential tolerance analysis | https://optics.ansys.com/hc/en-us/articles/42661666289043-How-to-perform-a-sequential-tolerance-analysis",
+    "page_or_section": "The first tolerancing run / Root Sum Square (RSS) / Inverse sensitivity",
+    "keywords_zh": "公差分析 首次运行 RSS 根和平方 良率 反灵敏度 蒙特卡洛采样 n平方 576 1000次 波前 0.0597",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【保存公差结果并复核 OpticStudio 内部改动】\n两种保存方式：在公差编辑器里加 SAVE 操作数（保存单项公差）；或在 Tolerancing 对话框里指定保存蒙特卡洛文件。\nSAVE 命名：TSAV_MIN_xxxx.ZMX 与 TSAV_MAX_xxxx.ZMX，xxxx 是 File# 列的整数；文件存到当前镜头文件所在目录。\n示例：TETX 给 ±0.5° 的元件倾斜公差，File# 取 5，则生成 TSAV_MIN_0005.ZMX。\n打开后可看到：为绕 X 轴倾斜，插入了成对坐标断点及相应求解；表面 6 上有边缘光线高度求解——因为补偿器选了 Paraxial Focus，系统通过移动像面让扰动系统保持原始离焦量。\n评价函数值等于公差报告里的判据值，可用来核对。\n蒙特卡洛文件命名 MC_T000x.zmx，x 从 1 到指定的保存数量；因同时施加全部扰动，改动远多于单公差文件。",
+    "source": "How to analyze your tolerance results | https://optics.ansys.com/hc/en-us/articles/43071088477587-How-to-analyze-your-tolerance-results",
+    "page_or_section": "Introduction / Applying the SAVE operand / Saving Monte Carlo tolerance files",
+    "keywords_zh": "SAVE 操作数 保存公差 公差文件 TSAV_MIN TSAV_MAX 蒙特卡洛文件 坐标断点 边缘光线高度 近轴焦点 补偿器",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【ISO 元件图（ISO 10110）】\n用途：给单片、双片或单个面出符合 ISO 10110 的加工图纸，供光学车间制造。入口在 Tolerance 选项卡下的 Manufacturing Drawing and Data。\n内容分块：每个面的 Codes 3-4 包含半径、圆锥系数、有效口径、口径、平口径、镀膜、面形与定心误差；Codes 5-6 包含疵病、激光损伤、纹理、倒角等表面规范。单片或双片另有 Material 选项卡（玻璃名、折射率、阿贝数、厚度、应力双折射、气泡、不均匀性）。\n口径换算（Premium 与 Professional）：有效口径 = 净半口径的两倍；口径 =（净半口径 + 崩边区）的两倍；平口径 = 机械半口径的两倍。\n公差来源：可从公差数据编辑器一键导入（Reset from TDE），只认 TRAD、TCUR、TFRN、TCON、TTHI、TIND、TABB、TSTX、TSTY、TSDX、TSDY、TIRR、TEZI、TWAV；未提供的公差按零处理、不进图纸。\n单位易错：TSTX、TSTY 以度输入，图纸按角分显示。\n装配公差 TEDX、TEDY、TETX、TETY 不进单件图纸（属装配环节）。\n单片可另出 XML，便于数据交换。",
+    "source": "How to use the ISO Element Drawing | https://optics.ansys.com/hc/en-us/articles/43071071251475-How-to-use-the-ISO-Element-Drawing",
+    "page_or_section": "Introduction to ISO Element Drawing / Tolerance data / code 3-4 / TIRR / TEDX TEDY TETX TETY",
+    "keywords_zh": "ISO 元件图 ISO 10110 加工图纸 Codes 3-4 Codes 5-6 有效口径 机械半口径 崩边区 Reset from TDE TRAD TIRR TSTX 角分 装配公差",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光谱仪装配公差（LGL 结构）】\n系统：透镜-光栅-透镜光谱仪，中心 880 nm、带宽 50 nm，用于 OCT。\n判据：单一波长的能量集中到一个像元的比例。用 DENF 计算 5 µm 缝宽内的能量占比（对应线阵相机像元尺寸），三个参考波长 865 / 880 / 905 nm；OSUM 求和，DIVB 算相对标称的能量损失百分比，其 Factor 需手填为 OSUM 值的百分之一。\n装配公差：只用元件公差（TEDX、TEDY、TETX、TETY）加面厚度 TTHI；生成后要手工删除与元件间隙无关的 TTHI 行。\n灵敏度结论：最差项是面 0 的厚度，即光纤到准直镜的间距——小 0.2 mm 就使像元上的能量下降超过 80%。\n排在其后的几项也都是元件间隙；第一个偏心项排到第 8 位，影响不到 3%。\n工程含义：光谱仪上桌装配时，准直单元的间距必须优先保证，倾斜和偏心相对次要。",
+    "source": "How to build a spectrometer – tolerancing | https://optics.ansys.com/hc/en-us/articles/42661756337171-How-to-build-a-spectrometer-tolerancing",
+    "page_or_section": "Introduction / Preparing the lens file / Assembly tolerances / Sensitivity analysis",
+    "keywords_zh": "光谱仪公差 装配公差 LGL DENF OSUM DIVB 像元能量 865 880 905 nm 准直镜 光纤 灵敏度 最差项",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光谱仪制造公差与补偿器】\n制造公差：不同厂商默认值、写法、镜型都不同，参数之间还互相牵连；按厂商规格取平均值，生成 85 行公差表后要删掉算不了的项（面 0 上的 TSTX、TSTY、TIRR，分别在第 60、35、34 行）。\n1000 次蒙特卡洛：制造公差使性能平均下降 27%。\n不加补偿：评价函数平均比标称差 50%。\n加补偿：补偿器取光纤与准直镜之间的间距（面 0 上加 COMP），平均只比标称差 3%。\n补偿器要配一套快速收敛的评价函数（本例改用 spot size 型，替代原来的环围能量型），否则每次蒙特卡洛都重新优化，耗时过长。\n注意：部分蒙特卡洛结果反而优于标称，原因是优化与公差用了不同评价函数。\n实施前提：光纤要用运动学调整架，才能真正把间距当作可调补偿量。",
+    "source": "How to build a spectrometer – tolerancing | https://optics.ansys.com/hc/en-us/articles/42661756337171-How-to-build-a-spectrometer-tolerancing",
+    "page_or_section": "Fabrication tolerances / Tolerancing: fabrication tolerances / Compensator",
+    "keywords_zh": "制造公差 补偿器 COMP 运动学调整架 蒙特卡洛 1000次 27% 50% 3% 收敛 spot size 环围能量",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-08",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【机械枢轴点操作数 MPVT（镜筒倾斜）】\n背景：1000 件铝制镜座由 CNC 铣削，机床一般精度在 ±0.025 mm 到 ±0.005 mm 之间，每件尺寸略有差异，装进去的镜片位置随之不同——这就是位置公差。\n镜筒：直筒靠隔圈定位，阶梯筒靠台阶定位；镜片通常先装进子镜座（subcell）再进主筒，既提高定心精度也便于装配。\nMPVT 作用：定义一组透镜的整体倾斜旋转原点，之后所有 TETX/TETY 都以它为枢轴，避免手工插入坐标断点再折返。\nPivot At 取值：0 前顶点、1 后顶点、2 前机械边、3 后机械边、4 几何中心。\n典型用法：镜筒整体倾斜用 MPVT + 一个跨多面的 TETX（如面 1 到面 9）；单镜用 MPVT 归零后各自倾斜；特定位姿的镜片（如靠机体后机械边夹持）把 Pivot At 设为 3。\n恢复默认：末尾再加一个参数 0 的 MPVT。",
+    "source": "Optomechanical Tolerancing and Systems Engineering - Mechanical Pivot Points | https://optics.ansys.com/hc/en-us/articles/42661839385875-Optomechanical-Tolerancing-and-Systems-Engineering-Mechanical-Pivot-Points",
+    "page_or_section": "Introduction / Mechanical Pivot Point Tolerance",
+    "keywords_zh": "MPVT 机械枢轴点 镜筒 子镜座 直筒 阶梯筒 位置公差 CNC 倾斜 TETX Pivot At 前顶点 机械边 几何中心",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-09",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【预览文件、旋转原点显示与反射镜用法】\nFile Preview：按当前公差随机生成一个实例文件（命名 CreatePreview_MC_T..），可先看清蒙特卡洛会做什么改动，再决定是否正式跑分析。\n颜色编码：不同分段的坐标断点用不同颜色标出，对应公差编辑器里的分段设置。\nDraw Origin：坐标断点可开启 Draw Local Origin Point，3D Layout 会在施加倾斜的位置画一个小球，颜色与大小可调。\n反射镜用法：镜面用 MPVT 时，后续 TETX/TETY 的 Surf 1 与 Surf 2 都要设成镜面所在的面。\n例（哈勃望远镜模型）：主镜在面 2，靠后机械边夹持，故 MPVT 的 Pivot At 设为 3，TETX 的 Surf 1 = Surf 2 = 面 2。\n想看清枢轴断点的精确位置，在镜头数据编辑器右键选择 Unhide all rows。\n结论：MPVT 既能对一组元件整体倾斜（模拟镜筒），也能让单个元件绕非默认的前顶点旋转，二者都用参数控制。",
+    "source": "Optomechanical Tolerancing and Systems Engineering - Mechanical Pivot Points | https://optics.ansys.com/hc/en-us/articles/42661839385875-Optomechanical-Tolerancing-and-Systems-Engineering-Mechanical-Pivot-Points",
+    "page_or_section": "File Preview / Draw Origin / Mechanical Pivot Points with Mirrors / Conclusion",
+    "keywords_zh": "File Preview 预览 CreatePreview Draw Origin 旋转原点 3D Layout 反射镜 MPVT 哈勃望远镜 Unhide all rows",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-10",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【非序列模式公差分析】\n专用操作数：TNPS 公差物体位置与朝向，TNPA 公差参数，TNMA 公差材料属性；补偿器用 CNPS、CNPA；多配置数据用 TMCO 作公差、CMCO 作补偿。\n限制：NSC 只有评价函数与用户脚本两种判据，补偿器的上下限被忽略，要用 NPGT、NPLT 这类边界操作数约束取值。\nTOLR 在 NSC 里只能用用户脚本，选评价函数会死循环；脚本加载的评价函数本身不能含 TOLR。\nNSC 中无意义的设置（光线瞄准、分离视场/配置等）自动禁用。\n多配置系统：评价函数用多个 CONF 覆盖每个配置。\n提速：NSDD 对采样噪声不敏感，别用多余的分析光线；尽量用 Sobol 光源采样；减少散射、CAD、布尔体。\n例：自由曲面光管，先删探测器的 pickup 求解、把 z 位置固定在 53 mm，再清空控制点的变量；TNPA 公差控制点与厚度，TNPS 公差 LED 与探测器位姿，TNMA 公差折射率；单色系统不公差阿贝数；删掉约束形状的 FREZ 操作数；跑灵敏度加 20 次蒙特卡洛，4 CPU 约一分钟。最敏感的是 Y2、Y3 控制点与 LED 位置。",
+    "source": "How to perform a Non-Sequential tolerance analysis | https://optics.ansys.com/hc/en-us/articles/43071055481363-How-to-perform-a-Non-Sequential-tolerance-analysis",
+    "page_or_section": "Introduction / Tolerance operands and settings / Tolerancing a freeform object",
+    "keywords_zh": "非序列公差 NSC TNPS TNPA TNMA CNPS CNPA TMCO CMCO TOLR NPGT NPLT NSDD Sobol 自由曲面 光管 CONF",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B01",
+    "chunk_id": "B01-11",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【用 TOLR 把制造公差放进优化】\n问题：先优化再公差的两步法，常得到“光学好但过于敏感”的设计，因为优化阶段完全没考虑公差。\nRSS 算法：每项公差相对标称的变化取平方，在 min 与 max 之间取平均，再把各项求和开方，得到估计变化量。估计总性能 = 标称性能 + 估计变化。\nTOLR 用法：先做出一个像样的起始设计，再定义公差操作数、限值、补偿器与判据，把公差对话框设置存成 TOLRnnn.TOP（nnn 取 1 到 999），放在 {Zemax}/Configs 下，然后在评价函数里用 TOLR 引用。\n数据项取值：1 取标称性能，0 取估计变化，2 取二者之和（最终性能）。\n效果示例：同一双分离镜，传统两步法实作 RMS 光斑 120µ，TOLR 法只优化 10 个循环就做到 79µ，实作性能接近好一倍。\n代价与建议：TOLR 计算量大、优化更慢；先用多核机器（OpticStudio 单机最多 64 核，光线追迹随核数线性加速）；先跑一次灵敏度分析，把不敏感的公差剪掉，能显著省时间。",
+    "source": "How to optimize for as-built performance | https://optics.ansys.com/hc/en-us/articles/42661801770003-How-to-optimize-for-as-built-performance",
+    "page_or_section": "Introduction / The Traditional Method / Using TOLR / Two-step optimize & tolerance / Best Practice",
+    "keywords_zh": "TOLR 实作性能 公差优化 两步法 RSS 估计变化 标称性能 TOLR999 双分离镜 79µ 120µ 64核 灵敏度剪枝",
+    "disclaimer": ""
+  }
+]

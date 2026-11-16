@@ -1,0 +1,57 @@
+[
+  {
+    "doc_id": "C01",
+    "chunk_id": "C01-01",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "缺什么：ZYGO 关于相干扫描干涉（CSI）的白皮书正文，含垂直分辨率、扫描范围、表面形貌测量与 ISO 25178 参数对应关系及厂商给出的具体数值。\n为什么：zygo.com 返回 403；zygo.com.cn 只有官网首页壳，不含任何技术正文；未取得白皮书原文。\n需用户提供什么：ZYGO CSI 白皮书 PDF 或可访问的技术页链接；在此之前不得编造 ZYGO 的数值与结论。",
+    "source": "ZYGO CSI (Coherence Scanning Interferometry) white paper | https://www.zygo.com.cn/（zygo.com 全站 403；zygo.com.cn 仅为官网壳）",
+    "page_or_section": "ZYGO CSI 白皮书正文（缺失占位）",
+    "keywords_zh": "ZYGO CSI 白光干涉 相干长度 干涉仪 表面形貌 ISO 25178 相干扫描 ZYGO 白皮书 垂直分辨率 扫描范围 形貌测量 未取得原文",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C01",
+    "chunk_id": "C01-02",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "缺什么：ISO 25178 关于面形/表面纹理参数（Sa、Sq、Sz 等）定义的正式条文与数值限。\n为什么：ISO 标准正文付费，取证材料中没有全文；不得凭记忆编写条文。\n需用户提供什么：正版 ISO 25178 正文或获授权的条文摘录。",
+    "source": "ISO 25178 (surface texture areal) full text | （ISO 标准正文付费；无可用公开全文 URL）",
+    "page_or_section": "ISO 25178 正文（缺失占位）",
+    "keywords_zh": "ZYGO CSI 白光干涉 相干长度 干涉仪 表面形貌 ISO 25178 相干扫描 ISO 25178 面形参数 Sa Sq Sz 标准正文 付费",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C01",
+    "chunk_id": "C01-03",
+    "status": "substitute",
+    "is_original_excerpt": false,
+    "text": "【白光干涉仪原理（替代资料，非 ZYGO 原文）】\n类型：用宽带（低相干）光源的干涉仪，属低相干干涉测量。\n判据：只有当两臂光程差接近零时，才出现高对比干涉条纹；条纹包络的峰值位置对应被测表面高度。\n分辨率来源：纵向分辨能力由光源相干长度决定，而不是由波长直接决定。\n典型用途：表面轮廓与形貌测量、距离测量、色散测量。\n与 CSI 的关系：相干扫描干涉即沿纵向扫描并找包络峰，本块只给一般原理，ZYGO 的具体垂直分辨率与扫描范围仍缺。",
+    "source": "White-light Interferometers – applications, chromatic dispersion measurement, distance, low-coherence interferometry | https://www.rp-photonics.com/white_light_interferometers.html",
+    "page_or_section": "White-light Interferometers (substitute)",
+    "keywords_zh": "ZYGO CSI 白光干涉 相干长度 干涉仪 表面形貌 ISO 25178 相干扫描 白光干涉 低相干干涉 宽带光源 时间相干 空间相干 迈克尔逊 表面轮廓 零光程差",
+    "disclaimer": "这是 RP Photonics 一般性原理补充资料，不是 ZYGO 原文"
+  },
+  {
+    "doc_id": "C01",
+    "chunk_id": "C01-04",
+    "status": "substitute",
+    "is_original_excerpt": false,
+    "text": "【相干长度（替代资料，非 ZYGO 原文）】\n定义：表征时间相干性的传播距离，即相干性显著衰减所经过的距离。\n依赖关系：光源光谱越窄，相干长度越长；光谱越宽，相干长度越短。\n工程含义：相干长度决定低相干干涉的纵向测量范围与纵向分辨能力，是白光干涉选光源的核心参数。\n边界：本块是通用原理，不含 ZYGO CSI 白皮书给出的具体指标。",
+    "source": "Coherence Length – temporal coherence | https://www.rp-photonics.com/coherence_length.html",
+    "page_or_section": "Coherence Length (substitute)",
+    "keywords_zh": "ZYGO CSI 白光干涉 相干长度 干涉仪 表面形貌 ISO 25178 相干扫描 相干长度 相干时间 时间相干 线宽 光程差 干涉仪",
+    "disclaimer": "这是 RP Photonics 一般性原理补充资料，不是 ZYGO 原文"
+  },
+  {
+    "doc_id": "C01",
+    "chunk_id": "C01-05",
+    "status": "substitute",
+    "is_original_excerpt": false,
+    "text": "【干涉仪的主要类型与共性问题（替代资料，非 ZYGO 原文）】\n类型：迈克尔逊、马赫-曾德尔、法布里-珀罗等。\n共性：都是把同一束光分成两路，再让两路产生光程差后合束，由干涉结果反推光程差。\n与本主题的关系：白光干涉/相干扫描常用迈克尔逊结构，把参考臂与测量臂的光程差调到零附近扫描。\n边界：本块只给一般原理，不是 ZYGO CSI 白皮书内容。",
+    "source": "Interferometers – types, operation principle, Mach–Zehnder, Michelson, Fabry–Pérot | https://www.rp-photonics.com/interferometers.html",
+    "page_or_section": "Interferometers (substitute)",
+    "keywords_zh": "ZYGO CSI 白光干涉 相干长度 干涉仪 表面形貌 ISO 25178 相干扫描 干涉仪 迈克尔逊 马赫曾德尔 法布里珀罗 干涉 光程差 一般性原理",
+    "disclaimer": "这是 RP Photonics 一般性原理补充资料，不是 ZYGO 原文"
+  }
+]
