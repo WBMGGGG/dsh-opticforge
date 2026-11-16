@@ -122,10 +122,12 @@ node scripts/install-local.mjs --uninstall
 ## 开发
 
 ```bash
-node test/run.mjs                      # 集成测试（23 个用例）
-node scripts/verify-all.mjs            # 全量回归
+node test/run.mjs                      # 集成测试（25 个用例）
+node scripts/verify-all.mjs            # 发布前验收（29 项：契约、数据、测试、打包、版本）
 node scripts/build-kb.mjs --all        # 重建知识库
 ```
+
+CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑同一套检查。
 
 改知识库的流程：编辑 `data/kb/<板块>.json` → `--doc` 自检 → `--all` 重建 → 跑测试。
 
