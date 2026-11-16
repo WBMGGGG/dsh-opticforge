@@ -1,9 +1,9 @@
 {
-  "kb_version": "0.2.0",
-  "built_at": "2026-11-16T04:17:03.653Z",
-  "content_sha256": "6da5f91e31315d45de06bd90609faa49e32a1a150ac67a5b79bd56522807b284",
-  "total_chunks": 264,
-  "present_chunks": 248,
+  "kb_version": "0.2.1",
+  "built_at": "2026-11-16T04:58:13.166Z",
+  "content_sha256": "d96b5caf84f54b521cf43dbbe70cd89cc96a230e455b70985b7d665b7a754deb",
+  "total_chunks": 324,
+  "present_chunks": 308,
   "docs": [
     {
       "doc_id": "A01",
@@ -208,6 +208,42 @@
       "chunks": 7,
       "present": 7,
       "source": "公开教材综合：Schubert《Light-Emitting Diodes》2e"
+    },
+    {
+      "doc_id": "I01",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与标准综合：Smith《Modern Optical Engineering》4e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "I02",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与标准综合：Hecht《Optics》5e；Born & Wolf《Principles of Optics》7e"
+    },
+    {
+      "doc_id": "I03",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与标准综合：ISO 10110 系列（光学元件面形与公差标注）；Smith《Modern Optical Engineering》4e"
+    },
+    {
+      "doc_id": "I04",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与标准综合：Smith《Modern Optical Engineering》4e；Fischer, Tadic-Galeb & Yoder《Optical System Design》2e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "I05",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与综述综合：Eismann《Hyperspectral Remote Sensing》；Hagen & Kudenov《Review of snapshot spectral imaging technologies》（Optical Engineering, 2013）"
+    },
+    {
+      "doc_id": "I06",
+      "chunks": 10,
+      "present": 10,
+      "source": "公开教材与标准综合：James《Spectrograph Design Fundamentals》；Hutley《Diffraction Gratings》"
     }
   ],
   "zero_coverage_topics": [

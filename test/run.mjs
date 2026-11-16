@@ -96,15 +96,15 @@ function assertOutputShape(name, value) {
 // =====================================================================
 // B. 统计断言：264 块 / 248 present
 // =====================================================================
-test("B1 KB 统计：264 块、248 present、状态分布与板块分布", async () => {
+test("B1 KB 统计：324 块、308 present、状态分布与板块分布", async () => {
   await booted;
   const m = requireModule(kbData, "lib/kb-data.js");
-  assert.equal(m.TOTAL_CHUNKS, 264, "kb-data.js TOTAL_CHUNKS 应为 264");
-  assert.equal(m.PRESENT_CHUNKS, 248, "kb-data.js PRESENT_CHUNKS 应为 248");
+  assert.equal(m.TOTAL_CHUNKS, 324, "kb-data.js TOTAL_CHUNKS 应为 324");
+  assert.equal(m.PRESENT_CHUNKS, 308, "kb-data.js PRESENT_CHUNKS 应为 308");
   assert.equal(typeof m.KB_SOURCE, "string", "kb-data.js KB_SOURCE 应为非空字符串");
   const chunks = await m.getKBData();
   assert.ok(Array.isArray(chunks), "getKBData() 应返回数组");
-  assert.equal(chunks.length, 264, "getKBData() 应返回 264 块，实际 " + chunks.length);
+  assert.equal(chunks.length, 324, "getKBData() 应返回 324 块，实际 " + chunks.length);
   const statuses = {};
   const docs = {};
   for (const c of chunks) {
@@ -114,19 +114,20 @@ test("B1 KB 统计：264 块、248 present、状态分布与板块分布", async
       assert.ok(f in c, "第 " + c.chunk_id + " 块缺少字段 " + f);
     }
   }
-  assert.equal(statuses.present, 248, "present 应为 248 块");
+  assert.equal(statuses.present, 308, "present 应为 308 块");
   assert.equal(statuses.missing_source, 11, "missing_source 应为 11 块");
   assert.equal(statuses.substitute, 5, "substitute 应为 5 块");
   // 原有九个板块的分布不得漂移
   for (const [id, n] of Object.entries({ A01: 13, A02: 9, A03: 1, B01: 11, B02: 4, C01: 5, C02: 7, D01: 11, E01: 6 })) {
     assert.equal(docs[id], n, "板块 " + id + " 块数应为 " + n + "，实际 " + docs[id]);
   }
-  // 新增三个系列的规模（F 基础 / G 工程 / H 前沿）
+  // 新增系列的规模（F 基础 / G 工程 / H 前沿 / I 场景深化）
   const sum = (prefix) => Object.entries(docs).filter(([k]) => k.startsWith(prefix)).reduce((a, [, n]) => a + n, 0);
   assert.equal(sum("F"), 83, "F 系列应为 83 块，实际 " + sum("F"));
   assert.equal(sum("G"), 53, "G 系列应为 53 块，实际 " + sum("G"));
   assert.equal(sum("H"), 61, "H 系列应为 61 块，实际 " + sum("H"));
-  assert.equal(Object.keys(docs).length, 34, "板块总数应为 34，实际 " + Object.keys(docs).length);
+  assert.equal(sum("I"), 60, "I 系列应为 60 块，实际 " + sum("I"));
+  assert.equal(Object.keys(docs).length, 40, "板块总数应为 40，实际 " + Object.keys(docs).length);
 });
 
 // =====================================================================
@@ -345,13 +346,13 @@ test("C9 统一输出信封：docs/get/search 共享 ok + kb_version + action", 
 // =====================================================================
 // D. opticforge_docs / opticforge_get 端到端（板块目录与完整条目）
 // =====================================================================
-test("D1 opticforge_docs：34 个板块、逐块列出 chunk_id 与标题", async () => {
+test("D1 opticforge_docs：40 个板块、逐块列出 chunk_id 与标题", async () => {
   await booted;
   const v = await tool("opticforge_docs").execute({}, {});
   assertOutputShape("opticforge_docs", v);
   assert.equal(v.ok, true, "docs 应返回 ok=true");
   assert.equal(v.action, "docs");
-  assert.equal(v.total_docs, 34, "应列出 34 个板块，实际 " + v.total_docs);
+  assert.equal(v.total_docs, 40, "应列出 40 个板块，实际 " + v.total_docs);
   const a01 = v.docs.find((d) => d.doc_id === "A01");
   assert.ok(a01, "缺少 A01 板块");
   assert.equal(a01.chunks, 13, "A01 应为 13 块");
@@ -359,9 +360,10 @@ test("D1 opticforge_docs：34 个板块、逐块列出 chunk_id 与标题", asyn
   assert.ok(Array.isArray(a01.items) && a01.items.length === 13, "docs 应逐块列出 items");
   const withTitle = a01.items.filter((i) => typeof i.title === "string" && i.title.length > 0);
   assert.ok(withTitle.length >= 12, "items 应带标题（从 text 的【】提取），实际带标题 " + withTitle.length + " 条");
-  // 编译型板块也要出现
+  // 基础、前沿与 0.2.1 场景深化板块都要出现
   assert.ok(v.docs.some((d) => d.doc_id === "F01"), "缺少 F01（基础理论板块）");
   assert.ok(v.docs.some((d) => d.doc_id === "H08"), "缺少 H08（前沿板块）");
+  assert.ok(v.docs.some((d) => d.doc_id === "I06"), "缺少 I06（0.2.1 分光系统设计板块）");
 });
 
 test("D2 opticforge_docs：doc_filter 生效，未知板块干净报错", async () => {
@@ -401,15 +403,15 @@ test("D4 opticforge_get：非 present 块如实标注为缺口，不当依据", 
     "缺口块应带 note 说明不可作为依据，实际：" + v.note);
 });
 
-test("D5 编译型板块可被检索：几何光学与干涉衍射主题命中 F 系列", async () => {
+test("D5 编译型板块可被检索：几何光学与干涉衍射主题命中 F/I 系列", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const geo = await execSearch({ query: "薄透镜 成像公式 放大率", top_k: 5 });
   assert.ok(geo.total_hits > 0, "几何光学查询应命中");
-  assert.ok(geo.results.some((r) => r.doc_id === "F01"), "应命中 F01，实际：" + JSON.stringify(geo.results.map((r) => r.chunk_id)));
+  assert.ok(geo.results.some((r) => ["F01", "I01"].includes(r.doc_id)), "应命中 F01/I01，实际：" + JSON.stringify(geo.results.map((r) => r.chunk_id)));
   const diff = await execSearch({ query: "艾里斑 衍射 分辨", top_k: 5 });
   assert.ok(diff.total_hits > 0, "衍射查询应命中");
-  assert.ok(diff.results.some((r) => ["F02", "F01"].includes(r.doc_id)), "应命中 F02/F01，实际：" + JSON.stringify(diff.results.map((r) => r.chunk_id)));
+  assert.ok(diff.results.some((r) => ["F02", "F01", "I02"].includes(r.doc_id)), "应命中 F02/F01/I02，实际：" + JSON.stringify(diff.results.map((r) => r.chunk_id)));
 });
 
 // =====================================================================
@@ -426,7 +428,7 @@ test("E1 内置 kb-data.json 与 data/kb/*.json 合并结果逐字段一致", as
   const kbDir = path.join(PLUGIN, "data", "kb");
   assert.ok(fs.existsSync(kbDir), "缺少 data/kb 分板块目录");
   const parts = fs.readdirSync(kbDir).filter((f) => f.endsWith(".json")).sort();
-  assert.ok(parts.length >= 34, "分板块文件应至少 34 个，实际 " + parts.length);
+  assert.ok(parts.length >= 40, "分板块文件应至少 40 个，实际 " + parts.length);
   const merged = [];
   for (const f of parts) merged.push(...JSON.parse(fs.readFileSync(path.join(kbDir, f), "utf8")));
   merged.sort((a, b) => (a.doc_id + a.chunk_id).localeCompare(b.doc_id + b.chunk_id));

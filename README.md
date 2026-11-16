@@ -2,7 +2,7 @@
 
 An optical-engineering knowledge base plugin for DeepSeek Harness (DSH).
 
-Pure Node.js. Zero runtime dependencies. Works as soon as it is installed. **Since 0.2.0 this is a knowledge base only — the calculators are gone.**
+Pure Node.js. Zero runtime dependencies. Works as soon as it is installed. **Since 0.2.0 this is a knowledge base only — the calculators are gone. 0.2.1 adds scenario-focused sections.**
 
 > 中文文档见 [README.zh.md](README.zh.md)。
 
@@ -28,9 +28,9 @@ All three share one envelope: `{ ok, kb_version, action, ... }`. Search supports
 
 ---
 
-## Knowledge base (0.2.0)
+## Knowledge base (0.2.1)
 
-**34 sections, 264 entries, 248 of them usable** (`status=present`):
+**40 sections, 324 entries, 308 of them usable** (`status=present`):
 
 | Series | Sections | Content | Entries |
 |---|---|---|---|
@@ -38,6 +38,7 @@ All three share one envelope: `{ ok, kb_version, action, ... }`. Search supports
 | F | 10 | Foundations: geometric optics, interference/diffraction, polarization, lasers, radiometry & colorimetry, thin films, detection & noise, spectroscopy, interferometry, materials & fabrication | 83 |
 | G | 7 | Engineering: opto-mechanics, tolerance & uncertainty, thermal optics, spectral/radiometric calibration, inspection & image processing, COMSOL, SolidWorks | 53 |
 | H | 8 | Frontier: metasurfaces & DOEs, waveguides & photonic integration, quantum optics, hyperspectral imaging, laser triangulation/confocal/lidar, field failures, frontier topics, semiconductor sources | 61 |
+| I | 6 | Scenario-focused (0.2.1): aberration judgement, physical optics & transfer functions, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny-Turner and Offner spectrometer design | 60 |
 
 A–E also carry 16 **declared gaps**: 11 `missing_source` (full text unavailable), 5 `substitute` (a comparable public source, explicitly marked as not the original).
 
@@ -54,7 +55,7 @@ Two section types, two rule sets, both enforced by `scripts/build-kb.mjs`:
 - **Every number must appear verbatim in the source chunk** — if the source says "three cycles", the entry says 三个循环, never `3`
 - No verbatim vendor text ships publicly; `_kb-raw/` stays local
 
-**F/G/H (compiled, 197 entries)**
+**F/G/H/I (compiled, 257 entries)**
 
 - No single source; content is the consensus of textbooks, standards and reviews, each `source` field naming a real, checkable reference
 - Text ≥ 300 chars, at least three field lines (definition / formula / criterion / limits / engineering notes), `disclaimer` must state "非原文摘录"

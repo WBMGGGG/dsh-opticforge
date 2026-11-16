@@ -42,7 +42,7 @@
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `doc_id` | string | 否 | 只看某个板块（`A01`/`F02`/`H03`…），省略则列全部 34 个 |
+| `doc_id` | string | 否 | 只看某个板块（`A01`/`F02`/`H03`…），省略则列全部 40 个 |
 
 **返回**：每个板块的 `doc_id`、`source`、`chunks`、`present`，以及 `items[]`（`chunk_id` / `status` / `title`）。
 
