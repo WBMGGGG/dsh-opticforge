@@ -1,0 +1,79 @@
+[
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【表面浮雕光栅 SRG 与体积全息光栅 VHG 区别】\n插件范围：本文插件主要支持 1 维光栅；2 维光栅需走 Lumerical RCWA 与 OpticStudio 联动流程。\n背景：OpticStudio 长期支持光栅光线追迹，但不计衍射效率与偏振态；要准确算衍射效率与衍射光偏振，必须考虑光栅微结构。本文提供梯形（Trapezoid）与台阶（Step）两个 DLL。\nSRG 用途：光谱仪、分束器、3D 扫描系统、衍射透镜、脉冲放大；现代用于 HUD、AR/VR 头戴显示器。其可把光线衍射到任意角度，并具波长选择性与角度选择性，能做出比棱镜加自由曲面更紧凑轻便的系统。\nSRG 结构：折射率均匀、表面带周期微结构；制作可用光刻、纳米压印、金刚石车削；建模需傅里叶模态法（即 RCWA）。\nVHG 结构：两束或多束光曝光光敏乳胶膜，再化学或热显影成栅；表面平滑、内部折射率正弦周期变化；建模用 Kogelnik 理论或 RCWA。\n工具归属：OpticStudio 对两者都提供 DLL；本文给 SRG 工具，VHG 工具见另一篇知识库文章。\n共同作用：两者在光学系统中作用相同，仅制作与仿真方式不同。",
+    "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method",
+    "page_or_section": "Introduction / Surface-relief grating vs. volume holographic grating",
+    "keywords_zh": "RCWA 光栅 衍射效率 傅里叶展开 分层 级次 Max Order SRG VHG Kogelnik DLL参数 表面浮雕光栅 体积全息光栅 偏振态 微结构 折射率周期变化 梯形 台阶",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【RCWA 原理：傅里叶展开、分层与级次】\n傅里叶展开：麦克斯韦方程在傅里叶空间展开，介电常数 ε 与磁导率 µ 写成傅里叶级数；Λx、Λy 为 x、y 方向周期，a、b 为各傅里叶项系数，(m,n) 为整数；电场 E、磁场 H 写成平面波叠加，S、U 为各平面波强度，k 为波矢，均为矢量。\n分层（layers）：假设结构 Z 向均匀、XY 向周期；Z 向不均时切成多层，每层 Z 向均匀。层越多越准、计算越慢，DLL 内用参数控制层数：梯形 DLL 为「# Layer」，台阶 DLL 为「lays of 1 stp」。\n级次（orders）：平面波入射后衍射到离散方向；级次越多越准但越慢，由「Max Order」控制。Max Order 取 3 即计入 -3、-2、-1、0、1、2、3；经验初值 = 3×光栅周期÷光波长；通常需测试才能在速度与精度间取最佳值。\n衔接：RCWA 算出每级输出波电场与传播方向，OpticStudio 将这些平面波对应为光线追迹里的光线；光栅深度只用于 RCWA 算效率，追迹代码里光栅仍按无限薄表面处理。",
+    "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method",
+    "page_or_section": "Fourier Model Method (RCWA) / Fourier Expansion / layers / harmonics (orders) / Max Order / link to ray-tracing",
+    "keywords_zh": "RCWA 光栅 衍射效率 傅里叶展开 分层 级次 Max Order 麦克斯韦方程 介电常数 平面波 Z向均匀 XY周期 harmonics orders 精度速度权衡 假设 无限薄表面",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【NSC 加载光栅与 RCWA DLL 公共参数】\n加载：圆孔用 Diffraction Grating Object；矩形孔用 User Defined Object 配 DiffractionGrating.dll；任意孔用 Boolean Native/CAD 加 Extruded。DLL 假设衍射面在 XY 平面，其他衍射物体不支持。衍射面在 Face 1；仅支持 1 维光栅，Y 向均匀、XZ 面周期轮廓。Reflect 与 Transmit 两列参数必须始终一致。\nDLL 清单：OpticStudio 20.3 共 5 个 RCWA DLL，对应 trapezoid、step、blaze、GridWirePolarizer、user_defined。\n周期：+Period/-Freq(µm) 正值为槽周期、负值为槽频率(1/µm)，互为倒数；周期不宜过大，如超过入射波长 100 倍则所需 Max Order 很大。\nMax Order：2023 R2.2 之前限 10（共 21 个谐波），之后提高到 50；超过 10 在 DLL 内改回 10，需联系支持团队才能提高。\n旋转：Rotate Grating(deg) 取 0 刻线沿 Y、光线向 X 偏折；正值刻线逆时针转(+X→+Y)、负值顺时针，基于物体局部坐标，例 135 度。\n涂层文件：Use Coating File 为非零正整数时，色散数据存于 {Zemax}\\Coatings\\COATING_xx.dat，如 7 对应 COATING_7.dat；材料名须以 RCWAxx 开头（xx 两位整数，如 RCWA01TIO2，DLL 只读材料号 1、忽略 TIO2 后缀）；Grate/Env/Coat 的实折射率用负整数 = 材料号乘 -1，如 Grate 用 RCWA02 则 Index Grate(R) 设 -2。\n编码注意：COATING_#.dat 若由 OpticStudio 存出可能为 UTF-16 LE，须改回 UTF-8，否则 DLL 能找到文件但读不到内容，报「Cannot find and RCWA material in COATING_7.dat」。\n插值：Interpolation 为整数，0 关；非零开 RAM 缓存 RCWA 数据供后续追迹插值，大量光线（如百万条）时大幅提速；取 1 用 201×201 网格，大于 1 即网格边长（如 51），最小网格 21，2 到 20 自动改 21；负整数取绝对值定网格、换更准但更慢的插值法。",
+    "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method",
+    "page_or_section": "How to set up a grating with the DLLs / DLL parameters (# Layer / lays of 1 stp) / Interpolation",
+    "keywords_zh": "RCWA DLL参数 # Layer Number of layer lays of 1 stp Start Order Stop Order Interpolation 缓存 LM空间 插值 精度 Diffraction Grating Object Max Order Rotate Grating Coating",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【插值缓存、级次筛选、各形状参数与用户自定义文件格式】\n插值原理：光线方向余弦 (L,M,N) 中 L、M 映射到 LM 空间，取最近四个采样点线性插值；同时插值衍射效率与电场（相位、偏振、振幅全部计入）。参数或波长变化即新建网格；优化时光栅参数为变量会每周期重算，多于 1000 条光线仍提速，少于 10 条建议关闭。\nOnly these orders：0 或负追全部级次；正整数按 2^唯一编号求和筛选，例追反射零级 R0 与透射一级 T+1 即 2^0+2^5=1+32=33；Start/Stop Order 范围须含所选级次；也可用可视化工具直接点选。\nStochastic：非零即按各级能量比随机衍射（蒙特卡洛/概率分裂）。Error Log 非零则把错误写到 {Zemax}\\DLL\\Diffractive\\ 下同 DLL 名日志，平时保持 0。\n梯形参数：Depth、Alpha(deg)、Beta(deg)、Fill factor 共 4 个；Alpha 从 -z 向 +x 转为正、反之为负；Fill factor 取 0~1，为底边与槽周期之比。涂层厚不计入 Depth，例 Depth 5 µm 加顶涂层 200 nm 总厚 5.2 µm；金属涂层复折射率虚部为负（吸收材料），如铝 0.7-7.0i，虚部不能为正；Index Coat(R) 不能为 0，但可为负整数（负=色散在文本文件）。\nGrate/Env：光栅结构分 Grate 与 Env 两区，外围是 Outside 与 Substrate（折射率由光学系统给定）；Index Grate(R)=0 表示等于 Substrate 折射率，Index Env(R)=0 表示等于 Outside 折射率；负整数同样表示色散在文本文件。\nBlaze：srg_blze_RCWA.dll，参数与梯形相同但无 Depth，深度由 Alpha、Beta 自动算出，形状由 Fill factor、Alpha、Beta 定义。\nStep：Depth、Number of steps、Alpha(deg)；台阶数对应实际制作工艺，形状向 +x 下沉，反向需把物体绕局部 z 转 180 度；Alpha 从 +z 向 -x 转为正；Layers per step 仅在 Alpha≠0 时有意义。\n网格偏振器：二元光栅，Depth(µm) 与 Fill factor(0~1，Grate 宽/周期)；结构分 Outside/Grate/Env/Substrate 四区，Index(R)/(I) 为 Grate 复折射率；Env 折射率不可在 DLL 定义、恒等于 Outside，Outside/Substrate 由 OpticStudio 给定。\n用户自定义：File Number 取 1~99，读 \\Documents\\Zemax\\DLL\\Diffractive\\user_grating_data_xx.txt；只读一次入内存，改文件后置负触发重载（须至少追一条光线，如更新 Layout 或 Ray Trace Control），再改回正。文件关键词 Number of layer/Layer/Section：Layer 行给 section 数、层厚(µm)、背景折射率实虚；Section 行给 shift、width（对周期的比值、无单位，shift 为段中心相对单周期左边界位置）、section 折射率实虚，例 shift=0.5、width=0.5 对应 0.25~0.75。\n可视化工具：Programming > User Extensions 下 RCWAvisualization.exe，分 4 段：Load DLL 列出用 RCWA DLL 的 NSC 物体；Set parameters 里 Substrate/Outside 仅用于画图（如 N-BK7），「Set to object」每改一个参数算一次 undo，「Create MCE」在多配置编辑器生成全部参数操作数、Transmit 自动 Pick Reflect，是优化光栅参数的前提；Grating editor 用 Load from DLL 画定义轮廓与傅里叶重建轮廓，核对 RCWA「看到」的形状。",
+    "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method",
+    "page_or_section": "Interpolation / user-defined grating data text file / assumptions / limitations",
+    "keywords_zh": "RCWA 用户自定义光栅 背景材料 截面 傅里叶重建 能量守恒 1D光栅 平面基底 Z向均匀 XY周期 LM空间 方向余弦 Only these orders Stochastic Error Log File Number Section",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【RCWA DLL 与内置模型差异、优化、几何错误及算例】\n可视化工具 Step4：受 ZOS-API 限制，Outside/Substrate 折射率读不出来，须在 Step2 两个文本框重填；「Load from text」从用户文本读光栅；编辑器可按 Insert/Delete 增删层，但改完只能导出成 user_grating_data 文本、不能直接写回系统。\n建测试系统：Step4 可设入射角与波长（视场角约定同序列模式 Field Angle），偏振选 Both 则每个视场/波长组合建 X、Y 两条光线；选透射或反射单一级次分析；勾「Rays from substrate」则光从基底入射；「Create test system」生成 \\Zemax\\Samples\\RCWA_Analyze_x.zmx（x 递增），内含光栅、探测器、测试光线，评价函数读每束衍射功率并目标 100%；Max 列大于 Min 列的参数在测试系统里设为变量并被评价函数约束。\n与内置模型：衍射方向相同（均按光栅方程，用入射/衍射单位矢、法向、光栅矢、周期 Λ、两侧折射率 n1/n2、整数级次 m），差别在衍射光线电场——RCWA 能给、内置模型不能。\n优化建议：复杂系统光线多次撞光栅时开插值，简单系统或仅 1 条光线撞光栅且参数为变量时不要开（可用 hammer 跑 5 分钟对比插值开关的评估次数）；用主光线加少数边缘光线、Source Ray 从指定 (x,y,z) 沿 (l,m,n) 发射；偏振显式定义 Jx/Jy 而非 Random；用 OPLT 限变量范围（如光栅厚一般不大于 100 µm）。\n几何错误：参数非法（无效参数组合）即停算返回 Geometric Error，用可视化工具查参数错误；计算错误（可视化查不出）须开 Error Log。常见原因：仅 Premium 订阅且 DLL 基于 OpticStudio 20.1（21/01/20）、发布约一年到期；Split NSC Rays 必须开（Ray Trace Control、3D Layout、Shaded Model 分别设置）；非物理光栅参数；RAM 上限（关插值或重启释放，不把光栅参数/波长设为变量时一般不会触顶）；掠射角——插值开启时入射角约大于 89 度即报错（采样网格边不外推），关插值解决；倏逝波——(L+mλ/Λ)²+M² 等于 1、n1² 或 n2² 之一对某整数 m 成立时报错（L、M 为相对局部坐标的方向余弦，λ 波长、Λ 周期、n1 入射侧、n2 透射侧），最常见为波长等于周期且正入射，把周期从 0.55 µm 微调至 0.55001 µm；每次计算还做能量守恒校验。\n限制：仅 1 维光栅、平面基底，不支持衍射透镜（非 RCWA 算法本身限制，可向 Ansys 客服门户提工单，需有效支持协议）；面向小周期，周期大于入射波长约 100 倍时需大量级次、慢且占 RAM。\n算例1（梯形效率）：复现论文 Fig.4(a)，文件 verify_1997...zar；波长 0.633 µm，周期 0.943×波长=0.596919，深度 1.058×波长=0.669714，Fill 0.5，Alpha/Beta 30 度；Start/Stop Order=1 只追一级；用 Analyze>Universal Plot 1D 扫深度看效率，画反射 k=0、k=2 时把 Start/Stop 改回 0 和 2；两个 Detector polar 分别测透射（Object 4）与反射（Object 5）。\n算例2（波导）：文件 RCWA_trap_waveguide_addlens.zar；左为近轴透镜焦面上的朗伯像源，第一光栅耦入、第二光栅耦出，第二近轴透镜把像重聚到焦面探测器；两光栅同为二元，Fill 0.5、Depth 0.2 µm、Period 0.43 µm，Alpha=Beta=0，顶涂层 20 nm 使总深 0.22 µm；光栅为 User Defined Object、定义在波导（Rectangular Volume）之后并覆盖其 Face 1，靠 Nesting 规则让光线先撞光栅；另用 Source Rectangle 准直、Slide 放 QR 图（{Zemax}\\IMAFiles\\QR_code_Zemax.jpg）、朗伯散射加 Importance Sampling。",
+    "source": "Simulating diffraction efficiency of surface-relief grating using the RCWA method | https://optics.ansys.com/hc/en-us/articles/42661666095891-Simulating-diffraction-efficiency-of-surface-relief-grating-using-the-RCWA-method",
+    "page_or_section": "Examples / diffraction efficiency / Universal Plot 1D / limitations / References",
+    "keywords_zh": "RCWA 衍射效率 Universal Plot 1D 梯形光栅 波导 光栅深度 周期 0.633µm 限制 Geometric Error Split NSC Rays 掠射角 倏逝波 能量守恒 Premium 算例",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【Kogelnik 耦合波理论与适用限制】\n用途背景：体积全息用于 HUD、AR/VR 头戴，可把光衍射到任意角度并具波长/角度选择性，系统更轻更紧凑；OpticStudio 长期支持理想全息，但要体现体积全息特性须计入衍射效率、材料收缩、折射率偏移，这才能做图像仿真与综合优化。\nSRG/VHG 制作：VHG 由两束或多束光曝光光敏乳胶膜再化学/热显影；SRG 用电子束光刻、光刻、纳米压印、金刚石车削做成表面周期微结构。\n耦合波：全息面法向 n，两束同波长平面波 k1、k2 经 Snell 折射为 k'1、k'2；光栅矢量 K=±(k'2-k'1)。再现波 kp 衍射出 kd，满足 n̂×(k'd-k'p)=-n̂×K；K 取两反向之一，约定 K·kp>0。\n条纹：n=n0+n1·cos(K·r)，α=α0+α1·cos(K·r)；n0 为平均折射率，n1 为折射率调制度，α 为吸收。\n方程：TE 用 4 个方程算透射/反射全息的衍射波与直射波电场，TM 把 κ 换 κTM；锥形衍射（入射不垂直光栅）另定义本征偏振。理论假设能量只在入射、零级直射、一级衍射间交换，去掉此限需用 RCWA。\n判据：折射率调制度相对平均折射率 n1/n<<1；经验上限 n1/n 反射全息不大于 0.16、透射全息不大于 0.06。\n其他限制：全息假定很厚，厚全息能量只到直射零级或衍射 +1 级，薄全息其他级次（-1、-2、+2、-3、+3）可能不为零；一次只允许一组条纹，不允许多路复用；材料假定各向同性，不允许双折射。厚度薄或过调制（高调制度）时精度下降；这些限制换用别的算法可解除。",
+    "source": "Simulating diffraction efficiency of a volume holographic grating using Kogelnik’s method | https://optics.ansys.com/hc/en-us/articles/42661738883219-Simulating-diffraction-efficiency-of-a-volume-holographic-grating-using-Kogelnik-s-method",
+    "page_or_section": "Two coupled wave analysis / Assumptions and limitations",
+    "keywords_zh": "RCWA Kogelnik 耦合波理论 光栅矢量 折射率正弦调制 n0 n1 0级 1级 厚全息 折射率调制度 0.16 0.06 双折射 多路复用 锥形衍射 TE TM",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "C02",
+    "chunk_id": "C02-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【体积全息在序列/非序列模式的参数设置】\n溶胀收缩：乳剂显影时厚度会变，光栅矢量分解为平行法线 K∥ 与垂直 K⊥，厚度 t 变 t' 时按公式改 K∥。\n序列模式：可选 4 个全息面——Hologram 1、Hologram 2、Toroidal Hologram、Optically Fabricated Hologram；构造光束位置与波长由 Construct X1/Y1/Z1/X2/Y2/Z2 加 Construct Wave 共 7 个参数定。\n参数：Diffract order 仅透射全息生效，0 追直射零级、1 追衍射一级（NSC 衍射 DLL 无此参数，因两级都追）；Volume Hologram? 取 0 为 False、非零整数为 True，体积全息设 1；Hologram Thickness 为乳剂虚拟厚度，只算效率、追迹中仍按无限薄表面；n1、n2 为构造光束进入全息前所在材料折射率（光束 1、光束 2 各一），n 为平均折射率（即 Kogelnik 的 n0），dn 为调制度（即 n1）；Index Shift 为显影后平均折射率变化；Shrinkage 为显影后厚度变化，0（默认）无收缩、非零为厚度缩放，例 0.98 即收缩 2%；Consider Fresnel? 1 计 Fresnel 损失、0 关（便于和自己代码对算）；涂层约定：Material 为 MIRROR 时加涂层 I.0，否则加 I.99999999（八个 9），因全息面默认无涂层、Fresnel 由模型内部计入。\n非序列：Hologram Lens、Hologram Surface、Toroidal Hologram 三选一，原生模型只支持圆/矩形，任意形状用 Boolean Native/CAD 加 Extruded；Volume Hologram? 设 1 后，衍射面 Face 1 上的涂层必须始终为 None；Use Polarization 必须勾选，否则衍射 DLL 不工作；Split NSC Rays 可选——勾选则任一入射光线都追衍射与直射两条，不勾则 Order=1 只追衍射光、Order=0 只追直射光。全息始终视为无限薄，所有作用只发生在 Face 1。\n判据：全息两侧折射率不同行为就不同（同一片全息悬空在空气与贴在玻璃上衍射方向不同）；两构造光束同侧则 n1=n2，来自两侧可不同，设错行为就错（记录时一侧放棱镜、再现时撤掉，n1/n2 应分别取棱镜与波导折射率）；供应商片可按给定规格搭一个 dummy 构造系统。\n序列算例1：文件 native_vhg_kog_seq_example1.zar，把 45 度入射准直光衍射并会聚到远场；Beam 1 放在极远（等效无穷远）做准直，STOP 放在全息前零厚度处保证主光线打中心；用 Analyze>Polarization and Surface Physics>Diffraction Efficiency>Efficiency vs. Angle 画效率，偏振设 (Jx,Jy)=(1,0) 为 TE。\n序列算例2：文件 native_vhg_kog_seq_example2.zar；Beam 1 在 (0,-1E8,-1.35E8) 为准直光、方向 (0,-0.6,-0.8)，Beam 2 在 (0,18.66,-45.12) 为会聚光；两构造光波长 0.55 µm，两侧均为丙烯酸故 n1=n2=1.493581；两个 Image Simulation 分析一个勾 Use Polarization、一个不勾，勾上后图像上下边缘更暗。\n非序列算例：Hologram Lens 物体 Face 1 为全息面；效率分析三工具 Efficiency vs. Wavelength（变波长）、vs. Angle（变角度）、Diffraction Efficiency（2D 两者都变），Hologram Object 只能选 Hologram Lens/Toroidal/Hologram Surface，Ambient Object 选外侧材料、Inside Of 选发射光线所在物体；波导叠三片光栅（Object 10/11/12），除构造波长(Wave)与 n1/n2 外参数相同，衍射面朝波导(-z 侧)，分析 Object 10 时 Ambient/Inside 都设为波导 Object 5；后端默认用 Detector Polar（Radius=1 mm）测功率，第二、三片太薄测不准，改用 Detector Rectangle Object 13/14 并设 Always Ignored By Rays，Object 13 测第二片(11)、Object 14 测第三片。\n供应商片算例：透射型，设计波长 632 nm，入射角 30 度、出射角 7 度，厚 7 mm，平均折射率 1.5，调制度 0.00005，空气中使用；Holotype=1，X1=0、Y1=-0.121869E9、Z1=-0.992546E9、X2=0、Y2=-0.5E9、Z2=-0.866025E9，1E9 倍数使构造点在极远、等效准直；Holotype=2 时任一组坐标乘 -1；Wave=0.633 µm，n1=n2=1.0；z 轴不可换（DLL 假定全息面在 XY 平面），y 轴可换成 x 轴。",
+    "source": "Simulating diffraction efficiency of a volume holographic grating using Kogelnik’s method | https://optics.ansys.com/hc/en-us/articles/42661738883219-Simulating-diffraction-efficiency-of-a-volume-holographic-grating-using-Kogelnik-s-method",
+    "page_or_section": "Swelling / shrinkage / Sequential Mode / Non-Sequential Mode / parameters",
+    "keywords_zh": "RCWA 溶胀 收缩 全息图厚度 Hologram 2 构造光束 Diffract order Volume Hologram Hologram Thickness n1 n2 dn Shrinkage Index Shift Fresnel Use Polarization Holotype 供应商片",
+    "disclaimer": ""
+  }
+]

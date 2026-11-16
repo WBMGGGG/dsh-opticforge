@@ -1,7 +1,7 @@
 {
-  "name": "@deepseek-ai/dsh-opticforge",
+  "name": "dsh-opticforge",
   "version": "0.1.0",
-  "description": "OpticForge — 光电工程师知识库检索与工程计算 DSH cordis 插件",
+  "description": "OpticForge —— 光电工程师知识库检索（BM25）与 5 类工程计算器，DeepSeek Harness 插件。光学工程知识库 + 工程计算，纯 Node.js，零运行时依赖。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -15,17 +15,43 @@
     "lib/",
     "data/",
     "cordis.patch.yml",
+    "README.md",
     "README.zh.md",
-    "package.json"
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
   },
-  "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.1.0",
-    "@deepseek-ai/dsh-tools": "^0.2.2-rc.1"
+  "scripts": {
+    "test": "node test/run.mjs",
+    "verify": "node scripts/verify-all.mjs",
+    "kb": "node scripts/build-kb.mjs --all",
+    "kb:check": "node scripts/build-kb.mjs --check"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "optics",
+    "optical-engineering",
+    "knowledge-base",
+    "bm25",
+    "confocal",
+    "tolerancing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WBMGGGG/dsh-opticforge.git"
+  },
+  "homepage": "https://github.com/WBMGGGG/dsh-opticforge#readme",
+  "bugs": {
+    "url": "https://github.com/WBMGGGG/dsh-opticforge/issues"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "license": "MIT"
 }

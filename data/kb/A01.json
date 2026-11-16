@@ -1,0 +1,145 @@
+[
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【共焦色散测量原理】\n照明：多色白光经多透镜光学系统聚焦，用受控色差把白光分成一串单色波长。\n映射：每个波长对应一个固定距离，由出厂标定确定。\n判据：只有精确聚焦在被测表面上的那个波长参与测量。\n探测：反射光经光学系统成像到光敏传感器，识别对应光谱色再换算距离。\n多峰值：光谱上出现多个峰值时，可同时评估多个距离点，对应多层或界面测量。\n适用表面：反射面、漫反射面、透明表面（如玻璃）。",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.4 The confocal chromatic measuring principle",
+    "keywords_zh": "共焦色散 测量原理 受控色差 波长 出厂标定 光谱色 多峰值 多层厚度 反射 漫反射 透明 光敏传感器",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2402 规格（量程 0.5 / 1.5 / 3.5 mm 三档）】\n型号对应：0.5 档 = IFS2402-0.5；1.5 档 = IFS2402-1.5（90° 型 IFS2402/90-1.5）；3.5 档 = IFS2402-4（90° 型 IFS2402/90-4）。\n量程：0.5 / 1.5 / 3.5 mm\n起始量程：约 1.7 / 0.9 / 1.9 mm（90° 型为 2.5 mm，自传感器轴测）\n静态分辨率：< 8 / < 30 / < 50 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 48 / < 192 / < 480 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.15 / ±0.60 / ±1.40 µm（25±1 °C，平行平面测试玻璃）\n光斑直径：10 / 20 / 20 µm\n最大测量角：±27° / ±5° / ±3°（反射面，越接近极限值精度越低）\n数值孔径 NA：0.40 / 0.20 / 0.10\n防护：IP64（前端）；90° 型为 IP40。重量约 186 g（含光纤）\n测厚限制：无厚度测量能力；玻璃测距要求厚度大于量程；金属面仅有限适用",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.16 IFS2402 specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2402 量程 0.5 1.5 3.5 mm 起始量程 静态分辨率 动态分辨率 线性度 光斑 数值孔径 最大测量角 IP64 厚度测量",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2403 规格（量程 0.4 / 1.5 / 4 / 10 mm 四档）】\n量程：0.4 / 1.5 / 4 / 10 mm（型号 IFS2403-0.4 / -1.5 / -4 / -10，/90 为 90° 出光型）\n起始量程：约 2.5 / 8 / 14.7 / 11 mm（90° 型为 4.9 / 12 / 8.6 mm，自传感器轴测）\n静态分辨率：< 8 / < 30 / < 50 / < 125 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 47 / < 186 / < 460 / < 950 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.12 / ±0.45 / ±1.6 / ±4 µm（25±1 °C，平行平面测试玻璃）\n光斑直径：9 / 15 / 28 / 56 µm\n最大测量角：±20° / ±16° / ±6° / ±6°（反射面）\n数值孔径 NA：0.50 / 0.30 / 0.15 / 0.15\n最小目标厚度：0.06 / 0.23 / 0.6 / 1.5 mm\n防护：IP64（前端）；重量约 200 g（含光纤）",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.18 IFS2403 specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2403 量程 0.4 1.5 4 10 mm 起始量程 静态分辨率 线性度 光斑 数值孔径 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2404 规格（量程 2 / 4 mm 两档）】\n型号对应：2 mm 档 = IFS2404-2、IFS2404/90-2、IFS2404-2(001)、IFS2404/90-2(001)；4 mm 档 = IFS2404-4。\n量程：2 / 4 mm\n起始量程：约 14 / 14.7 mm（90° 型为 9.6 mm，自传感器轴测）\n静态分辨率：< 20 / < 40 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 125 / < 250 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.5 / ≤ ±1 µm（25±1 °C，平行平面测试玻璃）\n线性度（厚度）：±1 / ≤ ±2 µm\n光斑直径：10 / 10 µm\n最大测量角：±12° / ±12°（反射面）\n数值孔径 NA：0.25 / 0.20\n最小目标厚度：0.1 / 0.2 mm\n防护：IP64（前端）。重量约 20 / 30 / 40 / 40 / 20 g（随型号，含插拔式光纤接头 FC）",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.20 IFS2404 (2/4 mm) specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2404 2 mm 4 mm 量程 起始量程 静态分辨率 线性度 厚度线性度 光斑 数值孔径 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2404 规格（量程 1 / 3 / 6 / 18 mm 四档）】\n量程：1 / 3 / 6 / 18 mm（型号 IFS2404-1 / -3 / -6 / -18）\n起始量程：约 15 / 25 / 35 / 61 mm\n静态分辨率：< 6 / < 18 / < 40 / < 50 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 50 / < 125 / < 250 / < 280 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.25 / ±0.75 / ±1.5 / ±5.4 µm\n线性度（厚度）：±0.5 / ±1.5 / ±3 / ±10.8 µm\n光斑直径：12 / 18 / 24 / 50 µm\n最大测量角：±25° / ±19° / ±10° / ±9°（反射面）\n数值孔径 NA：0.45 / 0.35 / 0.18 / 0.17\n最小目标厚度：0.05 / 0.15 / 0.3 / 0.9 mm\n防护：IP64（前端）；铝制外壳。重量约 100 / 100 / 100 / 150 g",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.22 IFS2404 (1/3/6/18 mm) specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2404 1 mm 3 mm 6 mm 18 mm 量程 静态分辨率 线性度 厚度 光斑 数值孔径 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2405 规格（量程 0.3 / 1 / 3 / 6 mm 四档）】\n型号对应：0.3 档 = IFS2405-0.3；1 档 = IFS2405-1；3 档 = IFS2405-3；6 档 = IFS2405-6（90° 型 IFS2405/90-6）。\n量程：0.3 / 1 / 3 / 6 mm\n起始量程：约 6 / 10 / 20 / 63 mm（90° 型为 41 mm，自传感器轴测）\n静态分辨率：< 2 / < 4 / < 8 / < 17 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 18 / < 38 / < 80 / < 190 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.09 / ±0.2 / ±0.6 / ±1.2 µm\n线性度（厚度）：±0.18 / ±0.4 / ±1.2 / ±2.4 µm\n光斑直径：6 / 8 / 9 / 31 µm\n最大测量角：±34° / ±30° / ±24° / ±10°（反射面）\n数值孔径 NA：0.60 / 0.55 / 0.45 / 0.22\n最小目标厚度：0.015 / 0.05 / 0.15 / 0.3 mm\n防护：IP64（前端）；铝制外壳。重量约 140 / 125 / 225 / 260 / 315 g",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.24 IFS2405 (0.3..6 mm) specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2405 0.3 1 3 6 mm 量程 起始量程 静态分辨率 线性度 光斑 数值孔径 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2405 规格（量程 10 / 28 / 30 mm 三档）】\n型号对应：10 档 = IFS2405-10；28 档 = IFS2405-28、IFS2405-28/VAC(001)；30 档 = IFS2405-30。\n量程：10 / 28 / 30 mm\n起始量程：约 50 / 220 / 100 mm\n静态分辨率：< 18 / < 65 / < 47 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 204 / < 747 / < 530 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±1.5 / ±5.6 / ±4.5 µm\n线性度（厚度）：±3 / ±11.2 / ±9 µm\n光斑直径：16 / 60 / 50 µm\n最大测量角：±17° / ±5° / ±9°（反射面）\n数值孔径 NA：0.30 / 0.10 / 0.20\n最小目标厚度：0.5 / 2.2 / 1.5 mm\n防护：IP64（前端）；真空兼容型为 IP40。重量约 500 / 750 / 730 g（VAC 型约 1.2 kg）",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.26 IFS2405 (10/28/30 mm) specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2405 10 28 30 mm 量程 起始量程 静态分辨率 线性度 光斑 数值孔径 真空 VAC",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-08",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2406 规格（量程 2.5 / 3 / 10 mm 三档，真空兼容）】\n型号：IFS2406-2,5/VAC(003)、IFS2406/90-2,5/VAC(001)、IFS2406-3、IFS2406-3/VAC(001)、IFS2406-10、IFS2406-10/VAC(001)。\n量程：2.5 / 3 / 10 mm\n起始量程：约 17.2 / 12.6 / 27 mm（90° 型为 75 mm，自传感器轴测）\n静态分辨率：< 9 / < 16 / < 19 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 97 / < 168 / < 207 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.6 / ±1.5 / ±2 µm\n线性度（厚度）：±1.2 / ±3 / ±4 µm\n光斑直径：10 / 35 / 15 µm\n最大测量角：±16° / ±6.5° / ±13.5°（反射面）\n数值孔径 NA：0.30 / 0.14 / 0.25\n最小目标厚度：0.125 / 0.15 / 0.5 mm\n防护：真空兼容型 IP40，非真空型 IP65（前端）。重量约 105 / 130 / 99 / 250 / 128 g",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.28 IFS2406 specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2406 2.5 3 10 mm 量程 真空 VAC 静态分辨率 线性度 光斑 数值孔径 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-09",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2407 高温/真空型规格（量程 0.8 / 2 / 4 mm）】\n型号：IFS2407-0,8HT/VAC、IFS2407-2HT/VAC、IFS2407/90-2HT/VAC、IFS2407-4HT/VAC、IFS2407/90-4HT/VAC。\n量程：0.8 / 2 / 4 mm\n起始量程：约 5.85 / 14.5 / 2 mm（90° 型起点 14.5 / 2 mm）\n静态分辨率：< 6 / < 10 / < 24 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 45 / < 90 / < 180 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.16 / ±0.4 / ±0.8 µm；线性度（厚度）：±0.35 / ±0.88 / ±1.76 µm\n温度稳定性：< 0.015 / < 0.005 / < 0.01 % FSO / K（随夹持位置变化）\n光斑直径：11 / 19 / 29 µm；最大测量角：±30° / ±12° / ±8°\n数值孔径 NA：0.50 / 0.28 / 0.19；最小目标厚度：0.04 / 0.1 / 0.2 mm\n温度范围：工作 +5 … +200 °C，存储 -20 … +200 °C（耐高温是此系列的主要区别）\n防护：IP40（真空兼容）；重量约 40 / 40 / 50 / 40 / 50 g",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.30 IFS2407 HT/VAC specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2407 HT VAC 高温 真空 0.8 2 4 mm 量程 温度稳定性 静态分辨率 线性度 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-10",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2407 规格（量程 0.1 / 0.8 mm，高数值孔径）】\n型号：IFS2407-0.1、IFS2407-0.1(001)、IFS2407-0.8。\n量程：0.1 / 0.1 / 0.8 mm\n起始量程：约 1 / 1 / 5.9 mm\n静态分辨率：< 1 / < 1 / < 9 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 6 / < 6 / < 75 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.04 / ±0.04 / ±0.2 µm；厚度线性度：0.1 档无厚度测量，0.8 档为 ±0.4 µm\n光斑直径：3 / 4 / 6 µm\n最大测量角：±48° / ±48° / ±30°（反射面）\n数值孔径 NA：0.80 / 0.70 / 0.50\n最小目标厚度：0.005 / 0.005 / 0.04 mm\n防护：IP65（前端）；不锈钢外壳。重量约 36 / 36 / 40 g。0.1 档为高 NA 型，0.1(001) 为强光型",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.32 IFS2407 (0.1/0.8 mm) specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2407 0.1 0.8 mm 高数值孔径 高NA 量程 静态分辨率 线性度 光斑 最小厚度 IP65",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-11",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFS2407/90 规格（量程 0.3 / 1.5 / 3 / 6 mm，90° 出光）】\n量程：0.3 / 1.5 / 3 / 6 mm（型号 IFS2407/90-0.3、IFS2407-1.5、IFS2407-3、IFS2407-6）\n起始量程：约 5.3 / 17 / 28 / 32 mm\n静态分辨率：< 3 / < 3 / < 7 / < 8 nm（1 kHz，2,048 个值平均，量程中段，光学平晶）\n动态分辨率：< 20 / < 36 / < 63 / < 90 nm（RMS 噪声，量程中段，1 kHz）\n线性度（位移与距离）：±0.10 / ±0.16 / ±0.45 / ≤ ±0.9 µm；厚度线性度：±0.20 / ±0.4 / ±0.9 / ≤ ±1.8 µm\n光斑直径：6 / 5.5 / 9 / 14 µm\n最大测量角：±27° / ±43°（漫反射金属面 ±70°）/ ±30° / ±23°\n数值孔径 NA：0.50 / 0.70 / 0.53 / 0.45\n最小目标厚度：0.015 / 0.075 / 0.15 / 0.3 mm\n防护：IP65（前端）；1.5 档为铝壳，其余为不锈钢壳。重量约 30 / 800 / 550 / 350 g",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "p.34 IFS2407/90 specifications (Measuring range / Start / Resolution Static / Linearity / Light spot / NA / Max angle / Min thickness)",
+    "keywords_zh": "IFS2407/90 0.3 1.5 3 6 mm 量程 静态分辨率 线性度 数值孔径 漫反射 最小厚度",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-12",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【IFC2421 / IFC2422 共焦控制器】\n用途：漫反射面与镜面的位移、厚度测量。\n通道：IFC2421 单通道，IFC2422 双通道，可做系列化应用的控制器。\n关键功能：CCD 阵列主动曝光调节，可在表面变化时做快速、准确的表面补偿。\n兼容性：适配 IFS 系列全部传感器型号。\n多峰值：可选多峰值版本，用于多层厚度测量。\n双通道工作方式：IFC2422 用专用计算函数评估两个通道，两通道同步采集，且各自都能跑到完整测量速率。",
+    "source": "confocalDT IFC2421/22 | Micro-Epsilon | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/confocaldt-ifc2421-22/",
+    "page_or_section": "Product page: Universal confocal controller with one and two channels",
+    "keywords_zh": "IFC2421 IFC2422 控制器 单通道 双通道 CCD 主动曝光 表面补偿 多峰值 同步采集 测量速率",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "A01",
+    "chunk_id": "A01-13",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "【缺：SMR / MMR / EMR 量程定义】\n缺什么：SMR、MMR、EMR 三个量程类缩写的正式定义与换算关系。\n为什么缺：对 Micro-Epsilon 目录全册检索，未出现 MMR / EMR 字面；仅在第 661、671、726、740 行的尺寸图里出现 SMR / MR 缩写，属于机械尺寸标注，不是量程定义。\n需要什么才能补：含 SMR/MMR/EMR 定义的原始页（技术手册、选型指南或应用笔记的 PDF 或截图），或厂商给出的明确文字定义。\n在此之前：不得据此出题，不得编造数值。",
+    "source": "confocalDT // Confocal chromatic sensor system (Micro-Epsilon catalog) | https://www.micro-epsilon.com/distance-sensors/confocal-sensors/",
+    "page_or_section": "SMR / MMR / EMR 量程定义（缺失占位）",
+    "keywords_zh": "SMR MMR EMR 量程定义 起始量程 缩写 缺失",
+    "disclaimer": ""
+  }
+]

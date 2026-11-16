@@ -1,0 +1,13 @@
+[
+  {
+    "doc_id": "A03",
+    "chunk_id": "A03-01",
+    "status": "missing_source",
+    "is_original_excerpt": false,
+    "text": "缺什么：《光学学报》关于峰值定位/亚像素峰值检测的综述全文，含各算法（质心法、高斯拟合、抛物线拟合、插值等）的精度对比与适用条件。\n为什么：opticsjournal.net 返回 JS 反爬页，正文被替换为 var arg1='…' 加密串与 aliyunwaf 脚本，无法取得任何正文。\n需用户提供什么：该综述的 PDF 或可复制正文，或明确可访问的公开链接/馆藏扫描件；在此之前不得编造正文或数值。",
+    "source": "《光学学报》峰值定位综述（未取得原文） | （站点 opticsjournal.net；站点返回反爬页，无可用原文 URL）",
+    "page_or_section": "峰值定位综述正文（缺失占位）",
+    "keywords_zh": "峰值定位 光学学报 综述 峰值检测 亚像素 质心 拟合 综述 算法对比 精度 适用条件 未取得原文",
+    "disclaimer": ""
+  }
+]

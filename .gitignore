@@ -19,3 +19,5 @@ _of_probe*
 _install_probe/
 temp/
 tmp/
+# 原始厂商文档快照：只留本地，不进公开仓库
+_kb-raw/

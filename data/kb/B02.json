@@ -1,0 +1,46 @@
+[
+  {
+    "doc_id": "B02",
+    "chunk_id": "B02-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【DOE 与超透镜设计路线总览（四条流程）】\n定位：给初次接触 DOE/metalens 设计的人一个起点，看 OpticStudio 里有哪些方法可用；文中先简介可行路线，后续展开相位剖面概念与自由空间、DOE/metalens 中的传播方法，最后介绍为特殊相位剖面定制的 DLL。\n前提：OpticStudio 内没有通用方法处理所有情形，需设计师按系统逐个决定策略；许多设计流程需要两套不同光学理论/算法，分别处理自由空间与微结构中的光束传播，另一些只用纯光线追迹。\n路线一（相位剖面→微结构→实验验证）：先用光线追迹设计 DOE/metalens 所需相位剖面，再据此设计微结构（可为传统 blaze 光栅或现代 metalens，所需设计与加工方法随类型差异很大）；blaze 光栅可参考用单点金刚石车削加工，生成宏见知识库“How to calculate the sag of a diffractive optical element with a macro”，示例系统见 phase profile example.zar；metalens 可参考用 Lumerical FDTD 按给定相位剖面设计。\n路线一局限：设计师无法检查整机性能——无法计入全部衍射级次检查真实 PSF；非工作级次的光线虽可追迹，但算不出衍射效率，因而不知道杂光路径的功率比。\n路线二（POP + FDTD 验证）：针对路线一无法在加工前仿真整机性能的缺点，用 POP 配合 FDTD 精确计算 PSF，主要面向平面 metalens 设计；OpticStudio 本身不含 FDTD 引擎，需集成 Lumerical FDTD。\n单 metalens 情形：直接在 Lumerical FDTD 中让平面波前入射 metalens，metalens 后输出的电场存为 ZBF 文件，导入 OpticStudio POP 评估最终 PSF。\nmetalens 位于透镜之间、入射波前非平面波时：先在 POP 中用平面波把光束传播到 metalens 前面，导出 ZBF 再作为光源导入 FDTD 穿过 metalens，其余步骤同上。\n路线二局限：FDTD 引擎因算力需求大，处理不了大尺寸透镜；且只能仿真每个独立视场的 PSF，做不了 Image Simulation 或 Relative Illumination 这类分析。\n补充：另有一条用 Lumerical RCWA 加 Zemax 光线追迹的新流程，可保留光线追迹引擎，同时分析整机性能、做图像仿真与杂光分析，解决 POP+FDTD 处理不了大尺寸 DOE 透镜的问题（详见 Large-Scale Metalens – Ray Propagation）。\n路线三（参数化 sag→FFT/Huygens PSF）：不做相位剖面，直接在序列模式建模细节化 blazed sag，用传统光线追迹引擎加 FFT、Huygens PSF 分析；仅当 DOE 特征尺寸不太接近波长尺度（矢量衍射效应强的情形不适用）才行，不适合 metalens；例见用方程生成类似 Fresnel 透镜的 blazed 结构。\n路线三局限：除特征尺寸外，仍需自建工具增强 OpticStudio——没有原生序列面支持该 blazed sag，需自建序列面 DLL；OpticStudio 也不显示 Y-Z 等截面 PSF，需用宏在不同 Z 位置扫描 PSF 出图。\n路线四（参数化 sag→POP）：在 OpticStudio 里建模二元型 sag 仿真 Fresnel 波带片；这类 DOE 用光线追迹效果不好——垂直入射的光线因表面无斜率不偏折，Layout 里光束保持准直从 Object 到 Image 面，但实际设计得当的波带片能把垂直入射光束聚焦，这一效应必须用 POP。\n示例（Fresnel Zone Plate Phase Type.zar）：高斯光束腰斑 2.6 mm 入射，POP 下像面光斑腰斑约 0.4 mm。\n边界：此结构透镜的最大允许直径可能严格取决于入射光束相干度与焦距；POP 基于标量衍射理论，不适合特征尺寸亚波长的 metalens。",
+    "source": "How to design DOE lens or metalens in OpticStudio | https://optics.ansys.com/hc/en-us/articles/42661666194323-How-to-design-DOE-lens-or-metalens-in-OpticStudio",
+    "page_or_section": "1. Design process (phase profile -> microstructure; POP+FDTD; sag + ray-tracing; POP)",
+    "keywords_zh": "DOE 超透镜 金属透镜 衍射光学元件 相位剖面 FDTD 纳米结构 局部光栅 相位 meta-atom 元胞 NA≤λ/(2l_unit) LPA 局部周期近似 速度精度权衡 ZBF POP 物理光学传播 blaze 光栅 金刚石车削 FFT Huygens PSF 菲涅尔波带片 标量衍射 RCWA",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B02",
+    "chunk_id": "B02-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【相位剖面建模与局部光栅近似（Binary 1 / Binary 2）】\n用途：相位剖面是 DOE 常用设计法，大优点是天然对接 OpticStudio 光线追迹，可复用大部分工具；局限是部署微结构后 OpticStudio 原生无法计入衍射效率——相位剖面足以算出每条光线衍射到哪里，却不含衍射光功率多少的信息，要算衍射效率需借助其他工具。\n实例：人工晶状体上的衍射面（用 Binary 2 面，见知识库“Using diffractive surfaces to model intraocular lenses”）把光分到 -1、0、+1 级；Layout 里可画出各级光斑方向，知道每级光斑长什么样，但各级之间的功率分布未知。\n本块讨论三件事：相位剖面的确定、用相位剖面做光线追迹、如何由相位剖面导出微结构。\n相位剖面获取：常用公式只适用于小视场（FOV）；大视场需在多个视场角与波长间折中；离轴设计可用非对称相位剖面，序列面常用 Binary 1，Zernike Standard Phase 等相位面也可能可用（知识库“How diffractive surfaces are modeled in OpticStudio”有用 Binary 2 设计相位剖面的例子）。\n局部光栅近似：曲面在追迹处局部视作平面，按 Snell 定律折射；周期变化的光栅在追迹处也视作局部平面、周期视作常数——这就是 DOE 用相位剖面配合光线追迹的原理。\n定周期：对相位剖面求导，得到该点局部光栅周期（结果是投影到 xy 平面的分量）；相位斜率越大，周期越小。",
+    "source": "How to design DOE lens or metalens in OpticStudio | https://optics.ansys.com/hc/en-us/articles/42661666194323-How-to-design-DOE-lens-or-metalens-in-OpticStudio",
+    "page_or_section": "2. Phase profile / Get the phase profile / local grating approximation",
+    "keywords_zh": "DOE 超透镜 金属透镜 衍射光学元件 相位剖面 FDTD 纳米结构 局部光栅 相位 meta-atom 元胞 NA≤λ/(2l_unit) LPA 局部周期近似 速度精度权衡 ZBF Binary 1 Binary 2 衍射效率 人工晶状体 离轴 Zernike",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B02",
+    "chunk_id": "B02-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【微结构落地与三个补充 DLL（mix12 / asp30_bin30 / metalens）】\n接局部光栅：周期确定后，由衍射方程算出衍射光线方向，r2 解可用矢量运算写出。\n微结构两条路线：metalens 先定 meta-atom 形状与延迟相位的关系，再按该关系和给定相位剖面排布 meta-atoms；传统 DOE 把相位剖面当频率分布函数，看成同心圆环光栅，周期是径向距离的函数。两者都生成周期随位置变化的结构，差别在每个周期区的微结构不同；同一相位可转成传统二元光栅、blaze 光栅或 meta-atoms。metalens 自由度更高、效率或功能更多，但设计与加工难度更大。\nus_binary_mix12.dll：原生 Binary 1 与 Binary 2 的混合，只支持平面，用于离轴 metalens，示例在 Binary2_mix12_demo.zar。\nus_asp30_bin30.dll：等同原生 Binary 2，但非球面项做到 30 阶（原生 Binary 2 只有 16 阶），用于在高阶非球面上设计 DOE/metalens，示例 test_asp30_bin30.zar。\nus_binary2_metalens.dll：近似 Binary 2，只支持平面、二元相位项到 10 阶；按波长给不同相位剖面，参数名 Wxry（x 为波长序号，y 为二元相位项阶数）；用于不同波长响应（相位剖面）不同的 metalens，需专门设计才能让 metalens 对不同波长表现不同，使用前需与 metalens 设计方确认。\n覆盖范围：共四条设计路线；原生 OpticStudio 面型不支持的特殊衍射面由这三个 DLL 补充，可从文中链接下载。",
+    "source": "How to design DOE lens or metalens in OpticStudio | https://optics.ansys.com/hc/en-us/articles/42661666194323-How-to-design-DOE-lens-or-metalens-in-OpticStudio",
+    "page_or_section": "Using diffractive surfaces / user-defined DLL / Summary",
+    "keywords_zh": "DOE 超透镜 金属透镜 衍射光学元件 相位剖面 FDTD 纳米结构 局部光栅 相位 meta-atom 元胞 NA≤λ/(2l_unit) LPA 局部周期近似 速度精度权衡 ZBF DLL us_binary_mix12 us_asp30_bin30 us_binary2_metalens 非球面 blaze 光栅 二元光栅",
+    "disclaimer": ""
+  },
+  {
+    "doc_id": "B02",
+    "chunk_id": "B02-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【超透镜仿真三方案（全 FDTD / 场拼接 / 光线追迹）】\n对象：metalens 是由纳米尺度单元（meta-atoms）拼成的宏观光学元件。\nNA 约束：metalens 的数值孔径 NA 受激发波长 λ 与最小 meta-atom 单元尺寸 l_unit 限制，NA ≤ λ / (2 l_unit)。\n算力权衡：单片 metalens 可由数百万个单元构成，响应跨多个长度尺度，需在速度与精度间权衡，按精度与计算速度要求三选一。\n全 FDTD（小尺寸 metalens，场传播）：在整个 metalens 上做 FDTD，逐 meta-atom 之间的交互都算；近似最少，物理上最准确，可用于器件验证，但内存与 CPU 时间消耗大；适合小尺寸 metalens，直径到 mm 级时需确认 PC 算力或改用更快方案，也可用 Lumerical 集群多机 HPC 绕过传统工作站。\n场拼接（小尺寸 metalens，场传播）：先用 RCWA 预计算单个 meta-atom 响应（假设周期边界，即局部周期近似 LPA），再按 metalens 设计网格排布并拼接成整面响应；比全 FDTD 便宜，但相邻 meta-atom 之间的耦合未精确计入，相位突变处（相邻 meta-atom 差异很大）近似会失效，与全 FDTD 结果会有偏差。\n光线追迹（大尺寸 metalens，光线传播）：最省成本但细节程度最低；不关心光的完整波动性质时可选。把 RCWA 预计算的纳米尺度响应与 metalens 设计方案一起传给 Zemax OpticStudio 做光线追迹，同样用 LPA；不整面计算，只在每条光线落点周围的 meta-atom 响应中插值；对 meta-atom 相位突变很敏感；最外圈边界单元（至多四个单元）的行为未定义。\n相关应用：眼动追踪系统（metalens 加 pancake 透镜组）、光纤内窥镜照明与收集、偏振依赖聚焦 metalens。",
+    "source": "Introduction to metalens workflows | https://optics.ansys.com/hc/en-us/articles/35797097445779-Introduction-to-metalens-workflows",
+    "page_or_section": "Overview / Metalens Analysis (Full FDTD / field stitching / ray-tracing) / Related applications",
+    "keywords_zh": "DOE 超透镜 金属透镜 衍射光学元件 相位剖面 FDTD 纳米结构 局部光栅 相位 meta-atom 元胞 NA≤λ/(2l_unit) LPA 局部周期近似 速度精度权衡 ZBF RCWA 场拼接 光线追迹 HPC 集群 眼动追踪 pancake 光纤内窥镜 偏振",
+    "disclaimer": ""
+  }
+]

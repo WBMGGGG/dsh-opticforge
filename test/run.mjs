@@ -1,25 +1,19 @@
 // OpticForge 集成测试（node:test）——直接运行：node test/run.mjs
-// 全程只读源码；唯一写入是 test/.asar-runtime/ 下的依赖抽取缓存（由 _asar_loader.mjs 完成），
-// 测试结束会自动清理该缓存，保持 test/ 目录干净。
-// 设计要点：用 DSH 安装目录 asar 里的【真实】@deepseek-ai/dsh-tools 校验 lib/index.js 注册的两个
-// defineTool（DSL schema / output.render / execute 返回值），并做端到端检索、计算与统计断言。
+// 全程只读源码，不写任何缓存、不依赖 DSH 安装目录。
+// 设计要点：插件走原生 JSON Schema 注册（不 import 任何 @deepseek-ai 包），
+// 所以这里用最小 ctx 收集 ctx.tools.register 的定义，直接对定义形状、参数校验、
+// 端到端检索与计算做断言。
 import test from "node:test";
 import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
-import { register } from "node:module";
-import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { ensureRuntime, LOADER } from "./_asar_loader.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN = path.resolve(HERE, "..");
 const LIB = path.join(PLUGIN, "lib");
 const idxUrl = pathToFileURL(path.join(LIB, "index.js")).href;
 
-// ---- 加载真实 defineTool 运行时（必须在任何 import lib/index.js 之前） ----
-let RUNTIME;
-let dshTools;
 let plugin;
 let registered;
 let kbData;
@@ -27,21 +21,15 @@ let kbEngine;
 let calculators;
 
 async function boot() {
-  const info = ensureRuntime();
-  RUNTIME = info;
-  register(pathToFileURL(LOADER).href, import.meta.url);
-  dshTools = await import("@deepseek-ai/dsh-tools");
   plugin = await import(idxUrl);
-  // 用最小 ctx 收集 ctx.tools.register 注册的工具定义
   const defs = [];
   const ctx = { tools: { register(def) { defs.push(def); } } };
   plugin.apply(ctx);
   registered = defs;
-  // 队友模块：容忍尚未写完，读取失败时保留 null 让用例给出清晰失败信息
+  // 模块读取失败时保留 null，让用例给出清晰失败信息
   try { kbData = await import(pathToFileURL(path.join(LIB, "kb-data.js")).href); } catch { kbData = null; }
   try { kbEngine = await import(pathToFileURL(path.join(LIB, "kb-engine.js")).href); } catch { kbEngine = null; }
   try { calculators = await import(pathToFileURL(path.join(LIB, "calculators.js")).href); } catch { calculators = null; }
-  return info;
 }
 const booted = boot();
 
@@ -56,42 +44,55 @@ function requireModule(m, label) {
 }
 
 // =====================================================================
-// A. 真实 defineTool 契约校验
+// A. 原生注册契约校验（不依赖 @deepseek-ai/dsh-tools）
 // =====================================================================
-test("A1 真实 defineTool 可用：apply/inject/name 导出正确", async () => {
+test("A1 插件可加载：apply/inject/name 正确，注册 4 个工具", async () => {
   await booted;
-  assert.equal(typeof dshTools.defineTool, "function", "未能从 asar 抽取的 @deepseek-ai/dsh-tools 载入 defineTool");
   assert.equal(typeof plugin.apply, "function", "lib/index.js 未导出 apply");
   assert.equal(plugin.name, "opticforge", "lib/index.js name 应为 opticforge");
   assert.deepEqual(plugin.inject, ["tools"], "lib/index.js inject 应为 [tools]");
-  assert.equal(registered.length, 2, "应恰好注册 2 个工具，实际 " + registered.length);
-  assert.deepEqual(registered.map((d) => d.name).sort(), ["opticforge_calc", "opticforge_search"]);
+  assert.equal(registered.length, 4, "应恰好注册 4 个工具，实际 " + registered.length);
+  assert.deepEqual(
+    registered.map((d) => d.name).sort(),
+    ["opticforge_calc", "opticforge_docs", "opticforge_get", "opticforge_search"]
+  );
 });
 
-test("A2 两个工具定义合法：parameters/output.schema 通过真实校验，output.render 可调用", async () => {
+test("A2 工具定义合法：parameters 是标准 JSON Schema，output.schema/render 齐备", async () => {
   await booted;
-  for (const name of ["opticforge_search", "opticforge_calc"]) {
-    const t = tool(name);
-    assert.equal(typeof t.execute, "function", name + ".execute 必须是函数");
-    assert.ok(t.output && typeof t.output === "object", name + " 缺少 output");
-    assert.equal(typeof t.output.render, "function", name + ".output.render 必须是函数");
-    assert.ok(t.output.schema, name + " 缺少 output.schema");
-    // defineTool 内部已用 assertSupportedJsonSchema 校验过；这里再用导出函数显式复核
-    assert.doesNotThrow(() => dshTools.assertSupportedJsonSchema(t.output.schema), name + ".output.schema 未被真实校验器接受");
-    assert.doesNotThrow(() => dshTools.assertSupportedJsonSchema(t.parameters), name + ".parameters 未被真实校验器接受");
-    // render 必须能调用且返回文本块
-    const rendered = t.output.render({}, {});
-    assert.ok(Array.isArray(rendered), name + ".output.render 应返回数组");
-    assert.equal(rendered[0].type, "text", name + ".output.render 首项 type 应为 text");
-    assert.equal(typeof rendered[0].text, "string", name + ".output.render 首项 text 应为字符串");
+  for (const t of registered) {
+    assert.equal(typeof t.execute, "function", t.name + ".execute 必须是函数");
+    assert.equal(typeof t.description, "string", t.name + " 缺少 description");
+    assert.ok(t.description.length > 10, t.name + " description 过短");
+
+    const p = t.parameters;
+    assert.ok(p && typeof p === "object", t.name + " 缺少 parameters");
+    assert.equal(p.type, "object", t.name + ".parameters.type 应为 object");
+    assert.equal(typeof p.properties, "object", t.name + ".parameters.properties 缺失");
+    // 每个属性只能有标准 JSON Schema 关键字，不能残留内部 DSL 的 required 布尔位
+    for (const [key, node] of Object.entries(p.properties)) {
+      assert.ok(node && typeof node === "object", t.name + "." + key + " 属性定义非法");
+      assert.notEqual(typeof node.required, "boolean", t.name + "." + key + " 残留 DSL 的 required 布尔位");
+      if (node.type) assert.ok(["string", "number", "integer", "boolean", "array", "object"].includes(node.type), t.name + "." + key + " 未知 type");
+      if (node.enum) assert.ok(Array.isArray(node.enum) && node.enum.length > 0, t.name + "." + key + " enum 应为非空数组");
+    }
+    // required 必须是 properties 里存在的名字
+    for (const r of p.required || []) assert.ok(r in p.properties, t.name + " required 里的 " + r + " 不在 properties");
+
+    assert.ok(t.output && typeof t.output === "object", t.name + " 缺少 output");
+    assert.ok(t.output.schema, t.name + " 缺少 output.schema");
+    assert.equal(typeof t.output.render, "function", t.name + ".output.render 必须是函数");
+    const rendered = t.output.render({}, { ok: true });
+    assert.ok(Array.isArray(rendered), t.name + ".output.render 应返回数组");
+    assert.equal(rendered[0].type, "text", t.name + ".output.render 首项 type 应为 text");
+    assert.equal(typeof rendered[0].text, "string", t.name + ".output.render 首项 text 应为字符串");
   }
 });
 
-// validateJsonSchemaValue 返回空数组表示合法；用它断言 execute 返回值符合 output.schema
-function assertOutputMatchesSchema(name, value) {
-  const t = tool(name);
-  const violations = dshTools.validateJsonSchemaValue(t.output.schema, value, "");
-  assert.deepEqual(violations, [], name + " 的 execute 返回值不符合其 output.schema: " + JSON.stringify(violations) + " 实际值: " + JSON.stringify(value));
+// output.schema 是注解形式（不限字段），这里只确认 execute 返回值是可序列化的对象
+function assertOutputShape(name, value) {
+  assert.ok(value && typeof value === "object", name + " 的 execute 应返回对象，实际 " + typeof value);
+  assert.doesNotThrow(() => JSON.stringify(value), name + " 的返回值应可 JSON 序列化");
 }
 
 // =====================================================================
@@ -133,7 +134,7 @@ test("C1 检索「共焦色散 测量原理」命中 A01，返回结构合法且
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "共焦色散 测量原理" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.equal(value.query, "共焦色散 测量原理");
   assert.ok(value.total_hits > 0, "应命中 A01 相关知识块，实际 total_hits=0");
   assert.equal(value.total_hits, value.results.length, "total_hits 应等于 results.length");
@@ -141,7 +142,10 @@ test("C1 检索「共焦色散 测量原理」命中 A01，返回结构合法且
   for (const r of value.results) {
     assert.equal(r.status, "present", "检索结果不应出现 status!==present 的块：" + r.chunk_id);
     assert.ok(r.score > 0, "命中分数应为正数：" + r.chunk_id);
-    assert.ok(r.excerpt.length <= 300, "excerpt 应为正文前 300 字以内：" + r.chunk_id);
+    assert.ok(r.excerpt.length <= 520, "excerpt 应在 520 字以内（标题 + 命中词窗口）：" + r.chunk_id);
+    assert.ok(r.excerpt.length > 0, "excerpt 不应为空：" + r.chunk_id);
+    assert.ok(Array.isArray(r.matched_terms), "应回显命中词 matched_terms：" + r.chunk_id);
+    assert.ok(typeof r.chars === "number" && r.chars > 0, "应回显条目长度 chars：" + r.chunk_id);
     assert.equal(typeof r.source, "string");
     assert.equal(typeof r.page, "string");
   }
@@ -153,7 +157,7 @@ test("C2 检索「RCWA 光栅 衍射效率」命中 C02", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "RCWA 光栅 衍射效率" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.ok(value.total_hits > 0, "应命中 RCWA 相关知识块");
   assert.ok(value.results.some((r) => r.doc_id === "C02"), "结果中应含 doc_id=C02：" + JSON.stringify(value.results.map((r) => r.chunk_id)));
   for (const r of value.results) assert.equal(r.status, "present");
@@ -163,14 +167,14 @@ test("C3 doc_filter 生效：结果全部属于指定 doc_id", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "共焦色散 测量原理", top_k: 20, doc_filter: "A01" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.ok(value.total_hits > 0, "doc_filter=A01 时应仍有命中");
   for (const r of value.results) {
     assert.equal(r.doc_id, "A01", "doc_filter=A01 却返回了 " + r.doc_id + " 的块：" + r.chunk_id);
     assert.equal(r.status, "present");
   }
   const c02 = await execSearch({ query: "共焦色散 测量原理", top_k: 20, doc_filter: "C02" });
-  assertOutputMatchesSchema("opticforge_search", c02);
+  assertOutputShape("opticforge_search", c02);
   for (const r of c02.results) {
     assert.equal(r.doc_id, "C02", "doc_filter=C02 却返回了 " + r.doc_id + " 的块：" + r.chunk_id);
   }
@@ -188,9 +192,9 @@ test("C4 top_k 生效：返回条数不超过 top_k", async () => {
   const v1 = await execSearch({ ...q, top_k: 1 });
   const v3 = await execSearch({ ...q, top_k: 3 });
   const v20 = await execSearch({ ...q, top_k: 20 });
-  assertOutputMatchesSchema("opticforge_search", v1);
-  assertOutputMatchesSchema("opticforge_search", v3);
-  assertOutputMatchesSchema("opticforge_search", v20);
+  assertOutputShape("opticforge_search", v1);
+  assertOutputShape("opticforge_search", v3);
+  assertOutputShape("opticforge_search", v20);
   assert.equal(v1.results.length, 1, "top_k=1 应恰好返回 1 条");
   assert.equal(v3.results.length, 3, "top_k=3 应恰好返回 3 条");
   assert.ok(v20.results.length > 3, "top_k=20 应返回多于 3 条以证明确有更多可命中块");
@@ -227,7 +231,7 @@ test("C6 知识空白如实告知：「量子计算 光学」返回空且 note=�
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "量子计算 光学" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
     "知识空白查询「量子计算 光学」应返回空结果(PLUGIN_PLAN 8.5/4.3)，实际 total_hits=" + value.total_hits + "，命中: " + JSON.stringify(value.results.map((r) => r.chunk_id + "(" + r.score + ")")) + "；应由 lib/index.js 的 isZeroCoverageQuery(query,chunks) 数据驱动守卫短路（topicHasPresentBasis 在 present 块可检索字段中 0 出现才成立），本用例按规范硬断言不静默跳过；H1 回归见 C6b/C6c/C6d。");
   assert.deepEqual(value.results, [], "知识空白查询的 results 应为空数组");
@@ -242,7 +246,7 @@ test("C6b H1 回归：「不确定度 评定」应命中 E01-06，不被知识�
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "不确定度 评定", top_k: 10 });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.ok(value.total_hits > 0,
     "H1：『不确定度』在 E01-06(present) 的 keywords_zh 中真实出现，数据驱动守卫必须放行；" +
     "实际 total_hits=" + value.total_hits + "（若为 0 说明守卫仍按静态词表误屏蔽）");
@@ -257,7 +261,7 @@ test("C6c H1 回归：「自由曲面 光学设计」应命中 B01-10，不被�
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "自由曲面 光学设计", top_k: 10 });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.ok(value.total_hits > 0,
     "H1：『自由曲面』在 B01-10(present) 的 keywords_zh 中真实出现，数据驱动守卫必须放行；" +
     "实际 total_hits=" + value.total_hits + "（若为 0 说明守卫仍按静态词表误屏蔽）");
@@ -272,7 +276,7 @@ test("C6d H1 回归：真 0 覆盖主题仍短路（白光干涉 present 块 0 �
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "白光干涉 测量" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
     "『白光干涉』在 present 块可检索字段中 0 出现，应仍短路为空；实际命中：" +
     JSON.stringify(value.results.map((r) => r.chunk_id)));
@@ -283,9 +287,53 @@ test("C7 生僻无意义词未命中时同样如实告知", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
   const value = await execSearch({ query: "zzzqwerty_nonexistenttoken" });
-  assertOutputMatchesSchema("opticforge_search", value);
+  assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0, "无意义生僻词不应命中");
   assert.equal(value.note, "知识库中未找到相关依据");
+});
+
+test("C8 分页与板块去重：offset 生效、total_matched 稳定、同一板块不超过 max_per_doc", async () => {
+  await booted;
+  requireModule(kbEngine, "lib/kb-engine.js");
+
+  const p1 = await execSearch({ query: "光栅 衍射 效率", top_k: 3, max_per_doc: 2 });
+  const p2 = await execSearch({ query: "光栅 衍射 效率", top_k: 3, max_per_doc: 2, offset: 3 });
+  assert.equal(p1.offset, 0, "默认 offset 应为 0");
+  assert.equal(p2.offset, 3, "offset 应原样回显");
+  assert.equal(p1.total_matched, p2.total_matched, "同一查询的 total_matched 不应随分页变化");
+  assert.equal(p1.returned, p1.results.length, "returned 应等于本页条数");
+  // 两页不应重复同一 chunk
+  const ids1 = p1.results.map((r) => r.chunk_id);
+  const ids2 = p2.results.map((r) => r.chunk_id);
+  for (const id of ids2) assert.ok(!ids1.includes(id), "分页出现重复 chunk：" + id);
+  // 同一板块限流
+  for (const page of [p1, p2]) {
+    const perDoc = {};
+    for (const r of page.results) perDoc[r.doc_id] = (perDoc[r.doc_id] || 0) + 1;
+    for (const [doc, n] of Object.entries(perDoc)) {
+      assert.ok(n <= 2, "板块 " + doc + " 超过 max_per_doc=2，实际 " + n);
+    }
+  }
+  assert.equal(typeof p1.has_more, "boolean", "应回显 has_more");
+});
+
+test("C9 统一输出信封：docs/get/search 共享 ok + kb_version + action", async () => {
+  await booted;
+  const docs = await tool("opticforge_docs").execute({}, {});
+  const one = docs.docs[0];
+  const firstChunkId = one.items[0].chunk_id;
+  const got = await tool("opticforge_get").execute({ chunk_id: firstChunkId }, {});
+  const hit = await execSearch({ query: "共焦 色散", top_k: 1 });
+
+  for (const [name, v] of [["docs", docs], ["get", got], ["search", hit]]) {
+    assert.equal(v.ok, true, name + " 应返回 ok=true");
+    assert.equal(typeof v.kb_version, "string", name + " 应回显 kb_version");
+    assert.ok(v.kb_version.length > 0, name + " 的 kb_version 不应为空");
+    assert.ok(["docs", "get", "search"].includes(v.action), name + " 应回显 action，实际 " + v.action);
+  }
+  assert.equal(got.action, "get");
+  assert.equal(hit.action, "search");
+  assert.equal(docs.action, "docs");
 });
 
 // =====================================================================
@@ -311,7 +359,7 @@ function assertHasNumberNear(v, expected, tol, label) {
   return near;
 }
 function assertCalcShape(v, label) {
-  assertOutputMatchesSchema("opticforge_calc", v);
+  assertOutputShape("opticforge_calc", v);
   for (const f of ["type", "ok", "formula", "substitution", "steps", "result", "source"]) {
     assert.ok(f in v, label + "：返回对象缺少必填字段 " + f);
   }
@@ -413,8 +461,8 @@ test("D6 缺参 / 非法参数（工具层）：ok=false 且绝不抛异常", as
 test("D6b 未知 type：工具层由 enum 干净拒绝，计算器层 calculate() 返回 ok:false 不抛", async () => {
   await booted;
   const m = requireModule(calculators, "lib/calculators.js");
-  // 1) 工具层：parameters.type 是 enum，未知 type 会被真实 defineTool 的参数校验拦截。
-  //    这是框架层的合法行为（不是崩溃）：抛出的应是带 enum 说明的 ToolArgsError，
+  // 1) 工具层：parameters.type 是 enum，未知 type 由插件自己的参数校验拦截。
+  //    这是合法行为（不是崩溃）：抛出的应是带可选值清单的普通 Error，
   //    而不是 TypeError / 未捕获异常。
   let toolErr = null;
   try {
@@ -423,8 +471,8 @@ test("D6b 未知 type：工具层由 enum 干净拒绝，计算器层 calculate(
     toolErr = e;
   }
   assert.ok(toolErr, "未知 type 应被工具的 enum 参数校验拒绝（不应静默执行）");
-  assert.ok(/type.*one of|must be one of|enum|invalid arguments/i.test(toolErr.message),
-    "未知 type 的拒绝信息应说明 enum 约束，实际：" + toolErr.message);
+  assert.ok(/取值必须是|one of|enum|invalid arguments/i.test(toolErr.message),
+    "未知 type 的拒绝信息应列出可选值，实际：" + toolErr.message);
   // 2) 计算器契约层：calculate() 对未知 type 必须返回结构化 ok:false、绝不抛异常。
   let v;
   try {
@@ -459,32 +507,38 @@ test("D7 calculate() 直接调用也不抛异常（契约：任何分支返回�
 });
 
 // =====================================================================
-// E. 数据源文件一致性（kb-data.json 与 kb-data-full.json）
+// E. 数据一致性：kb-data.json 必须等于 data/kb/*.json 的合并结果
 // =====================================================================
-test("E1 内置 67 块数据与源 kb-data-full.json 一致", async () => {
+test("E1 内置 kb-data.json 与 data/kb/*.json 合并结果逐字段一致", async () => {
   await booted;
+  const fs = await import("node:fs");
+  const crypto = await import("node:crypto");
   const builtinPath = path.join(PLUGIN, "data", "kb-data.json");
-  const sourcePath = "D:/AI/OpticsGPT/opticsgpt-space/kb-data-full.json";
   assert.ok(fs.existsSync(builtinPath), "内置数据文件不存在：" + builtinPath);
-  assert.ok(fs.existsSync(sourcePath), "源数据文件不存在：" + sourcePath);
   const builtin = JSON.parse(fs.readFileSync(builtinPath, "utf8"));
-  const source = JSON.parse(fs.readFileSync(sourcePath, "utf8"));
-  assert.equal(builtin.length, 67, "内置数据应为 67 块");
-  assert.equal(source.length, 67, "源数据应为 67 块");
-  const pick = (r) => [r.doc_id, r.chunk_id, r.status, r.text, r.source, r.page_or_section, r.keywords_zh, String(r.is_original_excerpt), String(r.disclaimer)].join("\u0001");
-  const a = builtin.map(pick).sort();
-  const b = source.map(pick).sort();
-  assert.deepEqual(a, b, "内置 67 块与源 kb-data-full.json 内容不一致（逐字段比对）");
+
+  const kbDir = path.join(PLUGIN, "data", "kb");
+  assert.ok(fs.existsSync(kbDir), "缺少 data/kb 分板块目录");
+  const parts = fs.readdirSync(kbDir).filter((f) => f.endsWith(".json")).sort();
+  assert.ok(parts.length >= 9, "分板块文件应至少 9 个，实际 " + parts.length);
+  const merged = [];
+  for (const f of parts) merged.push(...JSON.parse(fs.readFileSync(path.join(kbDir, f), "utf8")));
+  merged.sort((a, b) => (a.doc_id + a.chunk_id).localeCompare(b.doc_id + b.chunk_id));
+
+  assert.equal(builtin.length, merged.length, "内置块数应等于分板块合并块数");
+  const pick = (r) => [r.doc_id, r.chunk_id, r.status, r.is_original_excerpt, r.text, r.source, r.page_or_section, JSON.stringify(r.keywords_zh), r.disclaimer].join("\u0001");
+  assert.deepEqual(builtin.map(pick), merged.map(pick), "kb-data.json 与 data/kb/*.json 合并结果不一致（先跑 node scripts/build-kb.mjs --all）");
+
+  // 元数据指纹：kb-meta.json 的 sha256 必须与 kb-data.json 的实际内容匹配
+  const metaPath = path.join(PLUGIN, "data", "kb-meta.json");
+  assert.ok(fs.existsSync(metaPath), "缺少 data/kb-meta.json");
+  const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+  const sha = crypto.createHash("sha256").update(JSON.stringify(builtin)).digest("hex");
+  assert.equal(meta.content_sha256, sha, "kb-meta.json 的 content_sha256 与 kb-data.json 实际内容不匹配");
+  assert.equal(meta.total_chunks, builtin.length, "kb-meta.json total_chunks 不一致");
+  assert.equal(meta.present_chunks, builtin.filter((c) => c.status === "present").length, "kb-meta.json present_chunks 不一致");
+  assert.ok(Array.isArray(meta.zero_coverage_topics) && meta.zero_coverage_topics.length > 0, "kb-meta.json 缺少 zero_coverage_topics");
+  assert.ok(Array.isArray(meta.covered_anchors) && meta.covered_anchors.length > 0, "kb-meta.json 缺少 covered_anchors");
 });
 
-// 收尾：清理依赖抽取缓存（只删测试自己生成的目录，不碰任何源码）
-process.on("beforeExit", () => {
-  if (RUNTIME && fs.existsSync(RUNTIME.cacheDir)) {
-    try {
-      fs.rmSync(RUNTIME.cacheDir, { recursive: true, force: true });
-      console.log("[OpticForge 集成测试] 已清理临时依赖缓存：" + RUNTIME.cacheDir);
-    } catch (e) {
-      console.warn("[OpticForge 集成测试] 缓存清理失败（不影响测试结果）：" + (e && e.message ? e.message : String(e)));
-    }
-  }
-});
+// 测试不写任何缓存、不启动任何后台进程，无需收尾清理。

@@ -1,71 +1,114 @@
-# OpticForge 知识库与检索机制说明
+# 知识库与检索
 
-> 数据：`data/kb-data.json`（308,424 字节，UTF-8 JSON 数组）；检索引擎：`lib/kb-engine.js`；云端同步：`lib/kb-data.js`。本文数值与代码实跑一致。
+数据不是一大坨 JSON，而是按板块拆分、可逐条审阅的事实条目。本文说明它怎么组织、怎么改、怎么保证不编造。
 
-## 1. 知识库结构（67 块 / 9 篇来源 / 9 字段）
+---
 
-### 1.1 status 三种取值
+## 规模与结构
 
-| status | 数量 | 含义 | 是否参与检索 |
-|---|---|---|---|
-| `present` | **51** | 有原文摘录，可检索 | 是（唯一进入索引的状态） |
-| `missing_source` | 11 | 原文来源缺失（如 403 / 未取得） | 否 |
-| `substitute` | 5 | 用替代文本占位（非原摘录） | 否 |
+- **67 个条目，9 个板块（A01–E01）**
+- 其中 **51 条可用**（`status=present`），构成检索的证据池
+- 16 条是**宣告的缺口**：11 条 `missing_source`（原文没拿到）、5 条 `substitute`（用同类公开资料顶上，明确注明不是原出处）
 
-### 1.2 每块 9 字段（`REQUIRED_FIELDS`）
+```
+data/kb/A01.json … E01.json   按板块拆分的事实条目（人可读、可 diff、可单条审）
+data/kb-data.json             合并产物，插件运行时读它
+data/kb-meta.json             版本、内容 sha256、板块清单、空白词表、覆盖锚点
+_kb-raw/<板块>.json            厂商原文快照，只留本地，已 gitignore，永不发布
+```
 
-`doc_id`（文档标识，如 A01）、`chunk_id`（块标识，如 A01-02）、`status`、`is_original_excerpt`（是否原文摘录）、`text`（正文）、`source`（来源）、`page_or_section`（页码/章节）、`keywords_zh`（中文关键词）、`disclaimer`（免责/说明）。
+`_kb-raw/` 的唯一用途是改写时回查数字和原始措辞。它不进公开仓库，也不进 npm 包。
 
-### 1.3 doc_id 主题分布
+---
 
-| doc_id | 主题 | 块数 |
+## 三种状态
+
+| status | 含义 | 能否作依据 |
 |---|---|---|
-| A01 | Micro-Epsilon confocalDT 共焦色散位移/厚度传感器 | 13 |
-| A02 | Ansys Zemax KB 光谱仪（LGL 理论+实操） | 9 |
-| A03 | 《光学学报》峰值定位综述 | 1 |
-| B01 | Ansys Zemax KB 公差分析 | 11 |
-| B02 | Ansys Zemax KB DOE / 超透镜 | 4 |
-| C01 | ZYGO CSI 白皮书 / ISO 25178 | 5 |
-| C02 | Ansys Zemax KB RCWA / Kogelnik 光栅效率 | 7 |
-| D01 | 滨松《Si photodiodes》技术说明 | 11 |
-| E01 | JJF 1990-2022 校准规范 / 光学制图 | 6 |
-| **合计** | | **67** |
+| `present` | 有原文依据，已改写成事实条目 | 能，检索只会返回这一种 |
+| `missing_source` | 原文没拿到，条目写的是"缺什么、为什么缺、怎么补" | 不能，只作缺口提示 |
+| `substitute` | 原出处不可得，用同类公开资料补充一般原理 | 不能，正文会注明非原出处 |
 
-## 2. BM25 检索引擎（`lib/kb-engine.js`）
+缺口不是缺陷。模型看到 `note: 知识库中未找到相关依据` 时会告诉你没有依据，而不是编一个——这是设计目标。
 
-- 导出：`BM25_K1 = 1.5`、`BM25_B = 0.75`、`tokenize(text)`、`buildIndex(chunks)`、`searchKB(chunks, query, topK=5, docFilter=null)`。
-- 分词：CJK 连续段（\u3400-\u4dbf / \u4e00-\u9fff / \uf900-\ufaff）产出**单字 + 相邻双字**（单字保召回、双字保区分度）；非 CJK 段按正则收集拉丁词（保留 `.-+/µλ×°^~` 符号）并转小写。
-- 可检索字段：`text + keywords_zh + page_or_section + source + disclaimer`（以 `" \n"` 拼接）。
-- 索引：只纳入 `status==="present"`；`idf = log(1 + (N - df + 0.5)/(df + 0.5))`；`denom = f + K1*(1 - B + B*dl/avgdl)`；查询词频取 `min(qtf, 3)`。
-- 排序：`score <= 0` 不返回；按 `(-score, chunk_id)` 排序；分数 round 4 位。返回 7 字段 `{chunk_id, doc_id, status, score, text, source, page_or_section}`。
-- **忠实移植**：与 Python 参考 `kb_tool.py` **逐分比对 25/25 完全一致**（top-5 chunk_id+score），未改算法、未硬编码过滤。
-- 索引以 `WeakMap` 按 chunks 引用缓存。
+---
 
-## 3. 云端同步机制（`lib/kb-data.js`）
+## 事实条目的九条规矩
 
-- **云端同步口径（如实）**：`syncFromCloud(force=false)` 由**宿主显式调用**；本插件的 `apply()` / 两个工具**不会自动发网络请求**。
-- `CANDIDATE_URLS`：3 条 ModelScope Dataset 文件下载地址（`GrestestOptics/optics-kb` 的 `kb-data.json`，非推理 API）。
-- 缓存：`~/.dsh/opticforge-cache/`；`SYNC_TIMEOUT_MS = 4000`、`SYNC_TTL_MS = 3600000`（1 小时）。
-- `getKBData()`：优先读**已成功同步**的本地缓存，否则回退内置 67 块；任何网络/解析失败静默回退，**离线完全可用**。
-- `isValidKB()`：67 块且每块 9 字段；`parseCloudPayload()` 兼容 JSON 数组 / `{chunks}` / `{data}` / JSONL。
-- 实测（Dataset 未上传时）：`syncFromCloud()` 返回 `{"updated":false,"source":"builtin","error":"HTTP 404 ..."}`，属预期。
+每个条目固定 9 个字段：`doc_id / chunk_id / status / is_original_excerpt / text / source / page_or_section / keywords_zh / disclaimer`。
 
-## 4. 知识空白与数据驱动守卫
+`present` 条目的 `text` 必须满足：
 
-### 4.1 0 覆盖主题清单（`ZERO_COVERAGE_TOPICS`，来自 PLUGIN_PLAN §4.3/§8.5/§2.2/用户补录）
+1. 以 `【标题】` 开头
+2. 之后逐行"字段：值"，一个字段一行
+3. `is_original_excerpt = false`（全部为改写，不是原文转载）
+4. **数字必须逐字回查原文**：写进去的每个数字都要能在同块原文里逐字找到。原文写 `three cycles` 就写"三个循环"，不能写成 `3`
+5. 多档位参数用 ` / ` 分隔，并注明列序
+6. 不跨块合并、不补充原文没有的解释
+7. 不写营销词
+8. 长度下限 120 字，**上限不设**——完整性优先，内容多就按语义拆条，不许为了字数删事实
+9. 不确定的、原文没写的，宁可不写
 
-量子计算、量子信息、量子光学、量子比特、COMSOL、SolidWorks、图像处理、缺陷检测、热光学、无热化、热稳定、多物理场、波动光学、工程图、衍射光波导、光波导、光子集成、白光干涉、非球面、自由曲面、光谱定标、辐射度学、黑体、红外测温、信号解调、激光三角、光学测厚、光机结构、不确定度、公差链、物理光学、光学检测。
+规范全文见 `docs/KB-SPEC.zh.md`。
 
-### 4.2 `isZeroCoverageQuery(query, chunks)` 三重判据（全部满足才短路返回空 + `note`）
+---
 
-1. 查询命中 `ZERO_COVERAGE_TOPICS` 中至少一个词；
-2. 查询**不含** `COVERED_ANCHORS`（共焦色散/IFS2402/RCWA/光栅/公差分析/RSS/photodiode 等 KB 明确覆盖的核心主题）——保护混合查询不被误伤；
-3. **数据驱动**：命中词在 `status=present` 块的可检索字段（与 buildIndex 对齐的 5 字段）中确实 **0 出现**（`topicHasPresentBasis()` 运行时核实，结果按 chunks 引用缓存）。
+## 构建与校验
 
-### 4.3 为什么第 3 条关键（H1 教训）
+```bash
+node scripts/build-kb.mjs --doc A02       # 改单板块时自检
+node scripts/build-kb.mjs --all           # 全量校验 + 生成 kb-data.json 与 kb-meta.json
+node scripts/build-kb.mjs --check         # CI 用：只校验已生成产物的一致性
+node scripts/build-kb.mjs --all --version 0.1.0
+```
 
-- 「不确定度」在 `E01-06`（present）的 `keywords_zh`、「自由曲面」在 `B01-10`（present）的 `keywords_zh` **真实存在**——是可检索的真实依据，**不能屏蔽**；
-- 「白光干涉」只出现在 C01-01..C01-05（均非 present），0 出现，短路返回空**才是如实告知**；
-- 词表只是"已声明 0 覆盖"清单，**是否短路由运行时 KB 数据判定**，根治词表与 KB 实际覆盖漂移造成的误伤。
+校验项（任一不过即失败）：
 
-集成测试 `test/run.mjs`：C6（"量子计算 光学"→空+note 硬断言）、C6b（不确定度→E01-06 必须命中）、C6c（自由曲面→B01-10）、C6d（白光干涉仍短路）、C7（纯 ASCII 乱码未命中 note）。
+- `chunk_id` 集合必须与 `_kb-raw` 完全一致，不多不少不重复——引用锚点不可漂移
+- 9 个字段齐全、类型正确
+- `present` 条目以`【`开头、≥120 字、`is_original_excerpt=false`、不含营销词
+- **数字逐字回查**：`text` 里的每个数字 token 必须出现在同块原文中
+- 合并后总块数与 present 数必须等于基线（67 / 51）
+
+这套规则抓过真问题：把原文的 "three cycles" 写成 `3`、"one hundredth" 写成 `1/100`，校验器全部拦下——这些数字原文里并不存在。
+
+---
+
+## 版本与指纹
+
+`data/kb-meta.json` 存：
+
+- `kb_version`：与 `package.json` 版本一致，由 `--version` 指定
+- `content_sha256`：合并后数据的指纹，`verify-all.mjs` 会复核
+- `total_chunks` / `present_chunks` / `docs`
+- `zero_coverage_topics` / `covered_anchors`：知识空白守卫用的词表
+
+工具返回里的 `kb_version` 来自这里。如果它没变，说明你改了分部文件但没重建产物。
+
+---
+
+## 新增一个板块
+
+1. 拿到原文，按块切分，写入 `_kb-raw/<新ID>.json`（含 `chunk_id / status / source / page_or_section / keywords_zh / text`）
+2. 复制 `data/kb/A01.json` 当模板，按 `docs/KB-SPEC.zh.md` 逐块改写
+3. `node scripts/build-kb.mjs --doc <新ID>` 跑到 OK
+4. 把新 ID 加进 `scripts/build-kb.mjs` 的 `DOCS` 数组，更新 `EXPECTED` 基线
+5. `--all` 重建，跑 `test/run.mjs` 与 `verify-all.mjs`
+
+## 补一个缺口
+
+缺口条目已经写清了"缺什么、为什么缺、需要什么"。拿到原文后，把该条 `status` 从 `missing_source` 改成 `present`，按规范改写 `text`，重建即可。`present` 数会变，记得同步 `EXPECTED` 与文档里的统计。
+
+---
+
+## 已知空白
+
+当前明确不覆盖：量子计算 / 量子光学、COMSOL、SolidWorks、图像处理与缺陷检测、热光学与无热化、多物理场、光波导、非球面与自由曲面、光谱定标与辐射度学、不确定度与公差链、物理光学。
+
+词表在 `kb-meta.json` 的 `zero_coverage_topics`，改数据即可，不用改代码。
+
+---
+
+## 版权边界
+
+公开仓库只放改写后的工程事实和来源标注，不放厂商原文长段。逐字原文只存在于本地 `_kb-raw/`，用于核对数字，不随包发布。

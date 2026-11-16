@@ -1,43 +1,65 @@
-# OpticForge 测试与验证体系说明
+# 测试与验收
 
-> 两套独立验证，都可离线运行；本文与 `scripts/verify-all.mjs`、`test/run.mjs` 实际代码一致。
+两套检查，都离线运行，不依赖 DSH 进程、不写缓存。
 
-## 1. 两套验证的定位
-
-| | `scripts/verify-all.mjs` | `test/run.mjs` |
+| 命令 | 内容 | 用时 |
 |---|---|---|
-| 断言数 | **74 项** | **23 用例**（node:test） |
-| 定位 | 端到端契约总审查（独立 node.exe 可跑） | 集成测试（真实 defineTool 校验 + 检索/计算/统计） |
-| 运行方式 | `node scripts/verify-all.mjs`（cwd 建议为仓库根） | `cd opticforge && node test/run.mjs` 或 `node --test test/run.mjs` |
-| 写入 | 仅 `os.tmpdir()/dsh-opticforge-verify-runtime` 缓存 | 仅 `test/.asar-runtime/`（收尾自动清理） |
+| `node test/run.mjs` | 25 个集成用例（node:test） | 约 1 秒 |
+| `node scripts/verify-all.mjs` | 29 项发布前验收 | 约 5 秒（含 npm pack） |
 
-## 2. verify-all.mjs 工作原理（asar 只读归档下的依赖解决）
+CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑这两套。
 
-1. **内联解析 app.asar 归档头**：前 16 字节 pickle 头，`UInt32LE@12` = header JSON 字节数，数据区起点 = `16 + headerSize`；`header.files` 为文件树，每条目 `{size, offset}`（offset 相对数据区起点）；
-2. **提取依赖闭包**到 `os.tmpdir()/dsh-opticforge-verify-runtime`（实测约 22 包 / 1248 文件）：把 `@deepseek-ai/dsh-tools` 及其传递依赖（dsh-llm / dsh-scope / dsh-util-values / schemastery / cosmokit / zod / js-yaml 等）写成真实文件；`unpacked:true` 的原生 .node 条目从同级 `app.asar.unpacked/` 读取；
-3. **module.register() + resolve hook**：按 package.json `exports`/`main` 把裸 specifier 重定向到缓存真实文件；
-4. **用真实 defineTool / validateJsonSchemaValue 校验**：不是手写 mock——valueSchemaSpecToJsonSchema 会把 DSL 的 `required:true` 编译进 root.required，必须用**编译后**的 `def.output.schema` 校验返回值；
-5. **缓存 stamp 含脚本自身 sha256**：代码一改缓存自动重建。
+---
 
-非默认安装路径可用 `DSH_ASAR=<app.asar 完整路径>` 环境变量覆盖。
+## 集成测试的六组
 
-## 3. test/run.mjs 用例分组
+**A. 注册契约**
+插件可加载，`apply/inject/name` 正确，恰好注册 4 个工具；每个工具 `parameters` 是标准 JSON Schema（根 `type=object`、`required` 名字都在 `properties` 里、不残留内部 DSL 的 `required` 布尔位），`output.schema` 与 `output.render` 齐备且可调用。
 
-- **A**：真实 defineTool 契约——`lib/index.js` 注册的两个工具 `parameters`/`output.schema` 通过真实 `assertSupportedJsonSchema`，`output.render` 可调用，`execute` 返回值通过 `validateJsonSchemaValue` 符合 schema；
-- **B**：KB 统计——67 块 / 51 present / 9 字段 / status 与 doc_id 分布；
-- **C1-C7 检索**：C1 共焦色散→A01、C2 RCWA→C02、C3 doc_filter、C4 top_k、C5 status=present 过滤、**C6 "量子计算 光学" 硬断言空+note**、C6b 不确定度→E01-06（H1 回归）、C6c 自由曲面→B01-10、C6d 白光干涉仍短路、C7 纯 ASCII 乱码未命中 note；
-- **D1-D7 计算器**：D1 五示例数值（±6 容差）、D1b 精确值/方案示例值双口径（706.3158 与 plan_example_d_nm=708 都核验）、D6 缺参 ok=false、**D6b 未知 type 两层契约**（工具层 enum 干净拒绝抛 ToolArgsError 属框架合法行为；契约层直接 `calculate('not_exist',{})` 不抛、ok=false、符合 schema）、D7 直接调用 calculate；
-- **E1**：内置 `data/kb-data.json` 与源文件逐字段一致。
+**B. 数据统计**
+67 块 / 51 present；9 个字段齐全；`chunk_id` 唯一；`status` 只取三种值。
 
-## 4. 运行示例（本机实测）
+**C. 检索端到端**
+命中 A01/C02、`doc_filter` 生效、`top_k` 上限、0 覆盖主题短路、有依据的查询不被误判为空白、分页不重不漏、同一板块条数受限、三个工具共享 `ok/kb_version/action` 信封。
+
+**D. 计算器**
+5 个类型逐一核对验收值（706.3158 nm / 0.4469 nm / IFS2402-1.5 / 0.6164 µm / 353.1579 nm），非法参数返回 `ok:false` 且不抛，`calculate()` 直接调用同样不抛。
+
+**E. 产物一致性**
+`data/kb-data.json` 必须等于 `data/kb/*.json` 的合并结果；`kb-meta.json` 的 `content_sha256` 必须与数据实际内容匹配；`total_chunks` / `present_chunks` 对得上；空白词表与覆盖锚点非空。
+
+**F. 版本一致**
+`package.json` 版本 == `kb-meta.kb_version`。
+
+---
+
+## verify-all 的六组
+
+- **A 发布契约**：包名 `dsh-opticforge`、semver、`type=module`、`main`、`files`、`dsh.bundle.patch`、无 `peerDependencies`、无 `dependencies`、`repository`、`engines`
+- **B 零宿主依赖**：`lib/` 全部文件不得出现 `@deepseek-ai/`，否则 link 安装会解析失败
+- **C 产物一致**：跑 `build-kb.mjs --check`
+- **D 集成测试**：跑 `test/run.mjs`，必须是全绿
+- **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/`、`data/kb-data.json`、`data/kb-meta.json`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
+- **F 版本一致**
+
+任一项失败即退出码 1，不做"警告后继续"。
+
+---
+
+## 为什么不再需要 asar
+
+插件走原生 JSON Schema 注册，不 import 任何 `@deepseek-ai` 包。因此测试不需要从 `app.asar` 抽取 `dsh-tools` 依赖闭包，也不需要模拟 Electron 的 asar 读取。
+
+代价是参数校验必须自己做——`lib/index.js` 的 `validateArgs` 负责，D6b 用例专门验证它拦得住未知 `type`。
+
+---
+
+## 手工抽查
 
 ```bash
-# ① verify-all（独立 node.exe，74/74 ALL PASS）
-C:/Users/Lenovo/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/node/bin/node.exe scripts/verify-all.mjs
-
-# ② 集成测试（23/23 PASS，~0.2s）
-cd opticforge && node test/run.mjs
+node scripts/build-kb.mjs --doc A02    # 单板块校验
+node scripts/build-kb.mjs --check      # 产物一致性
+node scripts/verify-all.mjs            # 发布门禁
 ```
 
-- 测试用真实 dsh-tools（0.2.2-rc.1）跑通：A2 schema 校验、C6 硬断言、D6b 两层行为均按框架实测定义；
-- 测试脚本**只读源码**，唯一写入是依赖缓存且收尾自动清理；队友模块缺失时给出清晰失败信息，不静默跳过。
+数字校验抓过真实错误：改写 B01 时把原文 "three cycles" 写成 `3`、"one hundredth" 写成 `1/100`，被逐字回查拦下。这说明"防编造"是可执行的规则，不是口号。
