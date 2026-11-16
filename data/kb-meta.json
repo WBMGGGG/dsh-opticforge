@@ -1,6 +1,6 @@
 {
   "kb_version": "0.2.1",
-  "built_at": "2026-11-16T04:58:13.166Z",
+  "built_at": "2026-11-16T05:12:14.023Z",
   "content_sha256": "d96b5caf84f54b521cf43dbbe70cd89cc96a230e455b70985b7d665b7a754deb",
   "total_chunks": 324,
   "present_chunks": 308,
@@ -248,11 +248,7 @@
   ],
   "zero_coverage_topics": [
     "光刻工艺",
-    "空间光学",
-    "太赫兹",
-    "X 射线",
-    "光学软件二次开发",
-    "激光核聚变"
+    "空间光学"
   ],
   "covered_anchors": [
     "共焦色散",

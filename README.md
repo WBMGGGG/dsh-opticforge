@@ -97,7 +97,7 @@ Editing the knowledge base: edit `data/kb/<section>.json` → `--doc` validate �
 
 ## Boundaries
 
-- Only the 34 sections above; lithography process, space optics, terahertz, X-ray optics are explicitly not covered
+- Only the 40 sections above; lithography process and space optics are explicitly not covered, and any unlisted topic is treated the same way — no answer is invented for it
 - Compiled entries are engineering summaries of textbook consensus — verify against the `source` field before citing externally
 - Vendor numbers appear only where a snapshot exists
 - Gap entries tell you something is missing; they are not evidence

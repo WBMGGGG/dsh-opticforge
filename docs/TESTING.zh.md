@@ -23,7 +23,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 **C. 检索端到端**
 
-命中 A01/C02；`doc_filter` 生效；`top_k` 上限；0 覆盖主题（太赫兹、空间光学）短路；有依据的查询不被误判为空白；分页不重不漏；同板块条数受限；三个工具共享 `ok/kb_version/action` 信封；非 present 块从不进入检索结果。
+命中 A01/C02；`doc_filter` 生效；`top_k` 上限；0 覆盖主题（空间光学、光刻工艺）短路；有依据的查询不被误判为空白；分页不重不漏；同板块条数受限；三个工具共享 `ok/kb_version/action` 信封；非 present 块从不进入检索结果。
 
 **D. 目录与取用**
 

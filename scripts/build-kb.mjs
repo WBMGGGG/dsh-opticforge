@@ -32,8 +32,8 @@ const COMPILED_SERIES = new Set(["F", "G", "H", "I"]);
 const COMPILED_MIN_LEN = 300;
 const COMPILED_MIN_FIELDS = 3;
 
-// 知识空白：只列真正没有覆盖的主题。命中且正文确实无依据时才短路。
-const DEFAULT_TOPICS = ["光刻工艺", "空间光学", "太赫兹", "X 射线", "光学软件二次开发", "激光核聚变"];
+// 知识空白：只列真正没有覆盖、且维护者确认不再补充的主题。命中且正文确实无依据时才短路。
+const DEFAULT_TOPICS = ["光刻工艺", "空间光学"];
 const DEFAULT_ANCHORS = [
   "共焦色散", "共焦", "色散", "IFS2402", "IFS", "RCWA", "光栅", "衍射效率",
   "镀膜", "膜系", "热漂移", "dn/dT", "公差分析", "Monte Carlo", "RSS", "均方根", "公差分配",
