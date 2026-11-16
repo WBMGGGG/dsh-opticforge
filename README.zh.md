@@ -36,7 +36,7 @@ OpticForge 把这三件事收进一个插件：
  │    ├─ capabilities   本机 Skill / MCP / 工作目录素材
  │    ├─ calc_specs     公式卡（公式、单位、假设、算例；不执行计算）
  │    ├─ plan           分阶段步骤；web 步骤带 blocked_by
- │    ├─ search_pack    KB 查询与带 when 条件的外部查询
+ │    ├─ search_pack    KB 查询与带 trigger/gated 条件的外部查询
  │    └─ acceptance     验收清单 + 风险 + 可交接 Markdown
  │
  ├─ 执行层（agent）── 按 plan 调用
@@ -90,7 +90,7 @@ OpticForge 把这三件事收进一个插件：
 
 `handoff` 是一段可直接交给子 agent 的 Markdown，包含目标、依据、执行顺序与验收。另附 `execution_contract`：必须做什么、可调哪些 Skill/MCP/工具、什么情况必须停下。
 
-**KB-first 执行契约**：先 `assist`，再执行 `alignment.kb_queries` 形成 matched/unmatched 与 `verdict`，然后才检查 `web_gate`。KB 已覆盖的原理不允许直接改用网页；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足时才联网。`search_pack` 中 KB 查询与外部查询分开，外部查询带 `when`，web 步骤带 `blocked_by`。随包 `skills/opticforge-task/SKILL.md` 给 DSH 固定同一流程。
+**KB-first 执行契约**：先 `assist`，再执行 `alignment.kb_queries` 形成 matched/unmatched 与 `verdict`，然后才检查 `web_gate`。KB 已覆盖的原理不允许直接改用网页；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足时才联网。`search_pack` 中 KB 查询与外部查询分开，外部查询带 `trigger/gated/gate_id/blocked_by`，只有 `gated=true` 才可执行；web 步骤带 `blocked_by`。随包 `skills/opticforge-task/SKILL.md` 给 DSH 固定同一流程。
 
 ### 公式卡与文档前置提取
 

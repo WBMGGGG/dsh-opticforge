@@ -34,7 +34,7 @@ description: "OpticForge 光电任务端到端工作流。用于光学设计、�
 
 - `web_gate.allowed=false`：不要调用 `general_search` / `web_search` / `web_fetch`
 - 只有满足 `allowed_if` 中的条件才允许联网：KB 未覆盖、标准版本核对、厂商规格、价格或时效性信息
-- 外部检索只执行 `search_pack.external_queries` 中满足 `when` 的查询
+- 外部检索只执行 `search_pack` 中 `scope="external"` 且 `gated=true` 的条目；判断依据是 `trigger/gated/gate_id/blocked_by`。顶层 `external_queries` 只是已放行查询的汇总
 - 外部事实记录 URL、访问日期、厂商/型号/标准号与测试条件
 
 KB 已覆盖的物理原理、公式和判据，不要重复用网页替代。

@@ -92,7 +92,7 @@ The returned `plan` splits the task into: clarify → evidence → local invento
 
 `handoff` is Markdown ready to hand to a sub-agent: goal, evidence, execution order, acceptance.
 
-**KB-first contract**: call `assist`, run `alignment.kb_queries`, record matched/unmatched and `verdict`, then inspect `web_gate`. External search is conditional on a KB gap, standard-version check, vendor specification, price or other time-sensitive fact. External queries carry `when`; web plan steps carry `blocked_by`. The bundled `skills/opticforge-task/SKILL.md` gives DSH the same workflow.
+**KB-first contract**: call `assist`, run `alignment.kb_queries`, record matched/unmatched and `verdict`, then inspect `web_gate`. External search is conditional on a KB gap, standard-version check, vendor specification, price or other time-sensitive fact. External groups carry `trigger/gated/gate_id/blocked_by`; only `gated=true` queries may run, and web plan steps carry `blocked_by`. The bundled `skills/opticforge-task/SKILL.md` gives DSH the same workflow.
 
 `calc_specs` selects from 19 formula cards with formulas, units, assumptions, sanity ranges, worked examples and KB source IDs. The execution layer performs calculations and records `formula_id`, inputs, outputs, units and reproduction steps. Export docx/pdf to `.md`/`.txt` with the word/pdf Skills before calling `verify`.
 
