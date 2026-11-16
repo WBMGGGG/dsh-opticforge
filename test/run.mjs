@@ -360,10 +360,10 @@ test("D1 opticforge_docs：40 个板块、逐块列出 chunk_id 与标题", asyn
   assert.ok(Array.isArray(a01.items) && a01.items.length === 13, "docs 应逐块列出 items");
   const withTitle = a01.items.filter((i) => typeof i.title === "string" && i.title.length > 0);
   assert.ok(withTitle.length >= 12, "items 应带标题（从 text 的【】提取），实际带标题 " + withTitle.length + " 条");
-  // 基础、前沿与 0.2.1 场景深化板块都要出现
+  // 基础、前沿与场景深化板块都要出现
   assert.ok(v.docs.some((d) => d.doc_id === "F01"), "缺少 F01（基础理论板块）");
   assert.ok(v.docs.some((d) => d.doc_id === "H08"), "缺少 H08（前沿板块）");
-  assert.ok(v.docs.some((d) => d.doc_id === "I06"), "缺少 I06（0.2.1 分光系统设计板块）");
+  assert.ok(v.docs.some((d) => d.doc_id === "I06"), "缺少 I06（分光系统设计板块）");
 });
 
 test("D2 opticforge_docs：doc_filter 生效，未知板块干净报错", async () => {

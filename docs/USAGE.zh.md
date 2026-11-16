@@ -187,6 +187,6 @@ assist(problem="…") → 看 gaps / library_gaps → 没有就如实说明，�
 
 ---
 
-## 为什么没有计算器
+## 计算在哪里做
 
-0.1.0 曾带 5 个工程计算器。0.2.0 起按需求下线，改为“知识库 + 执行层计算”：公式依据在 F01/F06/G02/H05，具体数值由执行层用 `calculator`、PowerShell/Python 或表格 Skill 算，并用 `opticforge_verify` 复核来源。
+插件不带计算器。公式依据在 F01/F06/G02/H05，具体数值由执行层用 `calculator`、PowerShell/Python 或表格 Skill 算，并用 `opticforge_verify` 复核来源。
