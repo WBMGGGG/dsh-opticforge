@@ -5,7 +5,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【数据立方与成像方式】\n定义：高光谱数据立方是 x-y-λ 三维数据——每个空间像素对应一条完整光谱；成像方式分为推扫式、滤光片型和快照式三类。\n公式：推扫式沿飞行方向逐行获取空间线+光谱维；快照式单次曝光获取完整数据立方；空间分辨率与波段数受探测器总像素数约束（像素数 ≈ 空间像素数 × 波段数）。\n判据：推扫式空间分辨率高但需要运动平台；滤光片型逐波段获取时间长；快照式快但光谱或空间分辨率受限。\n边界：光谱分辨率与 SNR 是矛盾——波段越多每个波段光子越少；空间分辨率与波段数也受探测器像素总数限制。\n工程要点：选成像方式先看场景是否允许平台运动——静态场景用推扫或滤光片，高速动态场景必须快照式；不要用推扫式拍运动目标。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Govender et al., Journal of Hyperspectral Remote Sensing, 2017",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱成像公开综述（2008–2017）",
     "page_or_section": "综合：高光谱成像 / 数据立方与方式选择",
     "keywords_zh": "数据立方,推扫式,快照式,滤光片,空间分辨率,波段数",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -16,7 +16,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【光谱分辨率与波段数】\n定义：光谱分辨率指仪器能分辨的最小波长间隔 Δλ；分辨本领 R=λ/Δλ；波段数从窄带（几波段）到高光谱（几十到几百波段）再到超光谱（上千波段）。\n公式：Δλ 由光谱仪狭缝宽度、色散元件角色散和焦距决定；线色散 dl/dλ = f·dθ/dλ；狭缝宽度决定实际光谱分辨率。\n判据：地物分类通常 10–20 nm 分辨率足够；矿物识别需要 SWIR 吸收带附近 5–10 nm 分辨率；不要盲目追求高分辨率。\n边界：高光谱分辨率需要更窄狭缝——降低通光量和 SNR；波段数越多数据量越大，存储和处理成本上升。\n工程要点：先分析目标光谱特征的带宽，再反推所需 Δλ；先定应用需求再选参数，不要反过来——不是分辨率越高越好。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Fourier Transform Spectroscopy 相关教材；Chao et al., Applied Optics, 2008",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；傅里叶变换光谱学公开教材；高光谱成像公开综述",
     "page_or_section": "综合：光谱分辨率 / 分辨本领与波段选择",
     "keywords_zh": "光谱分辨率,分辨本领,波段数,狭缝宽度,线色散,信噪比",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -27,7 +27,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【smile 与 keystone】\n定义：Smile 是狭缝在像面上的弯曲——同一波长在视场两端的像点不在一条直线上，呈微笑状弯曲；Keystone 是不同波段间空间像素位置不对齐，像面在空间方向有梯形畸变。\n公式：Smile 通常用像素数表示（如 <0.1 pixel）；Keystone 用波段间的空间偏移量（pixel 或 %）；两者都源于光学系统像差和分光元件-成像透镜不匹配。\n判据：Smile 和 keystone 会导致光谱-空间配准误差，直接影响混合像元分解和分类精度；定标时用多波长光源在不同视场位置测量畸变曲线。\n边界：Smile 主要来自成像透镜的场曲和畸变；Keystone 来自分光后不同波段的放大率差异；校正精度取决于定标光源的波长精度和稳定性。\n工程要点：定标时逐视场位置逐波段测量 smile/keystone 曲线，再做像素级校正；校正残差要报告，不能假设一次校正就到位。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Nielsen, IEEE Transactions on Geoscience and Remote Sensing, 1998",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱成像公开综述（1998–2008）",
     "page_or_section": "综合：光谱仪畸变 / smile 与 keystone 校正",
     "keywords_zh": "smile,keystone,畸变,光谱配准,像场弯曲,定标",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -38,7 +38,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【辐射定标与大气校正】\n定义：辐射定标把探测器 DN 值转换成辐亮度；大气校正把大气层顶辐亮度转换成地表反射率，需要大气参数（气溶胶、水汽、能见度）。\n公式：定标链路——DN → 暗电流扣除 → 平场校正 → 线性化 → 辐亮度 L；大气辐射传输模型（6S/MODTRAN）模拟大气吸收和散射。\n判据：定标不确定度通常 3–5% 量级；大气校正误差是遥感定量反演的主要误差源；场地定标受大气变化影响。\n边界：暗目标法（浓密植被）在植被覆盖区较准；明亮区域大气校正不确定性大；大气校正模型需要匹配当地大气模式。\n工程要点：实验室定标做绝对辐亮度，现场用场地定标验证；选大气校正模型要匹配大气模式和观测几何，不要拿一个模型套所有场景。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Schott, Remote Sensing: The Image Chain Perspective, 2e；Kaufman et al., IEEE TGRS, 1997",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Schott《Remote Sensing: The Image Chain Perspective》2e",
     "page_or_section": "综合：辐射定标 / 大气校正链路",
     "keywords_zh": "辐射定标,大气校正,辐亮度,地表反射率,6S,MODTRAN",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -49,7 +49,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【降维与端元提取】\n定义：PCA（主成分分析）找最大方差方向降维；MNF（最小噪声分离）先对噪声白化再做 PCA；端元是数据中最纯的地物光谱（纯植被、纯土壤、纯水体）。\n公式：PCA 协方差矩阵特征值分解；MNF 按信噪比排序成分；端元提取方法包括 PPI（纯净像素指数）、N-FINDR、VCA（顶点成分分析）。\n判据：端元数等于数据中独立组分数；端元数太多引入噪声端元，太少遗漏组分；有效成分数取 MNF 特征值趋于噪声水平的位置。\n边界：PCA 不考虑噪声结构，方差大不代表信息量大；MNF 改善了这一点；端元提取受光照和地形阴影影响。\n工程要点：先做 MNF 降维取前几个有效成分；端元提取要结合地面真值验证——算法给出的端元不一定对应真实地物。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Green et al., IEEE Transactions on Geoscience and Remote Sensing, 1988；Nascimento & Dias, IEEE TGRS, 2005",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱解混公开综述（1988–2005）",
     "page_or_section": "综合：高光谱降维 / 端元提取",
     "keywords_zh": "PCA,MNF,端元提取,VCA,PPI,光谱解混",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -60,7 +60,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【分类与解混】\n定义：光谱角填图（SAM）计算像元光谱与端元光谱的夹角，夹角小则相似度高；线性光谱解混把像元光谱表示为各端元光谱的线性组合，求丰度。\n公式：线性解混 r = Σ(αᵢ·eᵢ) + ε，αᵢ 为第 i 个端元的丰度；约束 αᵢ≥0 且 Σαᵢ=1（丰度非负且和为 1）；SAM 夹角 cosθ = (r·e)/(||r||·||e||)。\n判据：线性解混在混合像元中组分独立、无多次散射时成立；非线性混合（多次散射、三级混合）需要非线性模型。\n边界：端元误差直接传递到分类/解混结果；光照和地形阴影影响光谱角；丰度残差检验（ε）用于判断模型是否合适。\n工程要点：先做大气校正和地形校正再分类；端元丰度图要做残差检验——残差大说明端元不全或混合非线性。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Keshava & Mustard, SIGCOMM, 2002；Heinz & Chang, IEEE TGRS, 2001",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Keshava & Mustard, Lincoln Laboratory Journal, 2002；Heinz & Chang, IEEE TGRS, 2001",
     "page_or_section": "综合：高光谱分类 / 线性解混与丰度",
     "keywords_zh": "光谱角,SAM,线性解混,丰度,端元,非线性混合",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -71,7 +71,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【系统 SNR 与曝光预算】\n定义：系统 SNR 由收集光子数、暗电流和读出噪声共同决定；曝光预算核算在给定场景下需要多长曝光时间才能达到目标 SNR。\n公式：SNR = N / √(N + N_dark + N_read²)，N 为收集到的光子数（电子数），N_dark 为暗电流电荷数，N_read 为读出噪声；散粒噪声极限 SNR≈√N。\n判据：低光强下读出噪声主导（SNR 受 N_read 限制）；高光强下散粒噪声主导（SNR≈√N）；Binning 像元合并提高 SNR 但降低空间分辨率。\n边界：高光谱每个波段光子数远小于全色，SNR 天然偏低；推扫式曝光时间受平台速度限制（运动模糊）；TDI（时间延迟积分）用于延长曝光等效时间。\n工程要点：先按目标辐亮度算光子预算，再决定曝光时间和 binning；高速运动场景用 TDI 或快照式，不要硬推扫导致模糊。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Fieten et al., IEEE Transactions on Nuclear Science, 2003；Janes et al., Applied Optics, 2014",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱仪器与定标公开综述（2003–2014）",
     "page_or_section": "综合：高光谱 SNR / 曝光与 binning",
     "keywords_zh": "SNR,光子预算,曝光时间,binning,读出噪声,TDI",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -82,7 +82,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【应用与前沿】\n定义：高光谱成像在农业（作物长势、氮素诊断、病虫害早期识别）、遥感（地质填图、矿物识别）、医学（肿瘤组织识别）等领域有应用；前沿方向包括快照式高光谱芯片、微型化集成和 AI 解译。\n公式：农业关注红边波段（700–750 nm）的植被指数变化；地质关注 SWIR 矿物吸收特征；波段选择要对准应用的诊断光谱特征。\n判据：应用驱动参数选择——不同应用需要的波段、分辨率、SNR 完全不同；不要用通用高光谱相机硬套所有场景。\n边界：实验室高光谱精度高但设备昂贵；微型化设备（手机集成、无人机载）光谱分辨率和 SNR 受限；AI 解译的可解释性是工程难点。\n工程要点：选波段先对准应用的诊断光谱特征；无人机载高光谱要同时考虑重量、功耗和数据传输；微型化方向要接受分辨率降级。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Govender et al., Journal of Hyperspectral Remote Sensing, 2017；Lu & Weng, Remote Sensing of Environment, 2007",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Lu & Weng, Remote Sensing of Environment, 2007",
     "page_or_section": "综合：高光谱应用 / 前沿方向",
     "keywords_zh": "农业遥感,地质填图,医学光谱,快照式,微型化,AI解译",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"

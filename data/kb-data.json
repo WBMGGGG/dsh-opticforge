@@ -2238,7 +2238,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【DOE 相位调制与标量理论边界】\n定义：衍射光学元件（DOE）通过在表面制作微结构，对入射光施加相位调制 φ(x,y)，使输出复振幅按需求分布；标量衍射理论把光场当作标量复振幅处理，忽略偏振与矢量耦合。\n公式：标量理论中 U(x,y)=A·exp(iφ)，透过元件后 U'=U·exp(iφ(x,y))，再由菲涅耳或夫琅禾费衍射传播到目标面；标量近似要求特征尺寸 a 与波长 λ 满足 a >> λ（经验上 a ≥ 5λ 时偏差较小）。\n判据：当微结构特征尺寸与波长可比或亚波长时，标量理论无法预测 TE/TM 效率差异、形状双折射与近场耦合，必须改用矢量电磁仿真（RCWA、FDTD）。\n边界：标量近似在闪耀光栅、透镜阵列等大特征尺寸 DOE 中精度足够；在超表面纳米柱、亚波长光栅等结构中失效。\n工程要点：DOE 设计先用标量衍射做初值迭代，再用矢量仿真抽样校核；直接拿标量结果投片，亚波长结构的实际效率可能与设计值差 10% 以上。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e；Kats & Capasso, Science, 2016",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e",
     "page_or_section": "综合：标量衍射 / 超表面边界",
     "keywords_zh": "DOE,标量衍射,相位调制,亚波长结构,矢量理论,标量近似",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2249,7 +2249,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【衍射效率与偏振依赖】\n定义：衍射效率指目标级次光功率占入射光功率的比例；偏振依赖指 TE 与 TM 偏振入射时效率不同。\n公式：理想两相相位阶（0/π）的一级效率 η = sinc²(1/2) ≈ 40.5%；N 位量化相位 DOE 的一级效率 η = sinc²(1/2^N)；连续相位（理想）效率可达接近 1。\n判据：标量效率公式在特征尺寸远大于 λ 时成立；当结构周期接近 λ 或亚波长时，TE/TM 效率差异显著，必须用矢量理论计算。\n边界：DOE 色散与折射元件相反——波长偏离设计波长时，衍射角变化方向与折射透镜相反，这一特性用于消色差组合；宽谱工作时效率随波长漂移。\n工程要点：多级量化 DOE 的刻蚀深度误差直接降低效率；偏振敏感场合要实测 TE/TM 两条曲线，不能只报一个标量值。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Born & Wolf《Principles of Optics》7e；Lalanne & Chavel, Adv. Opt. Photon., 2017",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Born & Wolf《Principles of Optics》7e",
     "page_or_section": "综合：衍射效率 / 偏振依赖",
     "keywords_zh": "衍射效率,偏振依赖,相位量化,闪耀光栅,TE-TM,色散",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2260,7 +2260,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超透镜相位与色散】\n定义：超透镜用纳米结构单元阵列提供所需的空间相位分布，替代传统透镜的曲面折射；每个单元通过形状、尺寸或取向控制局部相位。\n公式：聚焦透镜所需相位 φ(r) = -2π/λ·(√(r²+f²) - f)，其中 r 为径向位置、f 为焦距；单元需覆盖 0–2π 相位周期。\n判据：超透镜色差来源于两部分——单元相位响应随波长变化（材料色散）和相位梯度与波长的关系（几何色散）；宽带消色差需同时补偿这两项。\n边界：大 NA 超透镜边缘单元相位梯度极陡，单元间距需取 λ/2n 量级以避免高级次衍射；目前宽带大视场超透镜的像差校正仍未达到传统透镜水平。\n工程要点：超透镜色差与折射透镜符号相反，可与折射透镜组合消色差；设计时把相位和色散作为两个自由度联合优化，不要只做单波长设计。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Khorasaninejad & Capasso, Science, 2017；Lalanne et al., Science, 2019",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；超表面相位与色差公开综述（2016–2019）",
     "page_or_section": "综合：超透镜 / 相位分布与消色差",
     "keywords_zh": "超透镜,相位分布,消色差,色散,NA,纳米单元",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2271,7 +2271,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超表面单元与局部光栅近似】\n定义：超表面单元是纳米柱、纳米鳍或纳米盘等亚波长结构，通过改变尺寸/形状在不同位置提供不同相位；局部光栅近似（LWA）把每个局部位置当作无限周期阵列来计算单元响应。\n公式：周期边界条件下用 RCWA 求解单元的透射/反射相位与振幅；单元间距 p 需满足 p < λ/(n+NA) 以抑制高级次衍射。\n判据：LWA 在单元稀疏或相位梯度极大时误差增大——相邻单元间的近场耦合使实际相位偏离单元库插值结果；耦合效应随单元间距缩小而增强。\n边界：RCWA 假设严格周期结构，对非周期超透镜只是近似；当单元尺寸变化范围大时，单元库需要密扫尺寸以减少插值误差。\n工程要点：建库用 RCWA 扫尺寸曲线，设计时插值映射；最终必须用 FDTD 抽样关键位置（尤其是相位梯度大的边缘区域）验证耦合效应。",
-    "source": "公开教材综合：Lalanne & Chavel, Adv. Opt. Photon., 2017；Molesky et al., Nature Photonics, 2018；Saleh & Teich《Fundamentals of Photonics》2e",
+    "source": "公开综述综合：超表面逆设计公开综述（2017–2018）；Saleh & Teich《Fundamentals of Photonics》2e",
     "page_or_section": "综合：超表面单元 / 局部近似与耦合",
     "keywords_zh": "单元库,RCWA,局部光栅近似,近场耦合,相位梯度,纳米柱",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2282,7 +2282,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【纳米加工与材料】\n定义：超表面纳米结构的加工依赖光刻与刻蚀工艺；材料选择取决于工作波段的折射率与吸收特性。\n公式：要积累 2π 相位所需的材料厚度 d ≈ λ/(n-1)，n 为材料折射率；TiO₂（n≈2.4）可见光段需厚度约 λ/1.4，a-Si（n≈3.5）近红外段更薄。\n判据：常用材料——TiO₂ 可见光高透、高折射率；a-Si 在近红外（>800 nm）低吸收但可见光有吸收；Si 在红外工作；刻蚀深宽比决定纳米柱能否达到目标高度。\n边界：EBL（电子束光刻）适合小批量研发但速度慢；DUV 光刻与纳米压印（NIL）适合量产但设备投资大；刻蚀侧壁粗糙度会引入散射损耗。\n工程要点：设计前先确认工艺线的最小线宽与刻蚀深宽比极限；不要把关键尺寸卡在工艺极限上——留出版本公差，否则良率极低。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Khorasaninejad et al., Nano Letters, 2016；Aieta & Capasso, Nature Nanotechnology, 2014",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；可见光超透镜公开综述（2014–2016）",
     "page_or_section": "综合：超表面材料 / 纳米加工",
     "keywords_zh": "TiO2,a-Si,电子束光刻,刻蚀,深宽比,纳米压印",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2293,7 +2293,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超透镜仿真路径】\n定义：超透镜仿真分三层——标量衍射快速初值、RCWA 单元库建模、FDTD 全波验证，按精度需求分层使用。\n公式：系统级用标量传播（角谱法或菲涅耳积分）计算远场聚焦；单元级用 RCWA 扫描尺寸得到相位-振幅表；FDTD 用于局部全波验证。\n判据：单元数超过 10⁴ 时全 FDTD 不现实（计算量随单元数三次方增长）；必须分层策略——单元级 RCWA，系统级用等效边界条件或惠更斯子元法。\n边界：RCWA 假设周期结构，对非周期超透镜是近似；FDTD 边界条件（PML）的吸收效果直接影响仿真精度，反射边界会引入伪信号。\n工程要点：先标量快速迭代设计目标相位分布，再 RCWA 建库映射尺寸，最后 FDTD 抽样验证；不要一上来就全芯片 FDTD，否则一周出不了一个结果。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Lalanne & Chavel, Adv. Opt. Photon., 2017；Ong et al., Optics Express, 2018",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；超表面效率与公差公开综述",
     "page_or_section": "综合：超表面仿真 / 分层策略",
     "keywords_zh": "FDTD,RCWA,标量衍射,分层仿真,等效边界,惠更斯子元",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2304,7 +2304,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【衍射波导 AR 耦合】\n定义：衍射光波导通过表面光栅把自由空间光耦合进波导（入耦合），再通过光栅从波导耦合到人眼（出耦合），光在波导内靠全反射（TIR）传播。\n公式：TIR 条件 n·sinθ > n_air；光栅耦合方程 mλ = Λ·(n_eff - n_air·sinθ_in)，Λ 为光栅周期；FOV 受限于波导折射率与光栅耦合范围。\n判据：出耦合光栅效率随光在波导中传播距离递减，需用变占空比或变周期光栅补偿均匀性；一维光栅只扩张一个方向，二维或正交光栅实现二维出瞳扩张。\n边界：衍射效率受偏振影响大（TE/TM 不对称）；多级次衍射产生彩虹色散（彩色边缘）；波导厚度与折射率决定 FOV 上限。\n工程要点：入/出耦合光栅需同时优化耦合效率和视场均匀性；均匀性靠光栅沿传播方向渐变设计实现，不要指望单一周期光栅做到全视场均匀。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；Cataldo et al., Optics Express, 2018",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；超表面色散工程公开综述",
     "page_or_section": "综合：衍射波导 / 入出耦合与扩张",
     "keywords_zh": "衍射波导,光栅耦合,TIR,出瞳扩张,AR,均匀性",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2315,7 +2315,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【可调超表面与主动光学】\n定义：可调超表面通过电、热、光或机械方式实时改变单元相位响应，实现动态变焦、光束扫描或像差校正。\n公式：调谐范围用相位变化量 Δφ 表示；要实现变焦需相位分布整体偏移 Δφ(r) = 2π·(1/λ)·(√(r²+f₁²)-√(r²+f₂²))；调谐速度由材料响应时间决定。\n判据：主流机制——液晶（ms 级，可见光成熟）、相变材料 GST/VO₂（ns 级材料相变但效率低）、MEMS（μs 级但结构复杂）；调谐范围与插入损耗是矛盾关系。\n边界：调谐范围宽的材料通常吸收也大；像素数多了驱动 IC 布线与功耗急剧上升；相变材料的循环寿命是工程瓶颈。\n工程要点：选材料先看工作波段的吸收损耗；液晶速度慢但效率高，适合静态变焦；MEMS 适合高速扫描但良率低；驱动电路集成是量产关键。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Shaltout et al., Nature, 2019；Cui et al., Nature Communications, 2020",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；超表面多维调控公开综述（2019–2020）",
     "page_or_section": "综合：可调超表面 / 主动光学机制",
     "keywords_zh": "可调超表面,相变材料,液晶,MEMS,变焦,光束扫描",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2359,7 +2359,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【硅光平台与材料】\n定义：硅光集成在同一芯片上集成波导、调制器、探测器等器件；主流平台包括 SOI（绝缘体上硅）、SiN（氮化硅）和 InP（磷化铟）。\n公式：SOI 芯层 Si 折射率 n≈3.48，包层 SiO₂ n≈1.44，高折射率差允许波导弯曲半径小至几微米；SiN n≈2.0，色散低、可见光透明。\n判据：SOI 在 1550 nm 通信窗口低损耗且 CMOS 兼容；SiN 适合可见光到近红外、生物传感；InP 是有源平台（可集成激光器）。\n边界：Si 本身不发光，需异质集成 InP 激光器；Si 在可见光段有双光子吸收和自由载流子吸收；高折射率差虽然允许小尺寸但对工艺偏差极敏感。\n工程要点：选平台先看工作波段——1550 nm 通信选 SOI，可见光/生物选 SiN，需要片上光源选 InP；工艺线最小线宽直接决定波导损耗和弯曲半径。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；硅光子集成公开综述；Agrawal《Fiber-Optic Communication Systems》4e",
     "page_or_section": "综合：硅光平台 / 材料与工艺约束",
     "keywords_zh": "SOI,SiN,InP,硅光,折射率差,CMOS兼容",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2403,7 +2403,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【共封装与集成趋势】\n定义：共封装光学（CPO）把光引擎与交换芯片封装在一起，缩短电互连距离以降低功耗；光电融合指硅光集成把调制器、波导、探测器集成在同一芯片上。\n公式：电互连功耗随带宽增长近似线性或超线性上升；光互连单位带宽功耗更低；CPO 的核心驱动是电 I/O 功耗墙。\n判据：CPO 目前主要面向数据中心高密度交换机；可维护性差——光引擎坏了整板更换，不像可插拔光模块那样现场更换。\n边界：CPO 设计瓶颈在光纤阵列耦合对准、热管理（光引擎与芯片共热）、电-光接口密度；良率与成本是量产主要障碍。\n工程要点：CPO 设计先做光电协同仿真；光纤阵列耦合是封装良率的关键——对准精度要求亚微米级，贴片设备精度直接决定良率。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；硅光子集成公开综述；Agrawal《Fiber-Optic Communication Systems》4e",
     "page_or_section": "综合：共封装光学 / 光电集成趋势",
     "keywords_zh": "CPO,硅光集成,光电融合,光引擎,光纤阵列,封装",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2436,7 +2436,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【纠缠与贝尔测试】\n定义：纠缠态是两个或多个粒子的量子态不能分解为各自独立态的直积；Bell 态 |Φ⁺⟩=(|00⟩+|11⟩)/√2 是典型纠缠态，测量结果关联且不能用局域隐变量解释。\n公式：CHSH 不等式——局域实在论要求 |S|≤2，量子力学预言最大值 2√2；实验测得 S>2 即违反 CHSH。\n判据：无漏洞贝尔实验需同时关闭定域性漏洞（测量距离足够远）和探测漏洞（探测效率足够高）；SPDC 是产生纠缠光子对的常用方法。\n边界：贝尔测试排除了局域隐变量理论，但纠缠分发距离随信道损耗指数衰减；自由空间纠缠分发受大气湍流影响。\n工程要点：Bell 基测量用分束器+单光子探测器做符合计数；纠缠光子对的收集效率和符合计数率是实验关键指标。",
-    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Aspect, Aspect & Roger, PRL, 1982",
+    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Aspect, Dalibard & Roger, PRL, 1982",
     "page_or_section": "综合：量子纠缠 / CHSH 与实验漏洞",
     "keywords_zh": "纠缠态,CHSH,贝尔不等式,SPDC,定域性漏洞,探测漏洞",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2491,7 +2491,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【数据立方与成像方式】\n定义：高光谱数据立方是 x-y-λ 三维数据——每个空间像素对应一条完整光谱；成像方式分为推扫式、滤光片型和快照式三类。\n公式：推扫式沿飞行方向逐行获取空间线+光谱维；快照式单次曝光获取完整数据立方；空间分辨率与波段数受探测器总像素数约束（像素数 ≈ 空间像素数 × 波段数）。\n判据：推扫式空间分辨率高但需要运动平台；滤光片型逐波段获取时间长；快照式快但光谱或空间分辨率受限。\n边界：光谱分辨率与 SNR 是矛盾——波段越多每个波段光子越少；空间分辨率与波段数也受探测器像素总数限制。\n工程要点：选成像方式先看场景是否允许平台运动——静态场景用推扫或滤光片，高速动态场景必须快照式；不要用推扫式拍运动目标。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Govender et al., Journal of Hyperspectral Remote Sensing, 2017",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱成像公开综述（2008–2017）",
     "page_or_section": "综合：高光谱成像 / 数据立方与方式选择",
     "keywords_zh": "数据立方,推扫式,快照式,滤光片,空间分辨率,波段数",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2502,7 +2502,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【光谱分辨率与波段数】\n定义：光谱分辨率指仪器能分辨的最小波长间隔 Δλ；分辨本领 R=λ/Δλ；波段数从窄带（几波段）到高光谱（几十到几百波段）再到超光谱（上千波段）。\n公式：Δλ 由光谱仪狭缝宽度、色散元件角色散和焦距决定；线色散 dl/dλ = f·dθ/dλ；狭缝宽度决定实际光谱分辨率。\n判据：地物分类通常 10–20 nm 分辨率足够；矿物识别需要 SWIR 吸收带附近 5–10 nm 分辨率；不要盲目追求高分辨率。\n边界：高光谱分辨率需要更窄狭缝——降低通光量和 SNR；波段数越多数据量越大，存储和处理成本上升。\n工程要点：先分析目标光谱特征的带宽，再反推所需 Δλ；先定应用需求再选参数，不要反过来——不是分辨率越高越好。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Fourier Transform Spectroscopy 相关教材；Chao et al., Applied Optics, 2008",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；傅里叶变换光谱学公开教材；高光谱成像公开综述",
     "page_or_section": "综合：光谱分辨率 / 分辨本领与波段选择",
     "keywords_zh": "光谱分辨率,分辨本领,波段数,狭缝宽度,线色散,信噪比",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2513,7 +2513,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【smile 与 keystone】\n定义：Smile 是狭缝在像面上的弯曲——同一波长在视场两端的像点不在一条直线上，呈微笑状弯曲；Keystone 是不同波段间空间像素位置不对齐，像面在空间方向有梯形畸变。\n公式：Smile 通常用像素数表示（如 <0.1 pixel）；Keystone 用波段间的空间偏移量（pixel 或 %）；两者都源于光学系统像差和分光元件-成像透镜不匹配。\n判据：Smile 和 keystone 会导致光谱-空间配准误差，直接影响混合像元分解和分类精度；定标时用多波长光源在不同视场位置测量畸变曲线。\n边界：Smile 主要来自成像透镜的场曲和畸变；Keystone 来自分光后不同波段的放大率差异；校正精度取决于定标光源的波长精度和稳定性。\n工程要点：定标时逐视场位置逐波段测量 smile/keystone 曲线，再做像素级校正；校正残差要报告，不能假设一次校正就到位。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Nielsen, IEEE Transactions on Geoscience and Remote Sensing, 1998",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱成像公开综述（1998–2008）",
     "page_or_section": "综合：光谱仪畸变 / smile 与 keystone 校正",
     "keywords_zh": "smile,keystone,畸变,光谱配准,像场弯曲,定标",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2524,7 +2524,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【辐射定标与大气校正】\n定义：辐射定标把探测器 DN 值转换成辐亮度；大气校正把大气层顶辐亮度转换成地表反射率，需要大气参数（气溶胶、水汽、能见度）。\n公式：定标链路——DN → 暗电流扣除 → 平场校正 → 线性化 → 辐亮度 L；大气辐射传输模型（6S/MODTRAN）模拟大气吸收和散射。\n判据：定标不确定度通常 3–5% 量级；大气校正误差是遥感定量反演的主要误差源；场地定标受大气变化影响。\n边界：暗目标法（浓密植被）在植被覆盖区较准；明亮区域大气校正不确定性大；大气校正模型需要匹配当地大气模式。\n工程要点：实验室定标做绝对辐亮度，现场用场地定标验证；选大气校正模型要匹配大气模式和观测几何，不要拿一个模型套所有场景。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Schott, Remote Sensing: The Image Chain Perspective, 2e；Kaufman et al., IEEE TGRS, 1997",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Schott《Remote Sensing: The Image Chain Perspective》2e",
     "page_or_section": "综合：辐射定标 / 大气校正链路",
     "keywords_zh": "辐射定标,大气校正,辐亮度,地表反射率,6S,MODTRAN",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2535,7 +2535,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【降维与端元提取】\n定义：PCA（主成分分析）找最大方差方向降维；MNF（最小噪声分离）先对噪声白化再做 PCA；端元是数据中最纯的地物光谱（纯植被、纯土壤、纯水体）。\n公式：PCA 协方差矩阵特征值分解；MNF 按信噪比排序成分；端元提取方法包括 PPI（纯净像素指数）、N-FINDR、VCA（顶点成分分析）。\n判据：端元数等于数据中独立组分数；端元数太多引入噪声端元，太少遗漏组分；有效成分数取 MNF 特征值趋于噪声水平的位置。\n边界：PCA 不考虑噪声结构，方差大不代表信息量大；MNF 改善了这一点；端元提取受光照和地形阴影影响。\n工程要点：先做 MNF 降维取前几个有效成分；端元提取要结合地面真值验证——算法给出的端元不一定对应真实地物。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Green et al., IEEE Transactions on Geoscience and Remote Sensing, 1988；Nascimento & Dias, IEEE TGRS, 2005",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱解混公开综述（1988–2005）",
     "page_or_section": "综合：高光谱降维 / 端元提取",
     "keywords_zh": "PCA,MNF,端元提取,VCA,PPI,光谱解混",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2546,7 +2546,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【分类与解混】\n定义：光谱角填图（SAM）计算像元光谱与端元光谱的夹角，夹角小则相似度高；线性光谱解混把像元光谱表示为各端元光谱的线性组合，求丰度。\n公式：线性解混 r = Σ(αᵢ·eᵢ) + ε，αᵢ 为第 i 个端元的丰度；约束 αᵢ≥0 且 Σαᵢ=1（丰度非负且和为 1）；SAM 夹角 cosθ = (r·e)/(||r||·||e||)。\n判据：线性解混在混合像元中组分独立、无多次散射时成立；非线性混合（多次散射、三级混合）需要非线性模型。\n边界：端元误差直接传递到分类/解混结果；光照和地形阴影影响光谱角；丰度残差检验（ε）用于判断模型是否合适。\n工程要点：先做大气校正和地形校正再分类；端元丰度图要做残差检验——残差大说明端元不全或混合非线性。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Keshava & Mustard, SIGCOMM, 2002；Heinz & Chang, IEEE TGRS, 2001",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Keshava & Mustard, Lincoln Laboratory Journal, 2002；Heinz & Chang, IEEE TGRS, 2001",
     "page_or_section": "综合：高光谱分类 / 线性解混与丰度",
     "keywords_zh": "光谱角,SAM,线性解混,丰度,端元,非线性混合",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2557,7 +2557,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【系统 SNR 与曝光预算】\n定义：系统 SNR 由收集光子数、暗电流和读出噪声共同决定；曝光预算核算在给定场景下需要多长曝光时间才能达到目标 SNR。\n公式：SNR = N / √(N + N_dark + N_read²)，N 为收集到的光子数（电子数），N_dark 为暗电流电荷数，N_read 为读出噪声；散粒噪声极限 SNR≈√N。\n判据：低光强下读出噪声主导（SNR 受 N_read 限制）；高光强下散粒噪声主导（SNR≈√N）；Binning 像元合并提高 SNR 但降低空间分辨率。\n边界：高光谱每个波段光子数远小于全色，SNR 天然偏低；推扫式曝光时间受平台速度限制（运动模糊）；TDI（时间延迟积分）用于延长曝光等效时间。\n工程要点：先按目标辐亮度算光子预算，再决定曝光时间和 binning；高速运动场景用 TDI 或快照式，不要硬推扫导致模糊。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Fieten et al., IEEE Transactions on Nuclear Science, 2003；Janes et al., Applied Optics, 2014",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱仪器与定标公开综述（2003–2014）",
     "page_or_section": "综合：高光谱 SNR / 曝光与 binning",
     "keywords_zh": "SNR,光子预算,曝光时间,binning,读出噪声,TDI",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -2568,7 +2568,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【应用与前沿】\n定义：高光谱成像在农业（作物长势、氮素诊断、病虫害早期识别）、遥感（地质填图、矿物识别）、医学（肿瘤组织识别）等领域有应用；前沿方向包括快照式高光谱芯片、微型化集成和 AI 解译。\n公式：农业关注红边波段（700–750 nm）的植被指数变化；地质关注 SWIR 矿物吸收特征；波段选择要对准应用的诊断光谱特征。\n判据：应用驱动参数选择——不同应用需要的波段、分辨率、SNR 完全不同；不要用通用高光谱相机硬套所有场景。\n边界：实验室高光谱精度高但设备昂贵；微型化设备（手机集成、无人机载）光谱分辨率和 SNR 受限；AI 解译的可解释性是工程难点。\n工程要点：选波段先对准应用的诊断光谱特征；无人机载高光谱要同时考虑重量、功耗和数据传输；微型化方向要接受分辨率降级。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Govender et al., Journal of Hyperspectral Remote Sensing, 2017；Lu & Weng, Remote Sensing of Environment, 2007",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Lu & Weng, Remote Sensing of Environment, 2007",
     "page_or_section": "综合：高光谱应用 / 前沿方向",
     "keywords_zh": "农业遥感,地质填图,医学光谱,快照式,微型化,AI解译",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"

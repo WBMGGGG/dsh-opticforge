@@ -5,7 +5,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【DOE 相位调制与标量理论边界】\n定义：衍射光学元件（DOE）通过在表面制作微结构，对入射光施加相位调制 φ(x,y)，使输出复振幅按需求分布；标量衍射理论把光场当作标量复振幅处理，忽略偏振与矢量耦合。\n公式：标量理论中 U(x,y)=A·exp(iφ)，透过元件后 U'=U·exp(iφ(x,y))，再由菲涅耳或夫琅禾费衍射传播到目标面；标量近似要求特征尺寸 a 与波长 λ 满足 a >> λ（经验上 a ≥ 5λ 时偏差较小）。\n判据：当微结构特征尺寸与波长可比或亚波长时，标量理论无法预测 TE/TM 效率差异、形状双折射与近场耦合，必须改用矢量电磁仿真（RCWA、FDTD）。\n边界：标量近似在闪耀光栅、透镜阵列等大特征尺寸 DOE 中精度足够；在超表面纳米柱、亚波长光栅等结构中失效。\n工程要点：DOE 设计先用标量衍射做初值迭代，再用矢量仿真抽样校核；直接拿标量结果投片，亚波长结构的实际效率可能与设计值差 10% 以上。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e；Kats & Capasso, Science, 2016",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e",
     "page_or_section": "综合：标量衍射 / 超表面边界",
     "keywords_zh": "DOE,标量衍射,相位调制,亚波长结构,矢量理论,标量近似",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -16,7 +16,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【衍射效率与偏振依赖】\n定义：衍射效率指目标级次光功率占入射光功率的比例；偏振依赖指 TE 与 TM 偏振入射时效率不同。\n公式：理想两相相位阶（0/π）的一级效率 η = sinc²(1/2) ≈ 40.5%；N 位量化相位 DOE 的一级效率 η = sinc²(1/2^N)；连续相位（理想）效率可达接近 1。\n判据：标量效率公式在特征尺寸远大于 λ 时成立；当结构周期接近 λ 或亚波长时，TE/TM 效率差异显著，必须用矢量理论计算。\n边界：DOE 色散与折射元件相反——波长偏离设计波长时，衍射角变化方向与折射透镜相反，这一特性用于消色差组合；宽谱工作时效率随波长漂移。\n工程要点：多级量化 DOE 的刻蚀深度误差直接降低效率；偏振敏感场合要实测 TE/TM 两条曲线，不能只报一个标量值。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Born & Wolf《Principles of Optics》7e；Lalanne & Chavel, Adv. Opt. Photon., 2017",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Born & Wolf《Principles of Optics》7e",
     "page_or_section": "综合：衍射效率 / 偏振依赖",
     "keywords_zh": "衍射效率,偏振依赖,相位量化,闪耀光栅,TE-TM,色散",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -27,7 +27,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超透镜相位与色散】\n定义：超透镜用纳米结构单元阵列提供所需的空间相位分布，替代传统透镜的曲面折射；每个单元通过形状、尺寸或取向控制局部相位。\n公式：聚焦透镜所需相位 φ(r) = -2π/λ·(√(r²+f²) - f)，其中 r 为径向位置、f 为焦距；单元需覆盖 0–2π 相位周期。\n判据：超透镜色差来源于两部分——单元相位响应随波长变化（材料色散）和相位梯度与波长的关系（几何色散）；宽带消色差需同时补偿这两项。\n边界：大 NA 超透镜边缘单元相位梯度极陡，单元间距需取 λ/2n 量级以避免高级次衍射；目前宽带大视场超透镜的像差校正仍未达到传统透镜水平。\n工程要点：超透镜色差与折射透镜符号相反，可与折射透镜组合消色差；设计时把相位和色散作为两个自由度联合优化，不要只做单波长设计。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Khorasaninejad & Capasso, Science, 2017；Lalanne et al., Science, 2019",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；超表面相位与色差公开综述（2016–2019）",
     "page_or_section": "综合：超透镜 / 相位分布与消色差",
     "keywords_zh": "超透镜,相位分布,消色差,色散,NA,纳米单元",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -38,7 +38,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超表面单元与局部光栅近似】\n定义：超表面单元是纳米柱、纳米鳍或纳米盘等亚波长结构，通过改变尺寸/形状在不同位置提供不同相位；局部光栅近似（LWA）把每个局部位置当作无限周期阵列来计算单元响应。\n公式：周期边界条件下用 RCWA 求解单元的透射/反射相位与振幅；单元间距 p 需满足 p < λ/(n+NA) 以抑制高级次衍射。\n判据：LWA 在单元稀疏或相位梯度极大时误差增大——相邻单元间的近场耦合使实际相位偏离单元库插值结果；耦合效应随单元间距缩小而增强。\n边界：RCWA 假设严格周期结构，对非周期超透镜只是近似；当单元尺寸变化范围大时，单元库需要密扫尺寸以减少插值误差。\n工程要点：建库用 RCWA 扫尺寸曲线，设计时插值映射；最终必须用 FDTD 抽样关键位置（尤其是相位梯度大的边缘区域）验证耦合效应。",
-    "source": "公开教材综合：Lalanne & Chavel, Adv. Opt. Photon., 2017；Molesky et al., Nature Photonics, 2018；Saleh & Teich《Fundamentals of Photonics》2e",
+    "source": "公开综述综合：超表面逆设计公开综述（2017–2018）；Saleh & Teich《Fundamentals of Photonics》2e",
     "page_or_section": "综合：超表面单元 / 局部近似与耦合",
     "keywords_zh": "单元库,RCWA,局部光栅近似,近场耦合,相位梯度,纳米柱",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -49,7 +49,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【纳米加工与材料】\n定义：超表面纳米结构的加工依赖光刻与刻蚀工艺；材料选择取决于工作波段的折射率与吸收特性。\n公式：要积累 2π 相位所需的材料厚度 d ≈ λ/(n-1)，n 为材料折射率；TiO₂（n≈2.4）可见光段需厚度约 λ/1.4，a-Si（n≈3.5）近红外段更薄。\n判据：常用材料——TiO₂ 可见光高透、高折射率；a-Si 在近红外（>800 nm）低吸收但可见光有吸收；Si 在红外工作；刻蚀深宽比决定纳米柱能否达到目标高度。\n边界：EBL（电子束光刻）适合小批量研发但速度慢；DUV 光刻与纳米压印（NIL）适合量产但设备投资大；刻蚀侧壁粗糙度会引入散射损耗。\n工程要点：设计前先确认工艺线的最小线宽与刻蚀深宽比极限；不要把关键尺寸卡在工艺极限上——留出版本公差，否则良率极低。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Khorasaninejad et al., Nano Letters, 2016；Aieta & Capasso, Nature Nanotechnology, 2014",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；可见光超透镜公开综述（2014–2016）",
     "page_or_section": "综合：超表面材料 / 纳米加工",
     "keywords_zh": "TiO2,a-Si,电子束光刻,刻蚀,深宽比,纳米压印",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -60,7 +60,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【超透镜仿真路径】\n定义：超透镜仿真分三层——标量衍射快速初值、RCWA 单元库建模、FDTD 全波验证，按精度需求分层使用。\n公式：系统级用标量传播（角谱法或菲涅耳积分）计算远场聚焦；单元级用 RCWA 扫描尺寸得到相位-振幅表；FDTD 用于局部全波验证。\n判据：单元数超过 10⁴ 时全 FDTD 不现实（计算量随单元数三次方增长）；必须分层策略——单元级 RCWA，系统级用等效边界条件或惠更斯子元法。\n边界：RCWA 假设周期结构，对非周期超透镜是近似；FDTD 边界条件（PML）的吸收效果直接影响仿真精度，反射边界会引入伪信号。\n工程要点：先标量快速迭代设计目标相位分布，再 RCWA 建库映射尺寸，最后 FDTD 抽样验证；不要一上来就全芯片 FDTD，否则一周出不了一个结果。",
-    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Lalanne & Chavel, Adv. Opt. Photon., 2017；Ong et al., Optics Express, 2018",
+    "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；超表面效率与公差公开综述",
     "page_or_section": "综合：超表面仿真 / 分层策略",
     "keywords_zh": "FDTD,RCWA,标量衍射,分层仿真,等效边界,惠更斯子元",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -71,7 +71,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【衍射波导 AR 耦合】\n定义：衍射光波导通过表面光栅把自由空间光耦合进波导（入耦合），再通过光栅从波导耦合到人眼（出耦合），光在波导内靠全反射（TIR）传播。\n公式：TIR 条件 n·sinθ > n_air；光栅耦合方程 mλ = Λ·(n_eff - n_air·sinθ_in)，Λ 为光栅周期；FOV 受限于波导折射率与光栅耦合范围。\n判据：出耦合光栅效率随光在波导中传播距离递减，需用变占空比或变周期光栅补偿均匀性；一维光栅只扩张一个方向，二维或正交光栅实现二维出瞳扩张。\n边界：衍射效率受偏振影响大（TE/TM 不对称）；多级次衍射产生彩虹色散（彩色边缘）；波导厚度与折射率决定 FOV 上限。\n工程要点：入/出耦合光栅需同时优化耦合效率和视场均匀性；均匀性靠光栅沿传播方向渐变设计实现，不要指望单一周期光栅做到全视场均匀。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；Cataldo et al., Optics Express, 2018",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；超表面色散工程公开综述",
     "page_or_section": "综合：衍射波导 / 入出耦合与扩张",
     "keywords_zh": "衍射波导,光栅耦合,TIR,出瞳扩张,AR,均匀性",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -82,7 +82,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【可调超表面与主动光学】\n定义：可调超表面通过电、热、光或机械方式实时改变单元相位响应，实现动态变焦、光束扫描或像差校正。\n公式：调谐范围用相位变化量 Δφ 表示；要实现变焦需相位分布整体偏移 Δφ(r) = 2π·(1/λ)·(√(r²+f₁²)-√(r²+f₂²))；调谐速度由材料响应时间决定。\n判据：主流机制——液晶（ms 级，可见光成熟）、相变材料 GST/VO₂（ns 级材料相变但效率低）、MEMS（μs 级但结构复杂）；调谐范围与插入损耗是矛盾关系。\n边界：调谐范围宽的材料通常吸收也大；像素数多了驱动 IC 布线与功耗急剧上升；相变材料的循环寿命是工程瓶颈。\n工程要点：选材料先看工作波段的吸收损耗；液晶速度慢但效率高，适合静态变焦；MEMS 适合高速扫描但良率低；驱动电路集成是量产关键。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Shaltout et al., Nature, 2019；Cui et al., Nature Communications, 2020",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；超表面多维调控公开综述（2019–2020）",
     "page_or_section": "综合：可调超表面 / 主动光学机制",
     "keywords_zh": "可调超表面,相变材料,液晶,MEMS,变焦,光束扫描",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
