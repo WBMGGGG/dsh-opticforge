@@ -4,32 +4,34 @@
 
 | 命令 | 内容 | 用时 |
 |---|---|---|
-| `node test/run.mjs` | 25 个集成用例（node:test） | 约 1 秒 |
-| `node scripts/verify-all.mjs` | 29 项发布前验收 | 约 5 秒（含 npm pack） |
+| `node test/run.mjs` | 集成用例（node:test） | 约 1 秒 |
+| `node scripts/verify-all.mjs` | 28 项发布前验收 | 约 5 秒（含 npm pack） |
 
 CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑这两套。
 
 ---
 
-## 集成测试的六组
+## 集成测试的分组
 
 **A. 注册契约**
-插件可加载，`apply/inject/name` 正确，恰好注册 4 个工具；每个工具 `parameters` 是标准 JSON Schema（根 `type=object`、`required` 名字都在 `properties` 里、不残留内部 DSL 的 `required` 布尔位），`output.schema` 与 `output.render` 齐备且可调用。
+
+插件可加载，`apply/inject/name` 正确，恰好注册 3 个工具（docs / search / get）；每个工具 `parameters` 是标准 JSON Schema（根 `type=object`、`required` 名字都在 `properties` 里、不残留内部 DSL 的 `required` 布尔位），`output.schema` 与 `output.render` 齐备且可调用。
 
 **B. 数据统计**
-67 块 / 51 present；9 个字段齐全；`chunk_id` 唯一；`status` 只取三种值。
+
+264 块 / 248 present；A–E 九个板块的块数不漂移；F/G/H 三个系列分别为 83 / 53 / 61；板块总数 34；`missing_source` 11、`substitute` 5；9 个字段齐全；`chunk_id` 唯一。
 
 **C. 检索端到端**
-命中 A01/C02、`doc_filter` 生效、`top_k` 上限、0 覆盖主题短路、有依据的查询不被误判为空白、分页不重不漏、同一板块条数受限、三个工具共享 `ok/kb_version/action` 信封。
 
-**D. 计算器**
-5 个类型逐一核对验收值（706.3158 nm / 0.4469 nm / IFS2402-1.5 / 0.6164 µm / 353.1579 nm），非法参数返回 `ok:false` 且不抛，`calculate()` 直接调用同样不抛。
+命中 A01/C02；`doc_filter` 生效；`top_k` 上限；0 覆盖主题（太赫兹、空间光学）短路；有依据的查询不被误判为空白；分页不重不漏；同板块条数受限；三个工具共享 `ok/kb_version/action` 信封；非 present 块从不进入检索结果。
+
+**D. 目录与取用**
+
+`opticforge_docs` 列出 34 个板块与逐块标题；`doc_id` 大小写不敏感、未知板块干净报错；`opticforge_get` 返回 9 字段完整条目、不存在时回 `ok:false` 与已知前缀；缺口块带 `note` 且明确"不可当作事实依据"；编译型板块能被检索命中（F01/F02）。
 
 **E. 产物一致性**
-`data/kb-data.json` 必须等于 `data/kb/*.json` 的合并结果；`kb-meta.json` 的 `content_sha256` 必须与数据实际内容匹配；`total_chunks` / `present_chunks` 对得上；空白词表与覆盖锚点非空。
 
-**F. 版本一致**
-`package.json` 版本 == `kb-meta.kb_version`。
+`data/kb-data.json` 必须等于 `data/kb/*.json` 的合并结果；`kb-meta.json` 的 `content_sha256` 必须与数据实际内容匹配；`total_chunks` / `present_chunks` 对得上；空白词表与覆盖锚点非空。
 
 ---
 
@@ -40,7 +42,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 - **C 产物一致**：跑 `build-kb.mjs --check`
 - **D 集成测试**：跑 `test/run.mjs`，必须是全绿
 - **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/`、`data/kb-data.json`、`data/kb-meta.json`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
-- **F 版本一致**
+- **F 版本一致**：`package.json` 与 `kb-meta.kb_version` 相同
 
 任一项失败即退出码 1，不做"警告后继续"。
 
@@ -50,14 +52,14 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 插件走原生 JSON Schema 注册，不 import 任何 `@deepseek-ai` 包。因此测试不需要从 `app.asar` 抽取 `dsh-tools` 依赖闭包，也不需要模拟 Electron 的 asar 读取。
 
-代价是参数校验必须自己做——`lib/index.js` 的 `validateArgs` 负责，D6b 用例专门验证它拦得住未知 `type`。
+代价是参数校验必须自己做——`lib/index.js` 的 `validateArgs` 负责。
 
 ---
 
 ## 手工抽查
 
 ```bash
-node scripts/build-kb.mjs --doc A02    # 单板块校验
+node scripts/build-kb.mjs --doc F02    # 单板块校验
 node scripts/build-kb.mjs --check      # 产物一致性
 node scripts/verify-all.mjs            # 发布门禁
 ```

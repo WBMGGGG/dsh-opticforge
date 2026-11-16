@@ -1,8 +1,6 @@
 # 工具用法
 
-四个工具：`opticforge_docs`、`opticforge_search`、`opticforge_get`、`opticforge_calc`。
-
-前三个读写知识库，共用一个输出信封；`opticforge_calc` 保持计算契约。
+三个工具：`opticforge_docs`、`opticforge_search`、`opticforge_get`。都读写同一份本地知识库，共用一个输出信封。
 
 ---
 
@@ -13,7 +11,6 @@
 知道要查什么       → opticforge_search
 拿到 chunk_id 后
 想看完整正文/核对数字 → opticforge_get
-要算一个数          → opticforge_calc
 ```
 
 顺序建议：**docs → search → get**。先看目录能避免用错词检索，get 能避免凭 400 字摘录猜细节。
@@ -22,19 +19,17 @@
 
 ## 统一信封
 
-三个知识库工具都返回：
-
 ```json
 {
   "ok": true,
-  "kb_version": "0.1.0",
+  "kb_version": "0.2.0",
   "action": "search",
   "...": "各工具自己的字段"
 }
 ```
 
 - `ok`：这次调用成功与否，失败时给 `error` 与 `hint`
-- `kb_version`：当前数据版本，用于判断是否用上了最新知识库
+- `kb_version`：当前数据版本，判断是否用上了最新知识库
 - `action`：`docs` / `search` / `get`
 
 ---
@@ -47,15 +42,21 @@
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `doc_id` | string | 否 | 只看某个板块（`A01`/`C02`…），省略则列全部 |
+| `doc_id` | string | 否 | 只看某个板块（`A01`/`F02`/`H03`…），省略则列全部 34 个 |
 
 **返回**：每个板块的 `doc_id`、`source`、`chunks`、`present`，以及 `items[]`（`chunk_id` / `status` / `title`）。
 
 ```json
-{ "ok": true, "action": "docs", "kb_version": "0.1.0", "total_docs": 9, "docs": [
+{ "ok": true, "action": "docs", "kb_version": "0.2.0", "total_docs": 34, "docs": [
   { "doc_id": "A01", "source": "confocalDT ...", "chunks": 13, "present": 12,
-    "items": [ { "chunk_id": "A01-01", "status": "present", "title": "共焦色散测距原理" } ] }
+    "items": [ { "chunk_id": "A01-01", "status": "present", "title": "共焦色散位移传感器原理" } ] }
 ]}
+```
+
+板块不存在的处理：
+
+```json
+{ "ok": false, "error": "没有该板块", "available": ["A01","A02",...] }
 ```
 
 ---
@@ -103,7 +104,7 @@ query="光栅 衍射 效率", top_k=5
   "guidance": "该主题在知识库中没有覆盖，返回空是正确行为；不要用通用常识替代知识库依据。" }
 ```
 
-知识库明确不覆盖量子光学、COMSOL、SolidWorks、热光学等主题，此时空结果就是正确答案。
+光刻工艺、空间光学、太赫兹、X 射线等主题本库明确不覆盖，此时空结果就是正确答案。
 
 ---
 
@@ -115,7 +116,7 @@ query="光栅 衍射 效率", top_k=5
 
 | 参数 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `chunk_id` | string | 是 | 形如 `A01-02`，从 search 或 docs 里取 |
+| `chunk_id` | string | 是 | 形如 `F02-04`，从 search 或 docs 里取；大小写不敏感 |
 
 **返回**：`ok`、`kb_version`、`action`，以及 `doc_id` / `status` / `text` / `source` / `page_or_section` / `keywords_zh` / `disclaimer` / `is_original_excerpt`。
 
@@ -130,65 +131,28 @@ query="光栅 衍射 效率", top_k=5
 
 ---
 
-## opticforge_calc
-
-5 类工程计算，输出完整过程：`formula`（符号）→ `substitution`（代入）→ `steps`（分步）→ `result`（含单位）→ `notes`（边界与陷阱）→ `source`。
-
-**参数**
-
-| 参数 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| `type` | string | 是 | 五个枚举之一 |
-| `params` | object | 是 | 该计算器的参数对象 |
-
-### 各类型参数
-
-| type | 参数 |
-|---|---|
-| `diffraction_limit` | `lambda`、`lambda_unit`、`NA` |
-| `coating_thermal_drift` | `lambda`、`lambda_unit`、`dn_dT`、`alpha`、`delta_T`（`material` 可用于取默认光学常数） |
-| `confocal_range_select` | `range_min`、`range_max`、`range_unit`、`accuracy`、`accuracy_unit`、`material` 等 |
-| `tolerance_rss` | `tolerances`（数组）、`unit` |
-| `na_resolution` | `lambda`、`lambda_unit`、`NA` |
-
-长度参数支持 `550` + `lambda_unit="nm"`，也支持直接写 `"0.55µm"`。
-
-**示例**
-
-```
-type="tolerance_rss", params={ tolerances: [0.5,0.3,0.2], unit: "µm" }
-→ ok=true, result.value=0.6164, unit=µm
-```
-
-**错误路径**
-
-参数缺失或非法时返回 `ok:false`，给 `error` 和 `suggestion`（含合理范围），不会凑一个数：
-
-```json
-{ "ok": false, "error": "缺少必需参数 lambda 与 NA",
-  "suggestion": "lambda 建议 400–1600 nm，NA 建议 0.1–1.4" }
-```
-
-`type` 传枚举外的值时，工具层直接拒绝并列出可选值。
-
----
-
 ## 三个常见组合
 
 **查一个具体判据**
 
 ```
-docs → search("共焦 量程 线性度") → get("A01-02")
+docs(doc_id="A01") → search("共焦 量程 线性度") → get("A01-02")
 ```
 
-**算完回头核对依据**
+**补基础理论**
 
 ```
-calc(confocal_range_select, {...}) → search("IFS2402 量程") → get(...) 核对线性度
+search("艾里斑 分辨率 判据") → get("F02-04") → 需要公式推导再看 F01-05
 ```
 
 **确认某主题到底有没有**
 
 ```
-docs(doc_id="C01") → 看 present=0 → 说明该板块只有缺口，直接告知用户没有依据
+docs() → 看是否有对应板块 → 没有就如实说明无覆盖，不要用通用常识硬答
 ```
+
+---
+
+## 为什么没有计算器
+
+0.1.0 曾带 5 个工程计算器（衍射极限、膜层热漂移、共焦选型、公差 RSS、NA 分辨率）。0.2.0 按需求聚焦知识库，计算器整体下线；相关公式仍可在 F01（成像/NA/分辨率）、F06（膜层热漂移）、G02（RSS 与公差）、H05（共焦选型思路）里查到依据。

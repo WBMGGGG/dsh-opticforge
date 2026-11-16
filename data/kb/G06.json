@@ -1,0 +1,90 @@
+[
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【建模流程与网格】\n定义：波动光学仿真流程为几何简化、材料赋值、边界条件、求解器设置、网格划分与收敛检查；网格密度由最短工作波长与材料折射率决定。\n公式：单元特征尺寸 h 应小于工作波长除以介质折射率再除以若干因子，工程上 h ≲ λ/(6~10·n)，n 为该区域最大折射率。\n判据：先粗网格跑通流程，再在电场变化剧烈处（界面、边缘、端口附近）加密；连续两次细化后关键输出变化小于允许误差即认为网格无关。\n边界：几何简化过度会丢失倒角、缝隙等关键效应；网格过粗时结果看似收敛实则被粗单元「抹平」，虚假收敛比不收敛更危险。\n工程要点：规则区域用映射网格，弯曲界面用自由三角形网格；先在简单模型（单层平板）验证网格密度，再推到复杂结构；不要一上来就用极细网格全算。",
+    "source": "教材与官方文档综合：Jin《The Finite Element Method in Electromagnetics》3e；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：仿真流程 / 几何简化与网格收敛",
+    "keywords_zh": "建模流程,网格密度,有限元,收敛检查,几何简化",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【波动光学求解器选择】\n定义：频域求解器在单一频率下解时谐场方程，时域求解器在时间域步进求解 Maxwell 方程；特征频率求解器用于谐振腔本征模式。\n公式：时谐场取 E(r)·e^{iωt}，频域控制方程为 ∇×(μ⁻¹∇×E) − k₀²εE = 0；时域直接求解 Maxwell 旋度方程的时间推进。\n判据：窄带或单频特性用频域；宽带响应、非线性、瞬态现象用时域；谐振腔 Q 值与模式频率用特征频率求解器。\n边界：频域求解器矩阵规模大，在接近谐振频率时条件数差、易不收敛；时域需足够仿真时间让瞬态衰减到稳态，且存在数值色散与边界反射。\n工程要点：先用频域验证原理与结构，再用时域做宽带扫描；谐振结构须先估算 Q 值并据此判断时域仿真时长；频率扫描从远离谐振点起步。",
+    "source": "教材与官方文档综合：Jin《The Finite Element Method in Electromagnetics》3e；Taflove & Hagness《Computational Electrodynamics》3e；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：求解器选择 / 频域与时域",
+    "keywords_zh": "频域求解,时域求解,Helmholtz,特征频率,谐振腔",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【端口、PML 与边界】\n定义：端口用于注入和接收电磁波并计算 S 参数；完全匹配层（PML）以复坐标拉伸吸收出射波，模拟开放空间；散射边界条件（SBC）是近似吸收边界。\n公式：PML 内波数变为复坐标拉伸形式，出射波在层内指数衰减；端口在边界上求解本征模式并以此模式激励。\n判据：PML 层厚足够且前方留缓冲域；端口距散射体足够远使模式充分展开；以 S11 是否接近零、S21 是否收敛作为边界有效性判据。\n边界：PML 对掠入射波与倏逝波吸收效果下降；SBC 只适合法向入射的近似吸收，斜入射反射不可忽略；端口离散射体过近时端口模式含近场耦合，模式不纯。\n工程要点：周期性结构用周期边界而非 PML；先在平板波导上验证端口激励正确，再加入散射体；PML 参数不要随意改动默认值。",
+    "source": "教材与官方文档综合：Jin《The Finite Element Method in Electromagnetics》3e；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：边界条件 / 端口与PML",
+    "keywords_zh": "端口,PML,散射边界,S参数,复坐标拉伸",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【周期边界与光栅级次】\n定义：周期结构用 Floquet/Bloch 周期边界把计算域缩小到一个单元；衍射级次由光栅方程决定，各级次传播方向与波矢守恒。\n公式：光栅方程 k_{x,m} = k_{x,0} + m·2π/Λ，Λ 为周期；级次存在条件为 |k_{x,m}| ≤ n·k₀，不满足者为倏逝波。\n判据：RCWA（严格耦合波分析）是周期光栅的半解析基准，数值法结果应与之对照；列出所有传播级次并校验能量守恒。\n边界：RCWA 适合纯周期、线性材料与规则光栅；非周期缺陷、随机表面、大角度偏振或非线性效应需用 FEM/FDTD；级次过多时能量分布需逐一核对。\n工程要点：透射级次加反射级次加吸收应等于入射能量；周期边界两侧入射/出射波矢须匹配角度；不要在非周期结构上误用周期边界。",
+    "source": "论文与官方文档综合：Moharam & Gaylord, J. Opt. Soc. Am. 1981（RCWA）；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：周期结构 / Floquet边界与衍射级次",
+    "keywords_zh": "周期边界,Floquet,衍射级次,RCWA,光栅方程,能量守恒",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【热-结构-光学耦合】\n定义：热光分析按温度场→结构变形与应力→折射率与面形变化→光程差→出射波前的顺序单向耦合；强反馈时才双向耦合。\n公式：光程差 δOPD 由折射率温变 dn/dT 与几何热膨胀共同贡献，沿光路积分 δOPD = ∫[(dn/dT)·ΔT + n·(α·ΔT)·几何项]ds。\n判据：单向耦合通常足够；只有当光学吸收产热反过来显著改变温度场时（高能激光）才需双向耦合；每步映射后检查残差。\n边界：从非共形结构网格到光学网格插值时引入映射误差；接触热阻、对流系数是最大不确定来源，假设值偏差会显著影响结果。\n工程要点：先做热仿真看温度梯度分布，再传结构变形，再把面形/折射率变化传给光学；不要一开始就开全耦合——先确认各场量级再决定耦合方式。",
+    "source": "教材与官方文档综合：COMSOL Multiphysics Reference Manual（官方文档）；Jin《The Finite Element Method in Electromagnetics》3e",
+    "page_or_section": "综合：多物理场耦合 / 热-结构-光学顺序",
+    "keywords_zh": "热光耦合,单向耦合,光程差,dn/dT,热膨胀,网格映射",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【网格收敛与可信度】\n定义：可信度来自网格无关性与物理守恒校验；依次细化网格，关键输出稳定后再与解析解或文献对照。\n公式：关键输出（S 参数、衍射效率、波前 RMS）随网格特征尺寸 h 变化；可借 Richardson 外推估计离散误差；无损耗结构能量守恒要求 Σ|S_ij|² + 吸收 = 1。\n判据：连续两次细化后输出变化小于判据（如 1%）即网格无关；能量守恒误差在允许范围内；与解析解或 RCWA 对照一致。\n边界：网格无关不等于物理正确——边界条件错、材料参数错、几何简化过度都可能给出「收敛但错误」的结果；必须独立做物理校验。\n工程要点：保留粗网格结果做对照；不收敛时先查边界条件与材料参数单位，再加密网格；能量守恒是最便宜的「照妖镜」，先算它再谈其他。",
+    "source": "教材与官方文档综合：Jin《The Finite Element Method in Electromagnetics》3e；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：仿真可信度 / 网格无关性与守恒校验",
+    "keywords_zh": "网格收敛,能量守恒,Richardson外推,物理校验,可信度",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【材料色散模型】\n定义：色散用解析模型表达复折射率 n(λ)、k(λ)；Drude 模型描述自由电子金属，Lorentz 模型描述谐振吸收，Sellmeier 模型描述透明介质折射率。\n公式：Lorentz 形式 ε(ω) = ε∞ + Σ f_j·ω_j²/(ω_j² − ω² − i·γ_j·ω)；Sellmeier 形式 n²(λ) = 1 + Σ A_i·λ²/(λ² − λ_i²)。\n判据：模型参数应从实验数据（文献折射率表、材料供应商数据）在关注波段内拟合；拟合残差在关注波段内小，且参数物理合理。\n边界：色散模型外推到拟合波段之外不可靠；透明区的 Sellmeier 模型不能用于吸收区；金属在紫外与近红外行为不同，需分别取模型。\n工程要点：先确认材料数据来源与覆盖波段；不要用室温数据直接算高温工况；温度对折射率的影响需另给 dn/dT 而非改拟合参数。",
+    "source": "教材与官方文档综合：COMSOL Multiphysics Reference Manual（官方文档）；Jin《The Finite Element Method in Electromagnetics》3e",
+    "page_or_section": "综合：材料建模 / Drude 与 Lorentz 色散",
+    "keywords_zh": "材料色散,Drude模型,Lorentz模型,Sellmeier,复折射率,参数拟合",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  },
+  {
+    "doc_id": "G06",
+    "chunk_id": "G06-08",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【常见失败与排查】\n定义：波动仿真常见失败包括不收敛、内存溢出、出现非物理解（伪解，如场能量异常集中、S 参数不守恒）；排查顺序固定为边界条件→材料参数→网格→求解器设置。\n判据：先用最简单模型（平板、单层光栅）验证设置正确，再逐步加复杂度；能量守恒不通过即物理模型有误，不要靠加密网格硬凑收敛。\n边界：高频问题矩阵条件数差，求解器易停在局部误差；谐振腔模式容易漏模式；频率扫描起点离谐振过近会直接不收敛；PML 与散射边界混用会引入虚假反射。\n工程要点：不收敛时先查端口类型与激励方向、PML 位置、材料单位是否一致；内存不足时先简化几何或降阶基函数；结果异常时先做平板对照，排除求解器设置问题再怀疑物理模型；保留报错日志便于回溯。",
+    "source": "教材与官方文档综合：Taflove & Hagness《Computational Electrodynamics》3e；Jin《The Finite Element Method in Electromagnetics》3e；COMSOL Multiphysics Reference Manual（官方文档）",
+    "page_or_section": "综合：仿真排错 / 不收敛与伪解",
+    "keywords_zh": "不收敛,伪解,能量守恒,排错流程,边界条件",
+    "disclaimer": "本条为教材与标准通用结论的工程整理，非原文摘录；公式符号约定与判据以所列来源为准。"
+  }
+]

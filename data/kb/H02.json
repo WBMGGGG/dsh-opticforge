@@ -1,0 +1,90 @@
+[
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【波导模式与单模条件】\n定义：介质波导由高折射率芯层和低折射率包层构成，光靠芯层-包层界面的全反射被限制在芯层内；模式是满足边界条件的麦克斯韦方程本征解。\n公式：归一化频率 V = (2πa/λ)·√(n₁²-n₂²)，a 为芯层半径；阶跃光纤单模条件 V < 2.405；平板波导 V < π/2；有效折射率 n_eff 介于 n₁ 和 n₂ 之间。\n判据：V 值越大模式数越多；V 接近 2.405 时高阶模开始出现，工艺偏差（芯径偏差、折射率偏差）会使单模波导变多模。\n边界：截止波长 λ_c = (2πa/2.405)·√(n₁²-n₂²)；波长大于 λ_c 时高阶模截止，只剩基模；波长小于 λ_c 时多模传输。\n工程要点：设计单模波导时 V 取 2.0–2.4 留余量，不要贴着 2.405 设计；否则实际工艺偏差会导致高阶模激发，引起模场不稳定和传输损耗增大。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；Agrawal《Fiber-Optic Communication Systems》4e",
+    "page_or_section": "综合：介质波导 / 模式与截止条件",
+    "keywords_zh": "波导模式,有效折射率,单模条件,V值,截止波长,全反射",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【色散与群速度】\n定义：波导中总色散由材料色散（材料折射率随波长变化）和波导色散（波导结构使 n_eff 随波长变化）组成；群速度是光脉冲包络的传播速度。\n公式：群折射率 n_g = n_eff - λ·dn_eff/dλ；群速度 v_g = c/n_g；色散参数 D = -(λ/c)·d²n_eff/dλ²，单位 ps/(nm·km)。\n判据：D=0 处为零色散波长；总色散 = 材料色散 + 波导色散；通过波导结构设计可以移动零色散点或展宽平坦波段。\n边界：窄脉冲在色散波导中传输会展宽——展宽量与 D、谱宽、距离成正比；高速系统（>100 Gbps）中色散补偿不可忽略。\n工程要点：通信系统设计把工作波长放在零色散附近或做色散补偿；波导色散工程是色散位移光纤和色散平坦光纤的核心原理。",
+    "source": "公开教材综合：Agrawal《Fiber-Optic Communication Systems》4e；Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e",
+    "page_or_section": "综合：波导色散 / 群速度与色散参数",
+    "keywords_zh": "材料色散,波导色散,群速度,群折射率,零色散,色散参数",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【耦合器与光栅耦合】\n定义：端面耦合是光纤直接对接波导端面，靠模场重叠实现耦合；光栅耦合是表面光栅把垂直入射的光偏转进波导模式。\n公式：光栅耦合方程 λ = Λ·(n_eff - n_clad·sinθ)；耦合效率取决于光纤模场与波导模场的重叠积分；端面耦合对准容差为亚微米级，光栅耦合对准容差约几微米。\n判据：光栅耦合器带宽窄（通常几十 nm）且有波长-角度依赖关系；端面耦合带宽宽但封装对准要求极高。\n边界：光栅耦合器 TE/TM 效率差异显著（偏振敏感）；端面耦合需要光学级抛光端面和精确 V 槽对准；模斑转换器（spot-size converter）是降低耦合损耗的必备结构。\n工程要点：研发阶段用光栅耦合快速测试芯片，量产用端面耦合+光纤阵列封装；两者不要混用——光栅耦合器效率随温度漂移，不适合长期链路。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Agrawal《Fiber-Optic Communication Systems》4e；Yariv & Yeh《Photonics》6e",
+    "page_or_section": "综合：光纤-波导耦合 / 光栅与端面",
+    "keywords_zh": "光栅耦合,端面耦合,模场重叠,对准容差,模斑转换器,偏振敏感",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【硅光平台与材料】\n定义：硅光集成在同一芯片上集成波导、调制器、探测器等器件；主流平台包括 SOI（绝缘体上硅）、SiN（氮化硅）和 InP（磷化铟）。\n公式：SOI 芯层 Si 折射率 n≈3.48，包层 SiO₂ n≈1.44，高折射率差允许波导弯曲半径小至几微米；SiN n≈2.0，色散低、可见光透明。\n判据：SOI 在 1550 nm 通信窗口低损耗且 CMOS 兼容；SiN 适合可见光到近红外、生物传感；InP 是有源平台（可集成激光器）。\n边界：Si 本身不发光，需异质集成 InP 激光器；Si 在可见光段有双光子吸收和自由载流子吸收；高折射率差虽然允许小尺寸但对工艺偏差极敏感。\n工程要点：选平台先看工作波段——1550 nm 通信选 SOI，可见光/生物选 SiN，需要片上光源选 InP；工艺线最小线宽直接决定波导损耗和弯曲半径。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "page_or_section": "综合：硅光平台 / 材料与工艺约束",
+    "keywords_zh": "SOI,SiN,InP,硅光,折射率差,CMOS兼容",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【链路预算】\n定义：光链路预算核算从发射端到接收端的总光功率损耗，确认发射功率减去接收灵敏度后是否有足够余量。\n公式：总损耗 = 波导传输损耗 + 分光损耗 + 耦合损耗 + 弯曲损耗；1×N 分光器理想分光损耗 = 10·log₁₀(N) dB；链路余量 = P_tx - P_rx_min - 总损耗。\n判据：余量通常留 3–6 dB 应对温度漂移、器件老化和插拔损耗；余量不足时链路不稳定，余量过大说明设计保守。\n边界：损耗估算用 dB 加法，但偏振相关损耗（PDL）和回波损耗需单独考虑；分光器的额外插损（excess loss）要查工艺线规格，不能只算分光比。\n工程要点：先逐段算 dB 损耗再加余量；不要忘了算耦合点的插入损耗——每个对接点 0.5–1 dB 是常见值，多点累积不可忽略。",
+    "source": "公开教材综合：Agrawal《Fiber-Optic Communication Systems》4e；Saleh & Teich《Fundamentals of Photonics》2e",
+    "page_or_section": "综合：光链路预算 / 损耗与余量",
+    "keywords_zh": "链路预算,分光损耗,插入损耗,接收灵敏度,余量,偏振相关损耗",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光纤类型与损耗】\n定义：单模光纤（SMF）芯径约 9 μm、V<2.405 只传基模；多模光纤芯径 50/62.5 μm 支持多模传输；损耗主要来自吸收、散射和弯曲。\n公式：NA = √(n₁²-n₂²)，SMF NA 约 0.14；1550 nm 窗口损耗约 0.2 dB/km 量级，1310 nm 约 0.35 dB/km；瑞利散射损耗随 λ⁻⁴ 下降。\n判据：单模光纤在截止波长以下变多模；宏弯损耗随波长增大而增大（长波长更易漏出）；微弯由侧压力引起。\n边界：G.652 光纤在 1310 nm 零色散；高速系统（>100 Gbps）中偏振模色散（PMD）不可忽略；弯曲半径小于临界值时损耗急剧增大。\n工程要点：布线时弯曲半径留足余量（通常 ≥30 mm）；长距离通信选 1550 nm 窗口；短距数据中心多模用 OM3/OM4，不要混用单模多模。",
+    "source": "公开教材综合：Agrawal《Fiber-Optic Communication Systems》4e；Saleh & Teich《Fundamentals of Photonics》2e；ITU-T G.652 标准",
+    "page_or_section": "综合：光纤类型 / 损耗与弯曲特性",
+    "keywords_zh": "单模光纤,多模光纤,数值孔径,弯曲损耗,瑞利散射,零色散",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光纤传感】\n定义：光纤传感利用光纤中的光信号随温度、应变等物理量变化来测量待测参数；FBG（布拉格光栅）是最常用的点式传感元件。\n公式：FBG 中心波长 λ_B = 2·n_eff·Λ；温度/应变引起的漂移 Δλ_B/λ_B = (1-p_e)·Δε + (α+ξ)·ΔT，p_e 为有效弹光系数。\n判据：分布式传感（OTDR/BOTDA）沿光纤连续测量，空间分辨率与测量距离折中；FBG 传感精度取决于波长解调精度。\n边界：温度和应变交叉敏感，需要温度补偿参考光栅；强电磁干扰、高压、腐蚀环境下光纤传感优势明显；BOTDA 距离可达几十公里但空间分辨率米级。\n工程要点：工程现场先做温度-应变交叉标定；FBG 写栅位置避开应力集中点；解调仪波长分辨率直接决定传感精度。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；Agrawal《Fiber-Optic Communication Systems》4e",
+    "page_or_section": "综合：光纤传感 / FBG 与分布式测量",
+    "keywords_zh": "FBG,分布式传感,OTDR,BOTDA,波长漂移,交叉敏感",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H02",
+    "chunk_id": "H02-08",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【共封装与集成趋势】\n定义：共封装光学（CPO）把光引擎与交换芯片封装在一起，缩短电互连距离以降低功耗；光电融合指硅光集成把调制器、波导、探测器集成在同一芯片上。\n公式：电互连功耗随带宽增长近似线性或超线性上升；光互连单位带宽功耗更低；CPO 的核心驱动是电 I/O 功耗墙。\n判据：CPO 目前主要面向数据中心高密度交换机；可维护性差——光引擎坏了整板更换，不像可插拔光模块那样现场更换。\n边界：CPO 设计瓶颈在光纤阵列耦合对准、热管理（光引擎与芯片共热）、电-光接口密度；良率与成本是量产主要障碍。\n工程要点：CPO 设计先做光电协同仿真；光纤阵列耦合是封装良率的关键——对准精度要求亚微米级，贴片设备精度直接决定良率。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "page_or_section": "综合：共封装光学 / 光电集成趋势",
+    "keywords_zh": "CPO,硅光集成,光电融合,光引擎,光纤阵列,封装",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  }
+]
