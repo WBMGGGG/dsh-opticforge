@@ -234,13 +234,13 @@ test("C5 status=present 过滤生效：missing_source / substitute 不出现在�
   }
 });
 
-test("C6 知识空白如实告知：「太赫兹 时域光谱」返回空且 note=「知识库中未找到相关依据」", async () => {
+test("C6 知识空白如实告知：「空间光学 热控」返回空且 note=「知识库中未找到相关依据」", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
-  const value = await execSearch({ query: "太赫兹 时域光谱" });
+  const value = await execSearch({ query: "空间光学 热控 仿真" });
   assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
-    "知识空白查询「太赫兹 时域光谱」应返回空结果，实际 total_hits=" + value.total_hits + "，命中: " + JSON.stringify(value.results.map((r) => r.chunk_id + "(" + r.score + ")")) + "；应由 lib/index.js 的 isZeroCoverageQuery(query,chunks) 数据驱动守卫短路（topicHasPresentBasis 在 present 块可检索字段中 0 出现才成立），本用例按规范硬断言不静默跳过；H1 回归见 C6b/C6c/C6d。");
+    "知识空白查询「空间光学 热控」应返回空结果，实际 total_hits=" + value.total_hits + "，命中: " + JSON.stringify(value.results.map((r) => r.chunk_id + "(" + r.score + ")")) + "；应由 lib/index.js 的 isZeroCoverageQuery(query,chunks) 数据驱动守卫短路（topicHasPresentBasis 在 present 块可检索字段中 0 出现才成立），本用例按规范硬断言不静默跳过；H1 回归见 C6b/C6c/C6d。");
   assert.deepEqual(value.results, [], "知识空白查询的 results 应为空数组");
   assert.equal(value.note, "知识库中未找到相关依据", "note 应如实告知「知识库中未找到相关依据」，实际：" + value.note);
 });
@@ -279,13 +279,13 @@ test("C6c H1 回归：「自由曲面 光学设计」应命中 B01-10，不被�
   for (const r of value.results) assert.equal(r.status, "present");
 });
 
-test("C6d H1 回归：真 0 覆盖主题仍短路（空间光学 在 present 块 0 出现）", async () => {
+test("C6d H1 回归：真 0 覆盖主题仍短路（光刻工艺 在 present 块 0 出现）", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
-  const value = await execSearch({ query: "空间光学 热控 仿真" });
+  const value = await execSearch({ query: "光刻工艺 光刻胶 涂胶" });
   assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
-    "『空间光学』在 present 块可检索字段中 0 出现，应仍短路为空；实际命中：" +
+    "『光刻工艺』在 present 块可检索字段中 0 出现，应仍短路为空；实际命中：" +
     JSON.stringify(value.results.map((r) => r.chunk_id)));
   assert.equal(value.note, "知识库中未找到相关依据");
 });
