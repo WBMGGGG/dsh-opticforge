@@ -13,7 +13,7 @@
 统一信封：
 
 ```json
-{ "ok": true, "kb_version": "1.1.0", "action": "assist", "...": "各工具字段" }
+{ "ok": true, "kb_version": "1.2.0", "action": "assist", "...": "各工具字段" }
 ```
 
 ---
@@ -28,7 +28,7 @@
 拿到 chunk_id 想看全文     → opticforge_get
 ```
 
-典型顺序：**assist → 按 plan 执行（Skill/MCP/本地/检索）→ verify → 交付**。证据层是 assist 的内部依据，也可以单独调用。
+典型顺序：**assist → 执行 alignment.kb_queries → 记录 matched/unmatched 与 verdict → 检查 web_gate → 按 blocked_by 执行 plan → verify → 交付**。不要让 general_search/web_search 成为第一个工具；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足才联网。随包 `opticforge-task` Skill 固定同一流程。
 
 ---
 
@@ -52,14 +52,17 @@
 | 字段 | 说明 |
 |---|---|
 | `brief` | 目标、领域、意图、交付物、约束、待澄清（≤3 问） |
+| `alignment` | KB 查询、matched/unmatched、coverage_matrix、verdict |
+| `web_gate` | 默认关闭；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件才打开 |
 | `coverage` | 检索面覆盖数与置信度 |
 | `evidence[]` | chunk_id、doc_id、status、标题、来源、摘录、命中的检索面 |
 | `gaps[]` | 主题未覆盖 / 声明不覆盖 |
 | `library_gaps[]` | 原文缺口：A03、C01、E01 的缺失条数 |
 | `capabilities` | 扫描到的 Skill、MCP 服务器、说明 |
 | `local_assets` | workspace 文件清单（名称/类型/大小/相关度） |
-| `plan.steps[]` | 每步 phase/goal/capability/actions/output/routing |
-| `search_pack[]` | 按 facet 分组的检索词 |
+| `plan.steps[]` | 每步 phase/goal/capability/actions/output/routing；web 步骤带 blocked_by |
+| `calc_specs[]` | 公式卡：公式、变量单位、假设、合理范围、算例、KB 来源；不执行计算 |
+| `search_pack` | KB 查询与带 when 条件的外部查询 |
 | `acceptance[]` | 验收清单 |
 | `success_criteria[]` | 前 6 条验收标准 |
 | `execution_contract` | 必须做什么、可调哪些 Skill/MCP/工具、何时停下 |
@@ -104,10 +107,13 @@
 | 缺假设 | warning |
 | 缺缺口声明 | warning |
 | 缺复现 | warning |
-| 缺来源段 | warning |
+| 缺 KB 对齐段 / verdict | warning（strict=error） |
+| 外部 URL 缺访问日期或型号/标准号 | warning（strict=error） |
+| 有数值但缺 formula_id / 计算轨迹 | warning（strict=error） |
+| 引用了不存在的 formula_id | error |
 | 绝对化/营销词 | warning |
 
-**返回**：`pass`、`score`（0–100）、`citations`（valid/invalid）、`issues[]`、`checklist`、`summary`。
+**返回**：`pass`、`score`（0–100）、`citations`、`external_citations`、`alignment`、`formula_cards`、`issues[]`、`checklist`、`summary`。
 
 **限制**：只解析文本，不解析 docx/pdf；超过 2 MB 拒绝。
 
@@ -168,8 +174,11 @@ BM25 检索，只返回 `status=present`。
 
 ```
 assist(problem=..., workspace=..., known_capabilities=[...])
-→ 按 plan 调 sheet 做指标表、word 写报告、general_search 核标准
-→ verify(path="报告.md")
+→ 执行 alignment.kb_queries，记录 coverage_matrix 与 verdict
+→ web_gate 未打开则不联网；打开后才执行满足 when 的 external_queries
+→ 按 plan 调 sheet 做指标表、word 写报告，必要时联网核标准/厂商资料
+→ docx/pdf 先导出 .md/.txt
+→ verify(problem=原始问题, path="报告.md")
 → present_files
 ```
 
@@ -189,4 +198,4 @@ assist(problem="…") → 看 gaps / library_gaps → 没有就如实说明，�
 
 ## 计算在哪里做
 
-插件不带计算器。公式依据在 F01/F06/G02/H05，具体数值由执行层用 `calculator`、PowerShell/Python 或表格 Skill 算，并用 `opticforge_verify` 复核来源。
+插件不带计算器。`assist.calc_specs` 只从 `data/formula-cards.json` 返回公式卡，具体数值由执行层用 run_code、PowerShell/Python 或表格 Skill 计算。交付文本必须写 `formula_id`、输入、单位、输出、假设与复算路径，再用 `opticforge_verify` 检查。

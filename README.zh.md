@@ -3,7 +3,7 @@
 光电工程师的**任务辅助插件**，DeepSeek Harness（DSH）。
 输入一个具体问题，输出一套能直接执行的作战包：任务简报、知识证据、能力路由、分阶段计划、定向检索词、验收清单。
 
-纯 Node.js，零运行时依赖。**1.1.0 起从“检索插件”升级为“任务辅助层”，检索退为证据层。**
+纯 Node.js，零运行时依赖。**1.2.0 起把“先知识库、后联网”落成可检查的执行契约，并附 DSH Skill 与公式卡；插件仍不联网、不执行动作。**
 
 ---
 
@@ -18,8 +18,8 @@
 OpticForge 把这三件事收进一个插件：
 
 - **证据层**：40 个板块、324 条带来源的事实条目，检索命中给 chunk_id + 来源 + 摘录，没依据就明说。
-- **路由层**：按问题类型选剧本，盘点本机 Skill / MCP / 工作目录素材，生成带能力标签的执行计划。
-- **验收层**：交付前检查引用是否真实、数量断言是否有来源、假设/缺口/复现是否单列。
+- **路由层**：按问题类型选剧本，盘点本机 Skill / MCP / 工作目录素材，生成带能力标签的执行计划；`alignment` 先固定 KB 查询与覆盖判定，`web_gate` 决定何时才允许联网。
+- **验收层**：交付前检查引用、数量、KB 对齐段、外部来源日期、公式卡计算轨迹、假设/缺口/复现。
 
 ---
 
@@ -30,22 +30,27 @@ OpticForge 把这三件事收进一个插件：
  │
  ├─ opticforge_assist ── 受理与路由
  │    ├─ brief          目标 / 交付物 / 约束 / 待澄清
+ │    ├─ alignment      KB 查询 / matched / unmatched / verdict
+ │    ├─ web_gate       默认关闭；缺口、版本、厂商规格或时效才打开
  │    ├─ evidence       知识库证据 + 覆盖矩阵 + 缺口
  │    ├─ capabilities   本机 Skill / MCP / 工作目录素材
- │    ├─ plan           分阶段步骤，每步绑定能力类别与候选工具
- │    ├─ search_pack    标准 / 论文 / 厂商 / 排错 定向检索词
+ │    ├─ calc_specs     公式卡（公式、单位、假设、算例；不执行计算）
+ │    ├─ plan           分阶段步骤；web 步骤带 blocked_by
+ │    ├─ search_pack    KB 查询与带 when 条件的外部查询
  │    └─ acceptance     验收清单 + 风险 + 可交接 Markdown
  │
  ├─ 执行层（agent）── 按 plan 调用
- │    ├─ Skill：sheet / word / ppt / seedream / browser …
+ │    ├─ Skill：opticforge-task / sheet / word / ppt / browser …
  │    ├─ MCP：桌面、浏览器、GitHub 等
  │    ├─ 本地：PowerShell / Python / 文件读写
- │    └─ 检索：general_search + web_fetch
+ │    └─ 检索：仅在 web_gate 打开后 general_search + web_fetch
  │
  └─ opticforge_verify ── 交付自检
       ├─ 引用：chunk_id 是否存在、是否 present
       ├─ 数量：数字是否有引用或计算说明
       ├─ 结构：假设 / 缺口 / 复现 / 来源
+      ├─ KB-first：对齐段、verdict、外部 URL 日期与来源细节
+      ├─ 计算：formula_id、输入、单位、输出与复算路径
       └─ 措辞：绝对化与营销词
 ```
 
@@ -85,6 +90,14 @@ OpticForge 把这三件事收进一个插件：
 
 `handoff` 是一段可直接交给子 agent 的 Markdown，包含目标、依据、执行顺序与验收。另附 `execution_contract`：必须做什么、可调哪些 Skill/MCP/工具、什么情况必须停下。
 
+**KB-first 执行契约**：先 `assist`，再执行 `alignment.kb_queries` 形成 matched/unmatched 与 `verdict`，然后才检查 `web_gate`。KB 已覆盖的原理不允许直接改用网页；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足时才联网。`search_pack` 中 KB 查询与外部查询分开，外部查询带 `when`，web 步骤带 `blocked_by`。随包 `skills/opticforge-task/SKILL.md` 给 DSH 固定同一流程。
+
+### 公式卡与文档前置提取
+
+`calc_specs` 从 `data/formula-cards.json` 选择公式卡，给出公式、变量单位、假设、合理范围、算例和 `source_chunk_ids`。执行层用 run_code / Python / PowerShell / 表格 Skill 计算，并在交付中写 `formula_id`、输入、输出、单位与复算路径；插件没有计算器。
+
+docx/pdf 不直接交给 `verify`。先用 word/pdf Skill 导出 `.md` 或 `.txt`，再检查 KB 对齐段、外部 URL 的访问日期与型号/标准号、计算轨迹和单位闭合。
+
 ---
 
 ## 能力发现
@@ -99,7 +112,7 @@ OpticForge 把这三件事收进一个插件：
 
 ---
 
-## 知识库现状（1.1.0）
+## 知识库现状（1.2.0，内容基线不变）
 
 **40 个板块、324 条条目，其中 308 条可作为依据**（`status=present`）。
 
@@ -153,6 +166,9 @@ data/kb/              40 个板块的事实条目（人可读、git diff 可审�
 data/kb-data.json     合并产物，运行时读它
 data/kb-meta.json     版本、sha256、板块清单、缺口词表
 data/assist-playbooks.json  任务剧本（触发词/步骤/检索面）
+data/formula-cards.json 19 张公式卡（不执行计算）
+skills/opticforge-task/ DSH 的 KB-first 工作流 Skill
+eval/                 KB-first 契约评测与真实轨迹评分入口
 docs/KB-OUTLINE.zh.md 板块与条目总纲（chunk_id 契约）
 docs/ARCHITECTURE.zh.md 架构与扩展点
 ```
@@ -173,16 +189,17 @@ node scripts/install-local.mjs --dry-run  # 只打印，不动文件
 node scripts/install-local.mjs --uninstall
 ```
 
-重启 DSH 生效。之后改仓库代码或数据，重启即加载最新版本。
+重启 DSH 生效。之后改仓库代码或数据，重启即加载最新版本。安装器还会把 `skills/opticforge-task` 链接到 `~/.dsh/skills/opticforge-task`；若目标已是普通目录则不覆盖，卸载只删除链接。
 
 ---
 
 ## 开发
 
 ```bash
-node test/run.mjs                        # 集成测试（26 项）
-node scripts/verify-all.mjs              # 发布前验收（32 项）
-node scripts/build-kb.mjs --all --version 1.1.0
+node test/run.mjs                        # 集成测试
+node scripts/verify-all.mjs              # 发布前验收
+node eval/run-kb-first.mjs               # 10 类任务的 KB-first 契约评测
+node scripts/build-kb.mjs --all --version 1.2.0
 node scripts/build-kb.mjs --check
 ```
 

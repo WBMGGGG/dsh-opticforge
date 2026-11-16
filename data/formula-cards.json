@@ -1,0 +1,322 @@
+[
+  {
+    "id": "thin_lens_gaussian",
+    "title": "薄透镜高斯成像与放大率",
+    "domains": ["optical_design", "testing_alignment", "generic"],
+    "keywords": ["薄透镜", "焦距", "物距", "像距", "放大率", "成像"],
+    "formula": "1/f = 1/l' - 1/l；β = l'/l",
+    "variables": [
+      { "symbol": "f", "unit": "mm", "meaning": "焦距" },
+      { "symbol": "l", "unit": "mm", "meaning": "物距，按所选符号约定带符号" },
+      { "symbol": "l'", "unit": "mm", "meaning": "像距，按所选符号约定带符号" },
+      { "symbol": "β", "unit": "1", "meaning": "横向放大率" }
+    ],
+    "assumptions": ["近轴小孔径", "薄透镜或已归算到主平面的厚透镜", "全计算只使用一种符号约定"],
+    "sanity_range": "会聚薄透镜 f>0；实像与虚像的符号必须符合所选约定；不得把后焦距当焦距。",
+    "worked_example": "f=50 mm、l=-200 mm：1/l'=1/f+1/l=0.015 mm^-1，所以 l'=66.67 mm，β=-0.3333。",
+    "source_chunk_ids": ["F01-01"]
+  },
+  {
+    "id": "na_f_number",
+    "title": "数值孔径、F 数与入瞳直径",
+    "domains": ["optical_design", "imaging_camera", "testing_alignment"],
+    "keywords": ["数值孔径", "NA", "F数", "F/#", "入瞳", "光圈"],
+    "formula": "NA=n·sin u；F#=f/D；空气中近轴 NA≈1/(2F#)",
+    "variables": [
+      { "symbol": "n", "unit": "1", "meaning": "物方介质折射率" },
+      { "symbol": "u", "unit": "rad 或 °", "meaning": "边缘光线半孔径角" },
+      { "symbol": "f", "unit": "mm", "meaning": "焦距" },
+      { "symbol": "D", "unit": "mm", "meaning": "入瞳直径" }
+    ],
+    "assumptions": ["近轴近似用于 NA 与 F# 互换", "物在无穷远且忽略光瞳像差"],
+    "sanity_range": "空气近轴 NA<1；F#>0；有限共轭、大视场或浸液系统必须改用实际边缘光线角。",
+    "worked_example": "f=50 mm、D=25 mm：F#=2，空气近轴 NA≈0.25。",
+    "source_chunk_ids": ["F01-05", "F01-02"]
+  },
+  {
+    "id": "diffraction_focus_depth",
+    "title": "衍射焦深量级",
+    "domains": ["optical_design", "testing_alignment", "imaging_camera"],
+    "keywords": ["焦深", "景深", "离焦", "对准", "NA"],
+    "formula": "Δz≈±λ/(2NA²)",
+    "variables": [
+      { "symbol": "Δz", "unit": "mm", "meaning": "像侧允许轴向离焦量级" },
+      { "symbol": "λ", "unit": "mm", "meaning": "工作波长" },
+      { "symbol": "NA", "unit": "1", "meaning": "像方数值孔径" }
+    ],
+    "assumptions": ["小像差、接近衍射极限", "焦深定义采用本卡判据；其他瑞利判据可能差一个约 2 的系数"],
+    "sanity_range": "NA 增大时焦深按平方缩小；大像差系统不能把衍射焦深直接当装调公差。",
+    "worked_example": "λ=550 nm=0.00055 mm、NA=0.1：Δz≈±0.0275 mm，即约 ±27.5 μm。",
+    "source_chunk_ids": ["F01-05", "I01-07"]
+  },
+  {
+    "id": "gaussian_beam",
+    "title": "高斯光束束腰与瑞利长度",
+    "domains": ["optical_design", "testing_alignment", "generic"],
+    "keywords": ["高斯光束", "束腰", "瑞利长度", "激光", "光斑"],
+    "formula": "w(z)=w0·√(1+(z/zR)²)；zR=π·w0²/λ",
+    "variables": [
+      { "symbol": "w0", "unit": "mm", "meaning": "束腰半径" },
+      { "symbol": "w(z)", "unit": "mm", "meaning": "距束腰 z 处的光斑半径" },
+      { "symbol": "zR", "unit": "mm", "meaning": "瑞利长度" },
+      { "symbol": "λ", "unit": "mm", "meaning": "波长" }
+    ],
+    "assumptions": ["基横模 TEM00", "自由空间传播", "多横模时需引入 M² 修正"],
+    "sanity_range": "zR>0，w(z)≥w0；z=zR 时 w=√2·w0。",
+    "worked_example": "w0=0.5 mm、λ=1064 nm：zR≈737.9 mm；z=zR 时 w≈0.7071 mm。",
+    "source_chunk_ids": ["F04-03"]
+  },
+  {
+    "id": "laser_focus_m2",
+    "title": "含光束质量因子的聚焦光斑",
+    "domains": ["optical_design", "testing_alignment"],
+    "keywords": ["M²", "聚焦", "激光", "光斑", "光束质量"],
+    "formula": "d=4·M²·λ·f/(π·D)",
+    "variables": [
+      { "symbol": "d", "unit": "mm", "meaning": "聚焦光斑直径" },
+      { "symbol": "M²", "unit": "1", "meaning": "光束质量因子" },
+      { "symbol": "λ", "unit": "mm", "meaning": "波长" },
+      { "symbol": "f", "unit": "mm", "meaning": "聚焦镜焦距" },
+      { "symbol": "D", "unit": "mm", "meaning": "入射光束直径" }
+    ],
+    "assumptions": ["聚焦镜口径不截断光束", "M² 已在相应功率与工作条件下测得"],
+    "sanity_range": "M²≥1；D 增大或 f 减小时 d 减小；热透镜使 M² 变化时须重测。",
+    "worked_example": "M²=1.2、λ=1064 nm、f=100 mm、D=10 mm：d≈0.01626 mm，即约 16.3 μm。",
+    "source_chunk_ids": ["F04-04"]
+  },
+  {
+    "id": "coherence_length",
+    "title": "线宽与相干长度",
+    "domains": ["testing_alignment", "literature", "generic"],
+    "keywords": ["相干长度", "线宽", "稳频", "干涉", "激光"],
+    "formula": "Lc≈c/Δν",
+    "variables": [
+      { "symbol": "Lc", "unit": "m", "meaning": "相干长度量级" },
+      { "symbol": "c", "unit": "m/s", "meaning": "光速" },
+      { "symbol": "Δν", "unit": "Hz", "meaning": "光源自频域线宽" }
+    ],
+    "assumptions": ["用线宽做量级估算", "具体相干函数还依赖谱线形状"],
+    "sanity_range": "线宽越窄相干长度越长；长光程差干涉要求 Lc 明显大于光程差。",
+    "worked_example": "Δν=1 GHz：Lc≈0.2998 m；若 Δν=1 MHz，则量级约 299.8 m。",
+    "source_chunk_ids": ["F04-05"]
+  },
+  {
+    "id": "interference_visibility",
+    "title": "双光束干涉条纹可见度",
+    "domains": ["testing_alignment", "generic"],
+    "keywords": ["可见度", "条纹", "干涉", "光强比", "对比度"],
+    "formula": "V=2√(I1I2)/(I1+I2)=2√r/(1+r)，r=I2/I1",
+    "variables": [
+      { "symbol": "V", "unit": "1", "meaning": "条纹可见度，0 到 1" },
+      { "symbol": "I1,I2", "unit": "W/m² 或同一相对单位", "meaning": "两臂光强" },
+      { "symbol": "r", "unit": "1", "meaning": "弱臂与强臂光强比" }
+    ],
+    "assumptions": ["准单色、准直、同偏振且相位稳定", "暂不计宽带相干包络与背景光"],
+    "sanity_range": "等光强时 V=1；要 V≥0.5，弱臂光强不得低于强臂约 1/14。",
+    "worked_example": "r=1/14：V=2√(1/14)/(1+1/14)≈0.4989，约 0.5。",
+    "source_chunk_ids": ["I02-03", "F02-01"]
+  },
+  {
+    "id": "spatial_coherence",
+    "title": "扩展光源的空间相干孔径",
+    "domains": ["testing_alignment", "optical_design"],
+    "keywords": ["空间相干", "光源尺寸", "针孔", "狭缝", "相干孔径"],
+    "formula": "bc≈0.61·λ·R/b",
+    "variables": [
+      { "symbol": "bc", "unit": "mm", "meaning": "目标面处的相干孔径量级" },
+      { "symbol": "λ", "unit": "mm", "meaning": "波长" },
+      { "symbol": "R", "unit": "mm", "meaning": "光源到目标面的距离" },
+      { "symbol": "b", "unit": "mm", "meaning": "均匀圆形光源宽度" }
+    ],
+    "assumptions": ["光源面上各点独立发光", "均匀圆形光源、远场量级估算"],
+    "sanity_range": "光源越大或距离越近，相干孔径越小；激光本身高相干时加针孔只损光不增相干。",
+    "worked_example": "λ=550 nm、R=1000 mm、b=1 mm：bc≈0.3355 mm。",
+    "source_chunk_ids": ["I02-02"]
+  },
+  {
+    "id": "rss_tolerance",
+    "title": "独立误差 RSS 与最坏情况合成",
+    "domains": ["optical_design", "testing_alignment", "generic"],
+    "keywords": ["RSS", "公差", "误差合成", "最坏情况", "蒙特卡洛"],
+    "formula": "RSS：Δ=√(ΣΔxi²)；最坏情况：Δ=Σ|Δxi|",
+    "variables": [
+      { "symbol": "Δxi", "unit": "与目标误差一致", "meaning": "第 i 个误差源对目标量的贡献" },
+      { "symbol": "Δ", "unit": "与目标误差一致", "meaning": "合成误差" }
+    ],
+    "assumptions": ["RSS 仅用于相互独立、近似正态且已折算到同一目标量的误差", "系统偏置与相关误差单独代数相加"],
+    "sanity_range": "RSS≤最坏情况；相关误差若强行 RSS 会低估风险。",
+    "worked_example": "三项贡献 0.02、0.03、0.04 mm：RSS=0.05385 mm，最坏情况=0.09 mm。",
+    "source_chunk_ids": ["G02-02", "G02-01"]
+  },
+  {
+    "id": "thermal_opl",
+    "title": "温度引起的光程漂移",
+    "domains": ["optical_design", "testing_alignment", "thin_film"],
+    "keywords": ["热光程", "dn/dT", "热漂移", "线膨胀", "温度"],
+    "formula": "ΔOPL≈(β+n·α)·L·ΔT",
+    "variables": [
+      { "symbol": "β", "unit": "1/K", "meaning": "折射率温度系数 dn/dT" },
+      { "symbol": "n", "unit": "1", "meaning": "折射率" },
+      { "symbol": "α", "unit": "1/K", "meaning": "线膨胀系数" },
+      { "symbol": "L", "unit": "mm", "meaning": "介质内光程长度" },
+      { "symbol": "ΔT", "unit": "K", "meaning": "温度变化" }
+    ],
+    "assumptions": ["小温变、系数取工作温度附近常数", "β 与 n·α 配对，不得写成 n·β+α"],
+    "sanity_range": "长度单位与 L 一致；系数必须统一为 1/K；长光程与大温变需分段积分。",
+    "worked_example": "β=8e-6/K、n=1.5、α=7e-6/K、L=100 mm、ΔT=5 K：ΔOPL=0.00925 mm=9.25 μm。",
+    "source_chunk_ids": ["I03-09"]
+  },
+  {
+    "id": "responsivity",
+    "title": "光电探测器响应度与量子效率",
+    "domains": ["imaging_camera", "confocal_sensing", "generic"],
+    "keywords": ["响应度", "量子效率", "QE", "光电流", "探测器"],
+    "formula": "R=η·q·λ/(h·c)",
+    "variables": [
+      { "symbol": "R", "unit": "A/W", "meaning": "响应度" },
+      { "symbol": "η", "unit": "1", "meaning": "量子效率" },
+      { "symbol": "q", "unit": "C", "meaning": "电子电荷" },
+      { "symbol": "λ", "unit": "m", "meaning": "入射波长" },
+      { "symbol": "h,c", "unit": "J·s, m/s", "meaning": "普朗克常数与光速" }
+    ],
+    "assumptions": ["入射光全部进入光敏面", "实际系统还需乘窗口透过率与表面反射损失"],
+    "sanity_range": "0≤η≤1；比较探测器必须在同一波长下比较 R。",
+    "worked_example": "η=0.8、λ=850 nm：R≈0.547 A/W；入射 1 μW 时理想光电流约 0.547 μA。",
+    "source_chunk_ids": ["F07-02"]
+  },
+  {
+    "id": "shot_noise",
+    "title": "光电流散粒噪声",
+    "domains": ["imaging_camera", "confocal_sensing", "testing_alignment"],
+    "keywords": ["散粒噪声", "噪声", "NEP", "弱光", "光电流"],
+    "formula": "i_shot=√(2·q·I·B)",
+    "variables": [
+      { "symbol": "i_shot", "unit": "A rms", "meaning": "散粒噪声电流" },
+      { "symbol": "q", "unit": "C", "meaning": "电子电荷" },
+      { "symbol": "I", "unit": "A", "meaning": "直流光电流或暗电流" },
+      { "symbol": "B", "unit": "Hz", "meaning": "噪声带宽" }
+    ],
+    "assumptions": ["散粒噪声服从泊松统计", "带宽 B 已按测量链等效噪声带宽确定"],
+    "sanity_range": "噪声随 √I 与 √B 增长；总噪声还应与热噪声等按独立项平方和合成。",
+    "worked_example": "I=1 nA、B=100 Hz：i_shot≈1.79e-13 A，即约 0.179 pA rms。",
+    "source_chunk_ids": ["D01-06"]
+  },
+  {
+    "id": "rise_time_bandwidth",
+    "title": "上升时间与截止频率",
+    "domains": ["imaging_camera", "confocal_sensing", "testing_alignment"],
+    "keywords": ["上升时间", "截止频率", "带宽", "响应速度", "探测器"],
+    "formula": "fc≈0.35/tr",
+    "variables": [
+      { "symbol": "fc", "unit": "Hz", "meaning": "-3 dB 截止频率" },
+      { "symbol": "tr", "unit": "s", "meaning": "10%–90% 上升时间" }
+    ],
+    "assumptions": ["单极点近似", "tr 与 fc 使用一致单位"],
+    "sanity_range": "tr 越短 fc 越高；多级响应先按 tr=√(Σtri²) 合成再换算。",
+    "worked_example": "tr=10 ns：fc≈35 MHz；tr=1 μs 时 fc≈350 kHz。",
+    "source_chunk_ids": ["D01-07"]
+  },
+  {
+    "id": "grating_equation",
+    "title": "光栅方程与中心波长",
+    "domains": ["spectrometer", "hyperspectral", "optical_design"],
+    "keywords": ["光栅方程", "Czerny-Turner", "Offner", "Littrow", "光栅", "波长"],
+    "formula": "d·(sinα+sinβ)=m·λ（采用同侧相加的符号约定）",
+    "variables": [
+      { "symbol": "d", "unit": "mm 或 nm", "meaning": "光栅周期，刻线密度的倒数" },
+      { "symbol": "α,β", "unit": "rad 或 °", "meaning": "入射角与衍射角" },
+      { "symbol": "m", "unit": "1", "meaning": "衍射级次，整数" },
+      { "symbol": "λ", "unit": "与 d 一致", "meaning": "波长" }
+    ],
+    "assumptions": ["平面波照明、理想周期光栅", "角度正负号必须在同一约定下使用"],
+    "sanity_range": "d 与 λ 单位一致；Littrow 条件退化为 mλ=2d·sinα。",
+    "worked_example": "1200 lines/mm，即 d=833.333 nm；α=20°、β=10°、m=1：λ≈429.65 nm。",
+    "source_chunk_ids": ["I06-01", "I06-06"]
+  },
+  {
+    "id": "linear_dispersion",
+    "title": "分光系统线色散",
+    "domains": ["spectrometer", "hyperspectral", "optical_design"],
+    "keywords": ["线色散", "色散", "光谱仪", "焦距", "光栅"],
+    "formula": "dl/dλ=f2·m/(d·cosβ)",
+    "variables": [
+      { "symbol": "dl/dλ", "unit": "mm/nm", "meaning": "焦面上单位波长对应的空间位移" },
+      { "symbol": "f2", "unit": "mm", "meaning": "成像镜焦距" },
+      { "symbol": "m", "unit": "1", "meaning": "衍射级次" },
+      { "symbol": "d", "unit": "mm", "meaning": "光栅周期" },
+      { "symbol": "β", "unit": "rad 或 °", "meaning": "衍射角" }
+    ],
+    "assumptions": ["小角度微分、近轴焦面", "f2 与 d 使用一致长度单位后再换算为 mm/nm"],
+    "sanity_range": "f2 或 m 增大时色散增大；谱面长度与探测器像元匹配必须同步核算。",
+    "worked_example": "f2=200 mm、m=1、d=1/1200 mm、β=10°：dl/dλ≈0.2437 mm/nm。",
+    "source_chunk_ids": ["I06-01"]
+  },
+  {
+    "id": "spectral_resolution",
+    "title": "光栅理论分辨本领",
+    "domains": ["spectrometer", "hyperspectral", "optical_design"],
+    "keywords": ["分辨率", "分辨本领", "mN", "光谱仪", "刻线数"],
+    "formula": "R=λ/Δλ=m·N",
+    "variables": [
+      { "symbol": "R", "unit": "1", "meaning": "理论分辨本领" },
+      { "symbol": "λ", "unit": "nm", "meaning": "工作波长" },
+      { "symbol": "Δλ", "unit": "nm", "meaning": "理论可分辨波长间隔" },
+      { "symbol": "m", "unit": "1", "meaning": "衍射级次" },
+      { "symbol": "N", "unit": "1", "meaning": "被照亮刻线数" }
+    ],
+    "assumptions": ["m·N 是衍射极限", "实际分辨率还受狭缝几何像宽、衍射宽与像差限制"],
+    "sanity_range": "实际分辨本领不高于理想 m·N；N 必须取被照亮刻线数而非光栅总刻线数。",
+    "worked_example": "m=1、N=120000、λ=500 nm：R=120000，理论 Δλ≈0.00417 nm。",
+    "source_chunk_ids": ["I06-08"]
+  },
+  {
+    "id": "pushbroom_gsd",
+    "title": "推扫高光谱 GSD 与积分时间上限",
+    "domains": ["hyperspectral", "imaging_camera", "optical_design"],
+    "keywords": ["GSD", "推扫", "高光谱", "速高比", "积分时间", "运动模糊"],
+    "formula": "GSD=H·p/f；T_int≤0.3·H·p/(v·f)",
+    "variables": [
+      { "symbol": "GSD", "unit": "m", "meaning": "地面采样距离" },
+      { "symbol": "H", "unit": "m", "meaning": "平台高度" },
+      { "symbol": "p", "unit": "m", "meaning": "探测器像元尺寸" },
+      { "symbol": "f", "unit": "m", "meaning": "前置镜焦距" },
+      { "symbol": "v", "unit": "m/s", "meaning": "平台地速" },
+      { "symbol": "T_int", "unit": "s", "meaning": "积分时间" }
+    ],
+    "assumptions": ["平台直线匀速、无姿态扰动", "运动模糊判据取 m≤0.3 像元"],
+    "sanity_range": "H、p、f 统一为米；有姿态角速率时附加模糊必须并入，不得只套匀速公式。",
+    "worked_example": "H=1000 m、p=10 μm、f=0.05 m：GSD=0.2 m；v=100 m/s 时 T_int≤0.0006 s=0.6 ms。",
+    "source_chunk_ids": ["I05-02"]
+  },
+  {
+    "id": "qwot_film",
+    "title": "四分之一波长膜层几何厚度",
+    "domains": ["thin_film", "optical_design"],
+    "keywords": ["薄膜", "四分之一波长", "QWOT", "膜厚", "镀膜"],
+    "formula": "n·d=λ0/4",
+    "variables": [
+      { "symbol": "n", "unit": "1", "meaning": "膜料在中心波长处的折射率" },
+      { "symbol": "d", "unit": "nm", "meaning": "几何膜厚" },
+      { "symbol": "λ0", "unit": "nm", "meaning": "膜系中心波长" }
+    ],
+    "assumptions": ["正入射、非吸收各向同性均匀膜层", "折射率取中心波长处实际值"],
+    "sanity_range": "d 与 λ0 单位一致；斜入射须对 s/p 偏振重新计算光学导纳。",
+    "worked_example": "λ0=550 nm、n=1.45：d=550/(4×1.45)=94.83 nm。",
+    "source_chunk_ids": ["F06-01", "F06-02"]
+  },
+  {
+    "id": "ct_astigmatism",
+    "title": "Czerny-Turner 消像散条件",
+    "domains": ["spectrometer", "hyperspectral", "optical_design"],
+    "keywords": ["Czerny-Turner", "消像散", "CT", "曲率半径", "折叠角"],
+    "formula": "(sinα·tanα)/R1=(sinβ·tanβ)/R2",
+    "variables": [
+      { "symbol": "α,β", "unit": "rad 或 °", "meaning": "准直镜与成像镜上的入射角" },
+      { "symbol": "R1,R2", "unit": "mm", "meaning": "两球面镜曲率半径" }
+    ],
+    "assumptions": ["球面镜、近轴小视场、单设计波长", "f=R/2"],
+    "sanity_range": "R1=R2 时 α=β 可满足；扫描到宽波段两端时仍会有残余像散。",
+    "worked_example": "R1=R2=400 mm、α=β=8°：等式两侧相同；若只改变 β，必须重新调整 R2 或另一折叠角。",
+    "source_chunk_ids": ["I06-02"]
+  }
+]

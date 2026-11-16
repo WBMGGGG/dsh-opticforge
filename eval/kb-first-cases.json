@@ -1,0 +1,55 @@
+[
+  {
+    "id": "infrared_lens",
+    "problem": "设计一套 8–12 μm 红外镜头，给出初始结构、材料选择、热离焦分析与装调验收方案",
+    "deliverable": "方案报告",
+    "constraints": "先给 KB 基线，再决定是否需要外部资料"
+  },
+  {
+    "id": "pushbroom_hyperspectral",
+    "problem": "设计 400–1000 nm 推扫式高光谱成像仪，光谱分辨率 5 nm，GSD 0.5 m@1 km，给出指标预算、积分时间和定标流程",
+    "deliverable": "方案与指标表",
+    "constraints": "使用公式卡给出计算轨迹"
+  },
+  {
+    "id": "grating_spectrometer",
+    "problem": "比较 Czerny-Turner、Offner 与 Littrow 光栅光谱仪，按分辨率、体积、杂散光和装调难度选型",
+    "deliverable": "选型报告"
+  },
+  {
+    "id": "thin_film_thermal",
+    "problem": "评估薄膜滤光片在温度变化下的中心波长漂移与光程变化，给出计算假设和验证实验",
+    "deliverable": "分析报告"
+  },
+  {
+    "id": "confocal_selection",
+    "problem": "选择光谱共焦位移传感器用于透明玻璃厚度与表面形貌检测，给出量程、光斑、数值孔径和校准注意事项",
+    "deliverable": "选型清单"
+  },
+  {
+    "id": "optomechanical_tolerance",
+    "problem": "为一套机器视觉镜头建立光机公差链，区分相关误差与独立误差，给出 RSS、最坏情况与补偿器分配",
+    "deliverable": "公差预算表"
+  },
+  {
+    "id": "interferometry",
+    "problem": "干涉条纹对比度不足，分析两臂光强比、相干性、偏振、振动与气流，并给出排查顺序",
+    "deliverable": "排障 SOP"
+  },
+  {
+    "id": "stray_light_ghost",
+    "problem": "成像系统出现鬼像和杂散光，给出光机排查、分光片与镜筒检查、挡光测试和验收方法",
+    "deliverable": "排障报告"
+  },
+  {
+    "id": "detector_selection",
+    "problem": "为弱光 850 nm 检测选择光电探测器，比较响应度、暗电流、散粒噪声、带宽与读出电路",
+    "deliverable": "探测器选型表"
+  },
+  {
+    "id": "standard_whitepaper",
+    "problem": "调研相干扫描干涉测量的 ZYGO 白皮书和 JJF 1990-2022 原始条文，说明哪些结论只能标为 KB 缺口",
+    "deliverable": "资料核验报告",
+    "constraints": "先用 KB 确认 A03/C01/E01 缺口，再决定外部核验"
+  }
+]

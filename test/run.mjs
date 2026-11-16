@@ -514,18 +514,87 @@ test("F4 opticforge_verify：有效引用通过，无效引用与无来源数量
   assert.ok(bad.score < 100, "有问题时分数应低于 100");
 });
 
-test("F5 版本一致：assist/verify 与 KB 同版本 1.1.0", async () => {
+test("F5 版本一致：assist/verify 与 KB 同版本 1.2.0", async () => {
   await booted;
   const m = requireModule(kbData, "lib/kb-data.js");
   const meta = await m.getKBMeta();
-  assert.equal(meta.kb_version, "1.1.0", "kb_version 应为 1.1.0，实际 " + meta.kb_version);
+  assert.equal(meta.kb_version, "1.2.0", "kb_version 应为 1.2.0，实际 " + meta.kb_version);
   const v = await execAssist({ problem: "共焦位移传感器选型" });
-  assert.equal(v.kb_version, "1.1.0", "assist 应回显 1.1.0");
+  assert.equal(v.kb_version, "1.2.0", "assist 应回显 1.2.0");
   assert.deepEqual(
     v.library_gaps.map((g) => g.doc_id).sort(),
     ["A03", "C01", "E01"],
     "原文层缺口应只有 A03/C01/E01，实际：" + JSON.stringify(v.library_gaps)
   );
+});
+
+test("F6 KB-first 契约：alignment/web_gate/blocked_by 与第一入口禁网条款可检查", async () => {
+  await booted;
+  const v = await execAssist({ problem: "设计 400–1000 nm 推扫高光谱，给出 GSD 与积分时间预算" });
+  assert.equal(v.ok, true);
+  assert.ok(Array.isArray(v.alignment.kb_queries) && v.alignment.kb_queries.length > 0);
+  assert.ok(Array.isArray(v.alignment.matched) && Array.isArray(v.alignment.unmatched));
+  assert.ok(["covered", "partial", "gap"].includes(v.alignment.verdict));
+  assert.equal(v.web_gate.policy, "default_deny_explicit_allowlist");
+  assert.equal(typeof v.web_gate.allowed, "boolean");
+  const must = v.execution_contract.must.join("\n");
+  assert.match(must, /第一入口/);
+  assert.match(must, /alignment/);
+  assert.match(must, /general_search\/web_search\/web_fetch/);
+  for (const g of v.search_pack.filter((x) => x.scope === "external")) {
+    assert.ok(g.trigger && Array.isArray(g.blocked_by), "外部查询必须有 trigger 与 blocked_by");
+  }
+  for (const s of v.plan.steps.filter((x) => x.web_gated)) {
+    assert.ok(s.blocked_by.includes(v.plan.kb_evidence_step) && s.blocked_by.includes("web_gate"));
+    assert.ok(!v.plan.parallelizable.includes(s.id), "web 步骤不得无约束并行");
+  }
+});
+
+test("F7 公式卡与 verify 计算轨迹：pushbroom 命中 GSD，完整轨迹通过，缺轨迹可检出", async () => {
+  await booted;
+  const a = await execAssist({ problem: "推扫高光谱 GSD 积分时间 速高比，给出计算轨迹" });
+  assert.ok(a.calc_specs.some((c) => c.card_id === "pushbroom_gsd"), "应命中 pushbroom_gsd：" + JSON.stringify(a.calc_specs.map((c) => c.card_id)));
+  const good = await execVerify({
+    problem: "计算推扫高光谱 GSD",
+    strict: true,
+    text: "## KB 对齐\nverdict: covered；依据 I05-02。\n\n## 计算轨迹\nformula_id: pushbroom_gsd；输入 H=1000 m、p=0.00001 m、f=0.05 m；GSD=H·p/f=0.2 m。\n\n## 假设\n匀速直线飞行。\n\n## 缺口\n无新增缺口。\n\n## 复现\n按公式重算。\n\n## 来源\nI05-02。"
+  });
+  assert.equal(good.pass, true, "完整公式卡轨迹应通过：" + JSON.stringify(good.issues));
+  assert.ok(good.formula_cards.used.includes("pushbroom_gsd"));
+  const bad = await execVerify({ problem: "计算 GSD", strict: true, text: "GSD 为 0.2 m。\n\n## 假设\n匀速。\n\n## 缺口\n无。\n\n## 复现\n略。" });
+  assert.ok(bad.issues.some((i) => i.type === "missing_kb_alignment"));
+  assert.ok(bad.issues.some((i) => i.type === "missing_formula_id"));
+});
+
+test("F8 外部来源检查与缺口板块名：URL 要日期/细节，A03/C01/E01 提及不算引用", async () => {
+  await booted;
+  const gapText = "## 结论\n依据 F01-01。\n\n## 假设\n近轴。\n\n## 缺口\nA03、C01、E01 原文缺失。\n\n## 复现\n见步骤。\n\n## 来源\nF01-01。";
+  const gap = await execVerify({ text: gapText });
+  assert.equal(gap.citations.total, 1);
+  assert.deepEqual(gap.citations.invalid, []);
+  const bad = await execVerify({ problem: "核对厂商型号", strict: true, text: "## KB 对齐\nverdict: gap。\n\n## 假设\n以网页为准。\n\n## 缺口\nKB 无条目。\n\n## 复现\n打开 https://example.com/datasheet 查看。" });
+  assert.ok(bad.issues.some((i) => i.type === "external_missing_date"));
+  assert.ok(bad.issues.some((i) => i.type === "external_missing_detail"));
+});
+
+test("F9 Skill 与公式卡随包存在：frontmatter 完整，19 张卡全部引用 present 条目", async () => {
+  await booted;
+  const fs = await import("node:fs");
+  const skillPath = path.join(PLUGIN, "skills", "opticforge-task", "SKILL.md");
+  const skill = fs.readFileSync(skillPath, "utf8");
+  assert.match(skill, /^---\nname: opticforge-task\ndescription: /);
+  assert.ok(skill.includes("opticforge_assist") && skill.includes("web_gate") && skill.includes("opticforge_verify"));
+  assert.ok(!skill.includes("TODO"));
+  const cards = JSON.parse(fs.readFileSync(path.join(PLUGIN, "data", "formula-cards.json"), "utf8"));
+  assert.equal(cards.length, 19);
+  assert.equal(new Set(cards.map((c) => c.id)).size, cards.length);
+  const m = requireModule(kbData, "lib/kb-data.js");
+  const chunks = await m.getKBData();
+  const byId = new Map(chunks.map((c) => [c.chunk_id, c]));
+  for (const card of cards) {
+    assert.ok(card.formula && card.variables.length && card.assumptions.length && card.worked_example, "公式卡字段不全：" + card.id);
+    for (const id of card.source_chunk_ids) assert.equal(byId.get(id)?.status, "present", card.id + " 来源不是 present：" + id);
+  }
 });
 
 // =====================================================================

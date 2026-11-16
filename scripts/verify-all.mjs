@@ -3,13 +3,14 @@
 //
 // 跑法：node scripts/verify-all.mjs
 //
-// 六组检查：
+// 七组检查：
 //   A. package.json 发布契约（包名、files、dsh.bundle.patch、无宿主依赖）
 //   B. 源码不 import 任何 @deepseek-ai 包（否则 link 安装会解析失败）
 //   C. 知识库产物一致性（build-kb --check）
 //   D. 集成测试（test/run.mjs）
 //   E. 打包清单（npm pack --dry-run），确认该发的都发、不该发的一个都没发
 //   F. 版本一致（package.json version == kb-meta.kb_version）
+//   G. 公式卡、Skill、KB-first 评测与安装 dry-run
 //
 // 任何一项失败即整体失败（exit 1），不做「警告后继续」。
 
@@ -50,6 +51,7 @@ async function main() {
   assert("main 指向 lib/index.js", pkg.main === "lib/index.js", "实际 " + pkg.main);
   assert("files 含 lib/", (pkg.files || []).includes("lib/"), "files=" + JSON.stringify(pkg.files));
   assert("files 含 data/", (pkg.files || []).includes("data/"), "files=" + JSON.stringify(pkg.files));
+  assert("files 含 skills/", (pkg.files || []).includes("skills/"), "files=" + JSON.stringify(pkg.files));
   assert("files 含 cordis.patch.yml", (pkg.files || []).includes("cordis.patch.yml"), "files=" + JSON.stringify(pkg.files));
   assert("声明 dsh.bundle.patch", pkg.dsh?.bundle?.patch === "./cordis.patch.yml", "实际 " + JSON.stringify(pkg.dsh));
   assert("无 peerDependencies", !pkg.peerDependencies || Object.keys(pkg.peerDependencies).length === 0, JSON.stringify(pkg.peerDependencies));
@@ -80,6 +82,12 @@ async function main() {
   const pass = /\n# pass (\d+)/.exec(t.out);
   assert("test/run.mjs 全部通过", t.code === 0 && pass, (pass ? "pass=" + pass[1] : "") + (t.code === 0 ? "" : " exit=" + t.code));
   if (pass) console.log("       " + pass[1] + " 个用例通过");
+  for (const file of ["assist-contract.test.mjs", "entry-contract.test.mjs"]) {
+    const r = runNode([path.join(ROOT, "test", file)]);
+    const p = /\n# pass (\d+)/.exec(r.out);
+    assert(file + " 全部通过", r.code === 0 && p, (p ? "pass=" + p[1] : "") + (r.code === 0 ? "" : " exit=" + r.code));
+    if (p) console.log("       " + file + "：" + p[1] + " 个用例通过");
+  }
 
   console.log("== E. 打包清单 ==");
   const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -95,7 +103,7 @@ async function main() {
   } catch {
     bad("npm pack 可解析", (pack.stderr || pack.stdout || "无输出").slice(0, 200));
   }
-  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/assist.js", "lib/capabilities.js", "lib/verify.js", "data/kb-data.json", "data/kb-meta.json", "data/assist-playbooks.json", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
+  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/assist.js", "lib/capabilities.js", "lib/verify.js", "data/kb-data.json", "data/kb-meta.json", "data/assist-playbooks.json", "data/formula-cards.json", "skills/opticforge-task/SKILL.md", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
   for (const f of mustHave) assert("打包含 " + f, files.includes(f), "实际清单：" + files.join(", "));
   const mustNot = files.filter((f) => f.startsWith("_kb-raw/") || f.startsWith("test/") || f.startsWith("scripts/") || f.includes("HANDOVER"));
   assert("打包不含私有/内部文件", mustNot.length === 0, mustNot.join(", "));
@@ -105,6 +113,26 @@ async function main() {
   console.log("== F. 版本一致 ==");
   const meta = JSON.parse(await readFile(path.join(ROOT, "data", "kb-meta.json"), "utf8"));
   assert("package.json 与 kb_version 一致", pkg.version === meta.kb_version, "pkg=" + pkg.version + " kb=" + meta.kb_version);
+
+  console.log("== G. 公式卡、Skill、评测与安装契约 ==");
+  const cards = JSON.parse(await readFile(path.join(ROOT, "data", "formula-cards.json"), "utf8"));
+  const chunks = JSON.parse(await readFile(path.join(ROOT, "data", "kb-data.json"), "utf8"));
+  const byId = new Map(chunks.map((c) => [c.chunk_id, c]));
+  assert("公式卡共 19 张且 id 唯一", Array.isArray(cards) && cards.length === 19 && new Set(cards.map((c) => c.id)).size === 19, "实际 " + (Array.isArray(cards) ? cards.length : "非数组"));
+  let cardFields = true;
+  let cardSources = true;
+  for (const c of cards) {
+    if (!(c.id && c.title && c.formula && Array.isArray(c.variables) && c.variables.length && Array.isArray(c.assumptions) && c.assumptions.length && c.sanity_range && c.worked_example)) cardFields = false;
+    for (const id of c.source_chunk_ids || []) if (byId.get(id)?.status !== "present") cardSources = false;
+  }
+  assert("公式卡字段完整", cardFields, "缺 formula/variables/assumptions/sanity_range/worked_example");
+  assert("公式卡来源全部为 present", cardSources, "存在无效 source_chunk_ids");
+  const skill = await readFile(path.join(ROOT, "skills", "opticforge-task", "SKILL.md"), "utf8");
+  assert("Skill frontmatter 与工作流完整", /^---\nname: opticforge-task\ndescription: /.test(skill) && skill.includes("opticforge_assist") && skill.includes("web_gate") && skill.includes("opticforge_verify") && !skill.includes("TODO"), "检查 name/description/assist/web_gate/verify/TODO");
+  const evalRun = runNode([path.join(ROOT, "eval", "run-kb-first.mjs")]);
+  assert("10 类 KB-first 契约评测通过", evalRun.code === 0, evalRun.out.trim().split("\n").slice(-5).join(" | "));
+  const installDry = runNode([path.join(ROOT, "scripts", "install-local.mjs"), "--dry-run"]);
+  assert("安装器 dry-run 通过且包含 Skill 链接", installDry.code === 0 && installDry.out.includes("Skill"), installDry.out.trim().split("\n").slice(-4).join(" | "));
 
   console.log("");
   if (failures.length) {

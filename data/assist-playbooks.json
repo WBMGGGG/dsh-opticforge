@@ -60,7 +60,7 @@
         { "phase": "结构", "goal": "选镜头型式、给出初始结构参数与一阶量核算", "capability": "kb", "output": "初始结构说明" },
         { "phase": "优化", "goal": "设定评价函数、约束与优化顺序，记录每次迭代的取舍", "capability": "calc", "output": "优化记录 + MTF/点列图判读" },
         { "phase": "公差", "goal": "做灵敏度/蒙特卡洛公差，分配补偿器与装调余量", "capability": "calc", "output": "公差表 + 合格率" },
-        { "phase": "可制造", "goal": "核对材料、镀膜、加工与检测可行性，列出降本替代", "capability": "web_search", "output": "可制造性清单" }
+        { "phase": "可制造", "goal": "核对材料、镀膜、加工与检测可行性，列出降本替代", "capability": "web_search", "output": "可制造性清单", "gate_id": "vendor_params" }
       ],
       "search": [
         { "facet": "标准", "zh": "ISO 10110 光学图纸 标注", "en": "ISO 10110 optical drawing indication" },
@@ -174,7 +174,7 @@
       "steps": [
         { "phase": "指标", "goal": "写清波段、入射角、偏振、吸收与温漂指标", "capability": "skill_sheet", "output": "膜系指标表" },
         { "phase": "设计", "goal": "选材料与层数，给初始膜系与评价函数", "capability": "calc", "output": "膜系方案" },
-        { "phase": "工艺", "goal": "核对镀膜工艺、误差、应力与环境试验", "capability": "web_search", "output": "工艺可行性" }
+        { "phase": "工艺", "goal": "核对镀膜工艺、误差、应力与环境试验", "capability": "web_search", "output": "工艺可行性", "gate_id": "standard_version" }
       ],
       "search": [
         { "facet": "标准", "zh": "光学薄膜 环境试验 标准", "en": "optical coating environmental test standard" },
@@ -217,7 +217,7 @@
       ],
       "steps": [
         { "phase": "维度", "goal": "定比较维度、权重与淘汰线", "capability": "skill_sheet", "output": "评估矩阵" },
-        { "phase": "收集", "goal": "按标准/论文/厂商三类来源定向检索并抽取", "capability": "web_search", "output": "来源清单" },
+        { "phase": "收集", "goal": "按标准/论文/厂商三类来源定向检索并抽取", "capability": "web_search", "output": "来源清单", "gate_id": "vendor_params" },
         { "phase": "比较", "goal": "按统一口径填矩阵，标注不确定项", "capability": "analysis", "output": "对比表" },
         { "phase": "结论", "goal": "给推荐方案、风险与验证计划", "capability": "skill_doc", "output": "选型报告" }
       ],

@@ -20,7 +20,7 @@
 // 安全边界：只改 profile 的 package.json（写前留 .bak-时间戳 备份）和一条目录链接；
 // 卸载只删本插件相关项，不触碰其它插件、不删仓库文件。
 
-import { readFile, writeFile, rename, symlink, lstat, unlink, access } from "node:fs/promises";
+import { readFile, writeFile, rename, symlink, lstat, unlink, access, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname, resolve } from "node:path";
@@ -42,6 +42,10 @@ const UNINSTALL = has("--uninstall");
 const PROFILE = resolve(opt("--profile", join(homedir(), ".dsh", "profiles", "desktop")));
 const PKG_PATH = join(PROFILE, "package.json");
 const LINK_PATH = join(PROFILE, "node_modules", PLUGIN_NAME);
+const SKILL_NAME = "opticforge-task";
+const SKILL_SOURCE = join(PLUGIN_DIR, "skills", SKILL_NAME);
+const SKILL_HOME = join(homedir(), ".dsh", "skills");
+const SKILL_LINK = join(SKILL_HOME, SKILL_NAME);
 
 const log = (msg) => console.log((DRY ? "[dry-run] " : "") + msg);
 
@@ -81,6 +85,34 @@ async function removeLink() {
   log("已删除目录链接 " + LINK_PATH);
 }
 
+async function makeSkillLink() {
+  try {
+    await access(SKILL_SOURCE);
+  } catch {
+    return log("未找到随包 Skill，跳过：" + SKILL_SOURCE);
+  }
+  let st = null;
+  try { st = await lstat(SKILL_LINK); } catch { st = null; }
+  if (st) {
+    if (st.isSymbolicLink()) return log("Skill 链接已存在，跳过：" + SKILL_LINK);
+    return log("Skill 路径已存在且不是链接，未覆盖：" + SKILL_LINK);
+  }
+  if (DRY) return log("将创建 Skill 链接 " + SKILL_LINK + " → " + SKILL_SOURCE);
+  await mkdir(SKILL_HOME, { recursive: true });
+  await symlink(SKILL_SOURCE, SKILL_LINK, "junction");
+  log("已创建 Skill 链接 " + SKILL_LINK + " → " + SKILL_SOURCE);
+}
+
+async function removeSkillLink() {
+  let st = null;
+  try { st = await lstat(SKILL_LINK); } catch { st = null; }
+  if (!st) return log("Skill 链接不存在，跳过");
+  if (!st.isSymbolicLink()) return log("Skill 路径不是链接，保留：" + SKILL_LINK);
+  if (DRY) return log("将删除 Skill 链接 " + SKILL_LINK);
+  await unlink(SKILL_LINK);
+  log("已删除 Skill 链接 " + SKILL_LINK);
+}
+
 async function main() {
   await access(join(PLUGIN_DIR, "package.json")).catch(() => {
     throw new Error("插件目录异常（缺少 package.json）：" + PLUGIN_DIR);
@@ -103,6 +135,7 @@ async function main() {
       else await writePkg(pkg);
     }
     await removeLink();
+    await removeSkillLink();
     log("");
     log("卸载完成。重启 DSH 生效；仓库文件未改动。");
     return;
@@ -127,9 +160,11 @@ async function main() {
     await writePkg(pkg);
   }
   await makeLink();
+  await makeSkillLink();
 
   log("");
   log("完成。重启 DSH 后生效，然后用 opticforge_assist / opticforge_verify / opticforge_search 验证。");
+  log("Skill：" + SKILL_NAME + "（KB-first 工作流）已链接到 " + SKILL_HOME);
   log("以后升级：直接改这个仓库（数据、代码），重启 DSH 就加载最新版本。");
 }
 

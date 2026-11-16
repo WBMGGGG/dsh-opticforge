@@ -1,7 +1,7 @@
 {
   "name": "dsh-opticforge",
-  "version": "1.1.0",
-  "description": "OpticForge —— 光电工程师任务辅助插件，DeepSeek Harness。任务受理与能力路由（Skill / MCP / 本地工具 / 定向检索）+ 40 个板块、324 条带来源的事实条目 + 交付自检。输入一个具体问题，输出简报、知识证据、分阶段计划、检索包与验收清单；纯 Node.js，零运行时依赖。",
+  "version": "1.2.0",
+  "description": "OpticForge —— 光电工程师任务辅助插件，DeepSeek Harness。KB-first 任务受理与能力路由 + 40 个板块、324 条事实条目 + 19 张公式卡 + 交付自检。输入一个具体问题，先对齐知识库，再按 web_gate 决定是否联网；纯 Node.js，零运行时依赖。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -14,6 +14,7 @@
   "files": [
     "lib/",
     "data/",
+    "skills/",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
@@ -26,10 +27,11 @@
     }
   },
   "scripts": {
-    "test": "node test/run.mjs",
+    "test": "node test/run.mjs && node test/assist-contract.test.mjs && node test/entry-contract.test.mjs",
     "verify": "node scripts/verify-all.mjs",
     "kb": "node scripts/build-kb.mjs --all",
-    "kb:check": "node scripts/build-kb.mjs --check"
+    "kb:check": "node scripts/build-kb.mjs --check",
+    "eval:kb-first": "node eval/run-kb-first.mjs"
   },
   "keywords": [
     "dsh",
