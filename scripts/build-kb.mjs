@@ -26,7 +26,7 @@ const OUT_META = join(ROOT, "data", "kb-meta.json");
 
 const FIELDS = ["doc_id", "chunk_id", "status", "is_original_excerpt", "text", "source", "page_or_section", "keywords_zh", "disclaimer"];
 const MARKETING = ["low cost", "high performance", "best in class", "领先", "优异", "完美", "最佳选择"];
-const COMPILED_SERIES = new Set(["F", "G", "H"]);
+const COMPILED_SERIES = new Set(["F", "G", "H", "I"]);
 
 // 编译型板块的下限：比原文型更严，因为读者拿不到原文可核对。
 const COMPILED_MIN_LEN = 300;

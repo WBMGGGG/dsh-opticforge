@@ -19,7 +19,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 **B. 数据统计**
 
-264 块 / 248 present；A–E 九个板块的块数不漂移；F/G/H 三个系列分别为 83 / 53 / 61；板块总数 34；`missing_source` 11、`substitute` 5；9 个字段齐全；`chunk_id` 唯一。
+324 块 / 308 present；A–E 九个板块的块数不漂移；F/G/H/I 四个系列分别为 83 / 53 / 61 / 60；板块总数 40；`missing_source` 11、`substitute` 5；9 个字段齐全；`chunk_id` 唯一。
 
 **C. 检索端到端**
 
@@ -27,7 +27,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑�
 
 **D. 目录与取用**
 
-`opticforge_docs` 列出 34 个板块与逐块标题；`doc_id` 大小写不敏感、未知板块干净报错；`opticforge_get` 返回 9 字段完整条目、不存在时回 `ok:false` 与已知前缀；缺口块带 `note` 且明确"不可当作事实依据"；编译型板块能被检索命中（F01/F02）。
+`opticforge_docs` 列出 40 个板块与逐块标题；`doc_id` 大小写不敏感、未知板块干净报错；`opticforge_get` 返回 9 字段完整条目、不存在时回 `ok:false` 与已知前缀；缺口块带 `note` 且明确"不可当作事实依据"；编译型板块能被检索命中（F01/F02/I01/I02）。
 
 **E. 产物一致性**
 
