@@ -1,0 +1,31 @@
+{
+  "name": "@deepseek-ai/dsh-opticforge",
+  "version": "0.1.0",
+  "description": "OpticForge — 光电工程师知识库检索与工程计算 DSH cordis 插件",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib/",
+    "data/",
+    "cordis.patch.yml",
+    "README.zh.md",
+    "package.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-tools": "^0.2.2-rc.1"
+  },
+  "license": "MIT"
+}
