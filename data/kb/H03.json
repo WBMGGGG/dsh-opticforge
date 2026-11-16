@@ -27,7 +27,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【纠缠与贝尔测试】\n定义：纠缠态是两个或多个粒子的量子态不能分解为各自独立态的直积；Bell 态 |Φ⁺⟩=(|00⟩+|11⟩)/√2 是典型纠缠态，测量结果关联且不能用局域隐变量解释。\n公式：CHSH 不等式——局域实在论要求 |S|≤2，量子力学预言最大值 2√2；实验测得 S>2 即违反 CHSH。\n判据：无漏洞贝尔实验需同时关闭定域性漏洞（测量距离足够远）和探测漏洞（探测效率足够高）；SPDC 是产生纠缠光子对的常用方法。\n边界：贝尔测试排除了局域隐变量理论，但纠缠分发距离随信道损耗指数衰减；自由空间纠缠分发受大气湍流影响。\n工程要点：Bell 基测量用分束器+单光子探测器做符合计数；纠缠光子对的收集效率和符合计数率是实验关键指标。",
-    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Aspect, Aspect & Roger, PRL, 1982",
+    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Aspect, Dalibard & Roger, PRL, 1982",
     "page_or_section": "综合：量子纠缠 / CHSH 与实验漏洞",
     "keywords_zh": "纠缠态,CHSH,贝尔不等式,SPDC,定域性漏洞,探测漏洞",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"

@@ -38,7 +38,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【硅光平台与材料】\n定义：硅光集成在同一芯片上集成波导、调制器、探测器等器件；主流平台包括 SOI（绝缘体上硅）、SiN（氮化硅）和 InP（磷化铟）。\n公式：SOI 芯层 Si 折射率 n≈3.48，包层 SiO₂ n≈1.44，高折射率差允许波导弯曲半径小至几微米；SiN n≈2.0，色散低、可见光透明。\n判据：SOI 在 1550 nm 通信窗口低损耗且 CMOS 兼容；SiN 适合可见光到近红外、生物传感；InP 是有源平台（可集成激光器）。\n边界：Si 本身不发光，需异质集成 InP 激光器；Si 在可见光段有双光子吸收和自由载流子吸收；高折射率差虽然允许小尺寸但对工艺偏差极敏感。\n工程要点：选平台先看工作波段——1550 nm 通信选 SOI，可见光/生物选 SiN，需要片上光源选 InP；工艺线最小线宽直接决定波导损耗和弯曲半径。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；硅光子集成公开综述；Agrawal《Fiber-Optic Communication Systems》4e",
     "page_or_section": "综合：硅光平台 / 材料与工艺约束",
     "keywords_zh": "SOI,SiN,InP,硅光,折射率差,CMOS兼容",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
@@ -82,7 +82,7 @@
     "status": "present",
     "is_original_excerpt": false,
     "text": "【共封装与集成趋势】\n定义：共封装光学（CPO）把光引擎与交换芯片封装在一起，缩短电互连距离以降低功耗；光电融合指硅光集成把调制器、波导、探测器集成在同一芯片上。\n公式：电互连功耗随带宽增长近似线性或超线性上升；光互连单位带宽功耗更低；CPO 的核心驱动是电 I/O 功耗墙。\n判据：CPO 目前主要面向数据中心高密度交换机；可维护性差——光引擎坏了整板更换，不像可插拔光模块那样现场更换。\n边界：CPO 设计瓶颈在光纤阵列耦合对准、热管理（光引擎与芯片共热）、电-光接口密度；良率与成本是量产主要障碍。\n工程要点：CPO 设计先做光电协同仿真；光纤阵列耦合是封装良率的关键——对准精度要求亚微米级，贴片设备精度直接决定良率。",
-    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Soref, Nature Photonics, 2012；Agrawal《Fiber-Optic Communication Systems》4e",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；硅光子集成公开综述；Agrawal《Fiber-Optic Communication Systems》4e",
     "page_or_section": "综合：共封装光学 / 光电集成趋势",
     "keywords_zh": "CPO,硅光集成,光电融合,光引擎,光纤阵列,封装",
     "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"

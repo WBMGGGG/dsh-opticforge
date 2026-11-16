@@ -1,7 +1,7 @@
 {
   "kb_version": "0.2.0",
-  "built_at": "2026-11-16T04:11:56.928Z",
-  "content_sha256": "eac1dc3fcc4ac0f1ee4ab61e7002108866b86d9a3902325e69cf8ca40059421e",
+  "built_at": "2026-11-16T04:17:03.653Z",
+  "content_sha256": "6da5f91e31315d45de06bd90609faa49e32a1a150ac67a5b79bd56522807b284",
   "total_chunks": 264,
   "present_chunks": 248,
   "docs": [
@@ -165,7 +165,7 @@
       "doc_id": "H01",
       "chunks": 8,
       "present": 8,
-      "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e；Kats & Capasso, Science, 2016"
+      "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e"
     },
     {
       "doc_id": "H02",
@@ -183,7 +183,7 @@
       "doc_id": "H04",
       "chunks": 8,
       "present": 8,
-      "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Govender et al., Journal of Hyperspectral Remote Sensing, 2017"
+      "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；高光谱成像公开综述（2008–2017）"
     },
     {
       "doc_id": "H05",
