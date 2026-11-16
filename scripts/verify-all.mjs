@@ -95,7 +95,7 @@ async function main() {
   } catch {
     bad("npm pack 可解析", (pack.stderr || pack.stdout || "无输出").slice(0, 200));
   }
-  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "data/kb-data.json", "data/kb-meta.json", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
+  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/assist.js", "lib/capabilities.js", "lib/verify.js", "data/kb-data.json", "data/kb-meta.json", "data/assist-playbooks.json", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
   for (const f of mustHave) assert("打包含 " + f, files.includes(f), "实际清单：" + files.join(", "));
   const mustNot = files.filter((f) => f.startsWith("_kb-raw/") || f.startsWith("test/") || f.startsWith("scripts/") || f.includes("HANDOVER"));
   assert("打包不含私有/内部文件", mustNot.length === 0, mustNot.join(", "));

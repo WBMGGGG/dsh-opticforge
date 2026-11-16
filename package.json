@@ -1,7 +1,7 @@
 {
   "name": "dsh-opticforge",
-  "version": "0.2.1",
-  "description": "OpticForge —— 光电工程师知识库，DeepSeek Harness 插件。40 个板块、324 条带来源的事实条目，覆盖基础理论、工程系统、前沿方向与场景深化（几何光学、物理光学、光学检测、光学设计、高光谱推扫/快照、Czerny-Turner 与 Offner 分光系统）；BM25 检索 + 板块目录 + 单条取用，纯 Node.js，零运行时依赖。",
+  "version": "1.1.0",
+  "description": "OpticForge —— 光电工程师任务辅助插件，DeepSeek Harness。任务受理与能力路由（Skill / MCP / 本地工具 / 定向检索）+ 40 个板块、324 条带来源的事实条目 + 交付自检。输入一个具体问题，输出简报、知识证据、分阶段计划、检索包与验收清单；纯 Node.js，零运行时依赖。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -38,6 +38,9 @@
     "optics",
     "optical-engineering",
     "knowledge-base",
+    "task-assistant",
+    "capability-routing",
+    "workflow",
     "bm25",
     "confocal",
     "tolerancing",

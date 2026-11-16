@@ -18,7 +18,7 @@
 | F | F01–F10 | 基础理论，教材与标准编译 |
 | G | G01–G07 | 工程系统，教材、标准与工具文档编译 |
 | H | H01–H08 | 前沿交叉，综述与标准编译 |
-| I | I01–I06 | 场景深化（0.2.1）：几何光学判读、物理光学与传递函数、光学检测、光学设计、高光谱推扫/快照、CT/Offner 分光系统 |
+| I | I01–I06 | 场景深化：几何光学判读、物理光学与传递函数、光学检测、光学设计、高光谱推扫/快照、CT/Offner 分光系统 |
 
 ```
 data/kb/<板块>.json   按板块拆分的事实条目（人可读、可 diff、可单条审）
@@ -82,7 +82,7 @@ docs/KB-OUTLINE.zh.md 板块与条目总纲（chunk_id 契约，新增板块先�
 node scripts/build-kb.mjs --doc F02       # 改单板块时自检
 node scripts/build-kb.mjs --all           # 全量校验 + 生成 kb-data.json 与 kb-meta.json
 node scripts/build-kb.mjs --check         # CI 用：只校验产物与分部文件一致
-node scripts/build-kb.mjs --all --version 0.2.0
+node scripts/build-kb.mjs --all --version 1.1.0
 ```
 
 校验项（任一不过即失败）：
@@ -122,6 +122,14 @@ node scripts/build-kb.mjs --all --version 0.2.0
 ## 补一个缺口
 
 缺口条目已经写清了"缺什么、为什么缺、需要什么"。拿到原文后，把该条 `status` 从 `missing_source` 改成 `present`，按规范改写 `text`，重建即可。`present` 数会变，记得同步基线。
+
+---
+
+## 原文层缺口
+
+整段原文没拿到的只剩三处：**A03**（《光学学报》峰值定位综述，1 条）、**C01**（ZYGO CSI 白皮书，5 条）、**E01**（JJF 1990-2022，6 条）。合计 16 条非 present（11 条 `missing_source` + 5 条 `substitute`）。
+
+`opticforge_assist` 会把这三处单列为 `library_gaps`；`opticforge_verify` 一旦引用非 present 条目直接判 error。A01、A02、D01 里也有少量单条缺口，但不属于“整段原文缺失”，检索与引用按单条 `status` 处理。
 
 ---
 
