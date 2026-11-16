@@ -82,7 +82,7 @@ docs/KB-OUTLINE.zh.md 板块与条目总纲（chunk_id 契约，新增板块先�
 node scripts/build-kb.mjs --doc F02       # 改单板块时自检
 node scripts/build-kb.mjs --all           # 全量校验 + 生成 kb-data.json 与 kb-meta.json
 node scripts/build-kb.mjs --check         # CI 用：只校验产物与分部文件一致
-node scripts/build-kb.mjs --all --version 1.1.0
+node scripts/build-kb.mjs --all --version 1.2.0
 ```
 
 校验项（任一不过即失败）：

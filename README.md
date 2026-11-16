@@ -3,7 +3,7 @@
 A **task assistant plugin** for optical engineers, built for DeepSeek Harness (DSH).
 Give it one concrete problem; it returns an executable package: brief, knowledge evidence, capability routing, staged plan, targeted search queries and acceptance checks.
 
-Pure Node.js, zero runtime dependencies. **1.1.0 turns a retrieval plugin into a task-assistance layer; retrieval stays as the evidence layer.**
+Pure Node.js, zero runtime dependencies. **1.2.0 makes KB-first an inspectable execution contract and adds a DSH Skill plus formula cards; the plugin still performs no network or external actions.**
 
 > 中文文档见 [README.zh.md](README.zh.md)。
 
@@ -20,8 +20,8 @@ Optical design, alignment and acceptance work is blocked less by formulas than b
 OpticForge handles all three:
 
 - **Evidence layer**: 40 sections, 324 source-attributed fact entries; hits carry chunk_id, source and excerpt; no basis is stated as such.
-- **Routing layer**: classify the problem against a playbook, inspect local Skills / MCP / workspace assets, and produce a capability-tagged plan.
-- **Verification layer**: before delivery, check citations, quantity claims, assumptions, gaps and reproducibility.
+- **Routing layer**: classify the problem, inspect local Skills / MCP / workspace assets, and produce a capability-tagged plan. `alignment` fixes KB queries and coverage first; `web_gate` controls when external search is allowed.
+- **Verification layer**: check citations, quantities, the KB-alignment section, external-source dates, formula-card traces, assumptions, gaps and reproducibility.
 
 ---
 
@@ -32,22 +32,27 @@ Problem
  │
  ├─ opticforge_assist ── intake & routing
  │    ├─ brief           goal / deliverable / constraints / questions
+ │    ├─ alignment       KB queries / matched / unmatched / verdict
+ │    ├─ web_gate        closed by default; opens for gaps, versions, vendors, freshness
  │    ├─ evidence        KB chunks + coverage matrix + gaps
  │    ├─ capabilities    local Skills / MCP / workspace assets
- │    ├─ plan            staged steps bound to capability classes
- │    ├─ search_pack     standards / papers / vendors / troubleshooting queries
+ │    ├─ calc_specs      formula cards, never a calculator
+ │    ├─ plan            staged steps; web steps carry blocked_by
+ │    ├─ search_pack     KB queries + conditional external queries
  │    └─ acceptance      checklist + risks + handoff Markdown
  │
  ├─ execution layer (agent) ── follows the plan
- │    ├─ Skills: sheet / word / ppt / seedream / browser …
+ │    ├─ Skills: opticforge-task / sheet / word / ppt / browser …
  │    ├─ MCP: desktop, browser, GitHub …
  │    ├─ Local: PowerShell / Python / file I/O
- │    └─ Search: general_search + web_fetch
+ │    └─ Search: general_search + web_fetch only after web_gate opens
  │
  └─ opticforge_verify ── pre-delivery check
       ├─ citations: chunk_id exists and is present
       ├─ quantities: numbers carry a citation or a calculation note
       ├─ structure: assumptions / gaps / reproduction / sources
+      ├─ KB-first: alignment verdict, URL dates and source details
+      ├─ calculation: formula_id, inputs, units, outputs and reproduction
       └─ wording: absolute or marketing claims
 ```
 
@@ -87,6 +92,10 @@ The returned `plan` splits the task into: clarify → evidence → local invento
 
 `handoff` is Markdown ready to hand to a sub-agent: goal, evidence, execution order, acceptance.
 
+**KB-first contract**: call `assist`, run `alignment.kb_queries`, record matched/unmatched and `verdict`, then inspect `web_gate`. External search is conditional on a KB gap, standard-version check, vendor specification, price or other time-sensitive fact. External queries carry `when`; web plan steps carry `blocked_by`. The bundled `skills/opticforge-task/SKILL.md` gives DSH the same workflow.
+
+`calc_specs` selects from 19 formula cards with formulas, units, assumptions, sanity ranges, worked examples and KB source IDs. The execution layer performs calculations and records `formula_id`, inputs, outputs, units and reproduction steps. Export docx/pdf to `.md`/`.txt` with the word/pdf Skills before calling `verify`.
+
 ---
 
 ## Capability discovery
@@ -101,7 +110,7 @@ Failures degrade to empty lists with a note, never block the task. `known_capabi
 
 ---
 
-## Knowledge base (1.1.0)
+## Knowledge base (1.2.0, content baseline unchanged)
 
 **40 sections, 324 entries, 308 usable** (`status=present`):
 
@@ -152,7 +161,10 @@ lib/kb-data.js         data loading
 data/kb/               40 section files
 data/kb-data.json      merged runtime artefact
 data/kb-meta.json      version, sha256, sections, gap topics
-data/assist-playbooks.json  task playbooks (triggers / steps / search facets)
+data/assist-playbooks.json  task playbooks
+data/formula-cards.json 19 formula cards, no calculator
+skills/opticforge-task/ KB-first DSH workflow Skill
+eval/                  KB-first contract evaluation + optional real-trace scoring
 docs/ARCHITECTURE.zh.md     architecture and extension points
 ```
 
@@ -170,16 +182,17 @@ node scripts/install-local.mjs --dry-run
 node scripts/install-local.mjs --uninstall
 ```
 
-Restart DSH afterwards. Editing this repo and restarting picks up changes.
+Restart DSH afterwards. Editing this repo and restarting picks up changes. The installer also links `skills/opticforge-task` to `~/.dsh/skills/opticforge-task`; it never overwrites a real directory, and uninstall removes only the link.
 
 ---
 
 ## Development
 
 ```bash
-node test/run.mjs                          # 26 integration tests
-node scripts/verify-all.mjs                # 32 release gates
-node scripts/build-kb.mjs --all --version 1.1.0
+node test/run.mjs
+node scripts/verify-all.mjs
+node eval/run-kb-first.mjs
+node scripts/build-kb.mjs --all --version 1.2.0
 node scripts/build-kb.mjs --check
 ```
 

@@ -1,5 +1,42 @@
 # 变更记录
 
+## 1.2.0
+
+把“先知识库、后联网”从建议升级为可检查的执行契约，同时落地软约束 Skill、公式卡、文档前置提取检查与 KB-first 评测。仍为五个插件工具，无计算器，插件不联网、不执行动作。
+
+### KB-first 架构
+
+- `assist` 新增 `alignment`：KB 查询、matched/unmatched、coverage_matrix 与 covered/partial/gap 判定
+- 新增 `web_gate`：默认关闭，只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足才允许联网
+- KB 查询与外部查询分离；外部查询带 `trigger/gated/gate_id/blocked_by`，web 执行步骤带 `blocked_by`
+- `execution_contract.must` 明确禁止在完成 KB 对齐前调用 general_search/web_search/web_fetch
+- 工具描述把 `opticforge_assist` 固定为光学任务第一入口，并在计划中声明先调 `opticforge-task` Skill
+
+### P1：公式卡与计算轨迹
+
+- 新增 `data/formula-cards.json`：19 张卡，覆盖薄透镜、NA/F#、焦深、高斯光束、M²、相干、RSS、热光程、响应度、噪声、光栅、色散、光谱分辨率、推扫 GSD、薄膜与 CT 消像散
+- `assist.calc_specs` 只读返回公式、变量单位、假设、合理范围、算例与 KB 来源；不新增计算器
+- `verify` 新增 formula_id 有效性、计算轨迹、外部引用日期/来源细节检查
+
+### P2：软约束 Skill 与文档前置提取
+
+- 新增 `skills/opticforge-task/SKILL.md`：assist → KB 对齐 → web_gate → 执行 → 公式卡轨迹 → 文档导出 → verify
+- 安装器把 Skill 链接到 `~/.dsh/skills/opticforge-task`；真实目录不覆盖，卸载只删链接
+- docx/pdf 先用 word/pdf Skill 导出 `.md/.txt`，再交给 `verify`
+- 报告要求固定 KB 对齐段、外部来源访问日期与型号/标准号、计算轨迹和单位闭合
+
+### P3：KB-first 评测
+
+- 新增 10 类任务的契约评测：红外镜头、高光谱推扫、光栅光谱仪、薄膜热漂移、共焦选型、光机公差、干涉测量、杂光/鬼像、探测器选型、标准/白皮书调研
+- 支持导入真实工具调用 JSONL，统计 assist 首调率、KB 先于 web、verify 使用率；无轨迹时只报告离线契约结果，不冒充模型行为达标
+
+### 基线
+
+- `package.json` 与 `kb_version` → **1.2.0**
+- 知识内容不变：40 板块 / 324 条 / 308 present；A03/C01/E01 原文缺口不变
+- 五工具名不变：`opticforge_assist` / `opticforge_verify` / `opticforge_docs` / `opticforge_search` / `opticforge_get`
+- 发布门禁 43 项通过：主集成 30、assist 契约 18、入口契约 5、10 类离线评测全绿；真实模型轨迹指标需另行采集
+
 ## 1.1.0
 
 架构升级：从“检索插件”改为“任务辅助插件”。输入一个具体问题，输出可直接执行的作战包；检索退为证据层。
