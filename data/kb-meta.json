@@ -1,9 +1,9 @@
 {
-  "kb_version": "0.1.0",
-  "built_at": "2026-11-16T03:20:45.377Z",
-  "content_sha256": "37a53a3e18533f32d38e87d42f556b2f89b55e2bf131c693fc105bff51a84070",
-  "total_chunks": 67,
-  "present_chunks": 51,
+  "kb_version": "0.2.0",
+  "built_at": "2026-11-16T04:11:56.928Z",
+  "content_sha256": "eac1dc3fcc4ac0f1ee4ab61e7002108866b86d9a3902325e69cf8ca40059421e",
+  "total_chunks": 264,
+  "present_chunks": 248,
   "docs": [
     {
       "doc_id": "A01",
@@ -58,42 +58,165 @@
       "chunks": 6,
       "present": 1,
       "source": "JJF 1990-2022 校准规范正文 | （jjf.net.cn 无法访问；https://std.samr.gov.cn/ 查询 JJF 1990 返回 0 条）"
+    },
+    {
+      "doc_id": "F01",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Hecht《Optics》5e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F02",
+      "chunks": 9,
+      "present": 9,
+      "source": "公开教材综合：Born & Wolf《Principles of Optics》7e；Hecht《Optics》5e"
+    },
+    {
+      "doc_id": "F03",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》；Hecht《Optics》5e"
+    },
+    {
+      "doc_id": "F04",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Siegman《Lasers》；Saleh & Teich《Fundamentals of Photonics》"
+    },
+    {
+      "doc_id": "F05",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Hecht《Optics》5e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F06",
+      "chunks": 8,
+      "present": 8,
+      "source": "Macleod《Thin-Film Optical Filters》4e；Born & Wolf《Principles of Optics》7e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F07",
+      "chunks": 9,
+      "present": 9,
+      "source": "Saleh & Teich《Fundamentals of Photonics》；Hobbs《Building Electro-Optical Systems》；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F08",
+      "chunks": 9,
+      "present": 9,
+      "source": "Born & Wolf《Principles of Optics》7e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F09",
+      "chunks": 8,
+      "present": 8,
+      "source": "Born & Wolf《Principles of Optics》7e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "F10",
+      "chunks": 8,
+      "present": 8,
+      "source": "Smith《Modern Optical Engineering》4e；郁道银《工程光学》"
+    },
+    {
+      "doc_id": "G01",
+      "chunks": 8,
+      "present": 8,
+      "source": "Yoder《Opto-Mechanical Systems Design》4e；Vukobratovich & Yoder《Fundamentals of Optomechanics》"
+    },
+    {
+      "doc_id": "G02",
+      "chunks": 8,
+      "present": 8,
+      "source": "Smith《Modern Optical Engineering》4e；Yoder《Opto-Mechanical Systems Design》4e"
+    },
+    {
+      "doc_id": "G03",
+      "chunks": 7,
+      "present": 7,
+      "source": "Smith《Modern Optical Engineering》4e；Yoder《Opto-Mechanical Systems Design》4e"
+    },
+    {
+      "doc_id": "G04",
+      "chunks": 7,
+      "present": 7,
+      "source": "公开技术说明与教材综合：NIST 光谱/辐射度定标公开技术说明；Hecht《Optics》5e；ISO 5725"
+    },
+    {
+      "doc_id": "G05",
+      "chunks": 8,
+      "present": 8,
+      "source": "教材综合：Goodman《Introduction to Fourier Optics》4e；Hecht《Optics》5e"
+    },
+    {
+      "doc_id": "G06",
+      "chunks": 8,
+      "present": 8,
+      "source": "教材与官方文档综合：Jin《The Finite Element Method in Electromagnetics》3e；COMSOL Multiphysics Reference Manual（官方文档）"
+    },
+    {
+      "doc_id": "G07",
+      "chunks": 7,
+      "present": 7,
+      "source": "标准与官方文档综合：ISO 128 技术制图；ISO 1101 几何公差；SolidWorks 官方帮助文档"
+    },
+    {
+      "doc_id": "H01",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；Saleh & Teich《Fundamentals of Photonics》2e；Kats & Capasso, Science, 2016"
+    },
+    {
+      "doc_id": "H02",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Yariv & Yeh《Photonics》6e；Agrawal《Fiber-Optic Communication Systems》4e"
+    },
+    {
+      "doc_id": "H03",
+      "chunks": 7,
+      "present": 7,
+      "source": "公开教材综合：Scully & Zubairy《Quantum Optics》；Loudon《The Quantum Theory of Light》3e；Saleh & Teich《Fundamentals of Photonics》2e"
+    },
+    {
+      "doc_id": "H04",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Chao et al., Applied Optics, 2008；Govender et al., Journal of Hyperspectral Remote Sensing, 2017"
+    },
+    {
+      "doc_id": "H05",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Smith《Modern Optical Engineering》；Hecht《Optics》5e"
+    },
+    {
+      "doc_id": "H06",
+      "chunks": 7,
+      "present": 7,
+      "source": "公开标准综合：ISO 9022 系列（光学与光子学 环境试验方法）；IEC 60068（环境试验）"
+    },
+    {
+      "doc_id": "H07",
+      "chunks": 8,
+      "present": 8,
+      "source": "公开教材综合：Goodman《Introduction to Fourier Optics》4e；编码孔径成像公开综述"
+    },
+    {
+      "doc_id": "H08",
+      "chunks": 7,
+      "present": 7,
+      "source": "公开教材综合：Schubert《Light-Emitting Diodes》2e"
     }
   ],
   "zero_coverage_topics": [
-    "量子计算",
-    "量子信息",
-    "量子光学",
-    "量子比特",
-    "COMSOL",
-    "SolidWorks",
-    "图像处理",
-    "缺陷检测",
-    "热光学",
-    "无热化",
-    "热稳定",
-    "多物理场",
-    "波动光学",
-    "工程图",
-    "衍射光波导",
-    "光波导",
-    "光子集成",
-    "白光干涉",
-    "非球面",
-    "自由曲面",
-    "光谱定标",
-    "辐射度学",
-    "黑体",
-    "红外测温",
-    "信号解调",
-    "光谱与信号解调",
-    "激光三角",
-    "光学测厚",
-    "光机结构",
-    "不确定度",
-    "公差链",
-    "物理光学",
-    "光学检测"
+    "光刻工艺",
+    "空间光学",
+    "太赫兹",
+    "X 射线",
+    "光学软件二次开发",
+    "激光核聚变"
   ],
   "covered_anchors": [
     "共焦色散",
@@ -120,6 +243,23 @@
     "Rayleigh",
     "线性度",
     "量程",
-    "分辨率"
+    "分辨率",
+    "几何光学",
+    "像差",
+    "MTF",
+    "偏振",
+    "激光",
+    "高斯光束",
+    "薄膜",
+    "探测器",
+    "噪声",
+    "高光谱",
+    "波导",
+    "量子",
+    "超表面",
+    "白光干涉",
+    "定标",
+    "装调",
+    "可靠性"
   ]
 }

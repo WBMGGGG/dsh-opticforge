@@ -1,7 +1,7 @@
 {
   "name": "dsh-opticforge",
-  "version": "0.1.0",
-  "description": "OpticForge —— 光电工程师知识库检索（BM25）与 5 类工程计算器，DeepSeek Harness 插件。光学工程知识库 + 工程计算，纯 Node.js，零运行时依赖。",
+  "version": "0.2.0",
+  "description": "OpticForge —— 光电工程师知识库，DeepSeek Harness 插件。34 个板块、264 条带来源的事实条目，覆盖基础理论、工程系统与前沿方向；BM25 检索 + 板块目录 + 单条取用，纯 Node.js，零运行时依赖。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -40,7 +40,10 @@
     "knowledge-base",
     "bm25",
     "confocal",
-    "tolerancing"
+    "tolerancing",
+    "metasurface",
+    "hyperspectral",
+    "photonics"
   ],
   "repository": {
     "type": "git",

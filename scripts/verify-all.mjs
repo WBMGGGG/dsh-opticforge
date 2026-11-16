@@ -95,11 +95,12 @@ async function main() {
   } catch {
     bad("npm pack 可解析", (pack.stderr || pack.stdout || "无输出").slice(0, 200));
   }
-  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/calculators.js", "data/kb-data.json", "data/kb-meta.json", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
+  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "data/kb-data.json", "data/kb-meta.json", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
   for (const f of mustHave) assert("打包含 " + f, files.includes(f), "实际清单：" + files.join(", "));
   const mustNot = files.filter((f) => f.startsWith("_kb-raw/") || f.startsWith("test/") || f.startsWith("scripts/") || f.includes("HANDOVER"));
   assert("打包不含私有/内部文件", mustNot.length === 0, mustNot.join(", "));
-  assert("打包文件数在 8–40 之间", files.length >= 8 && files.length <= 40, "实际 " + files.length + " 个");
+  // 34 个板块文件 + lib + data + 契约文档，上限随板块增长而放宽
+  assert("打包文件数在 8–120 之间", files.length >= 8 && files.length <= 120, "实际 " + files.length + " 个");
 
   console.log("== F. 版本一致 ==");
   const meta = JSON.parse(await readFile(path.join(ROOT, "data", "kb-meta.json"), "utf8"));

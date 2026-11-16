@@ -18,7 +18,6 @@ let plugin;
 let registered;
 let kbData;
 let kbEngine;
-let calculators;
 
 async function boot() {
   plugin = await import(idxUrl);
@@ -29,7 +28,6 @@ async function boot() {
   // 模块读取失败时保留 null，让用例给出清晰失败信息
   try { kbData = await import(pathToFileURL(path.join(LIB, "kb-data.js")).href); } catch { kbData = null; }
   try { kbEngine = await import(pathToFileURL(path.join(LIB, "kb-engine.js")).href); } catch { kbEngine = null; }
-  try { calculators = await import(pathToFileURL(path.join(LIB, "calculators.js")).href); } catch { calculators = null; }
 }
 const booted = boot();
 
@@ -46,15 +44,15 @@ function requireModule(m, label) {
 // =====================================================================
 // A. 原生注册契约校验（不依赖 @deepseek-ai/dsh-tools）
 // =====================================================================
-test("A1 插件可加载：apply/inject/name 正确，注册 4 个工具", async () => {
+test("A1 插件可加载：apply/inject/name 正确，注册 3 个工具", async () => {
   await booted;
   assert.equal(typeof plugin.apply, "function", "lib/index.js 未导出 apply");
   assert.equal(plugin.name, "opticforge", "lib/index.js name 应为 opticforge");
   assert.deepEqual(plugin.inject, ["tools"], "lib/index.js inject 应为 [tools]");
-  assert.equal(registered.length, 4, "应恰好注册 4 个工具，实际 " + registered.length);
+  assert.equal(registered.length, 3, "应恰好注册 3 个工具，实际 " + registered.length);
   assert.deepEqual(
     registered.map((d) => d.name).sort(),
-    ["opticforge_calc", "opticforge_docs", "opticforge_get", "opticforge_search"]
+    ["opticforge_docs", "opticforge_get", "opticforge_search"]
   );
 });
 
@@ -96,17 +94,17 @@ function assertOutputShape(name, value) {
 }
 
 // =====================================================================
-// B. 统计断言：67 块 / 51 present
+// B. 统计断言：264 块 / 248 present
 // =====================================================================
-test("B1 KB 统计：67 块、51 present、状态分布与 doc_id 分布", async () => {
+test("B1 KB 统计：264 块、248 present、状态分布与板块分布", async () => {
   await booted;
   const m = requireModule(kbData, "lib/kb-data.js");
-  assert.equal(m.TOTAL_CHUNKS, 67, "kb-data.js TOTAL_CHUNKS 应为 67");
-  assert.equal(m.PRESENT_CHUNKS, 51, "kb-data.js PRESENT_CHUNKS 应为 51");
+  assert.equal(m.TOTAL_CHUNKS, 264, "kb-data.js TOTAL_CHUNKS 应为 264");
+  assert.equal(m.PRESENT_CHUNKS, 248, "kb-data.js PRESENT_CHUNKS 应为 248");
   assert.equal(typeof m.KB_SOURCE, "string", "kb-data.js KB_SOURCE 应为非空字符串");
   const chunks = await m.getKBData();
   assert.ok(Array.isArray(chunks), "getKBData() 应返回数组");
-  assert.equal(chunks.length, 67, "getKBData() 应返回 67 块，实际 " + chunks.length);
+  assert.equal(chunks.length, 264, "getKBData() 应返回 264 块，实际 " + chunks.length);
   const statuses = {};
   const docs = {};
   for (const c of chunks) {
@@ -116,11 +114,19 @@ test("B1 KB 统计：67 块、51 present、状态分布与 doc_id 分布", async
       assert.ok(f in c, "第 " + c.chunk_id + " 块缺少字段 " + f);
     }
   }
-  assert.equal(statuses.present, 51, "present 应为 51 块");
+  assert.equal(statuses.present, 248, "present 应为 248 块");
   assert.equal(statuses.missing_source, 11, "missing_source 应为 11 块");
   assert.equal(statuses.substitute, 5, "substitute 应为 5 块");
-  assert.deepEqual(docs, { A01: 13, A02: 9, A03: 1, B01: 11, B02: 4, C01: 5, C02: 7, D01: 11, E01: 6 },
-    "doc_id 分布与数据源不一致：" + JSON.stringify(docs));
+  // 原有九个板块的分布不得漂移
+  for (const [id, n] of Object.entries({ A01: 13, A02: 9, A03: 1, B01: 11, B02: 4, C01: 5, C02: 7, D01: 11, E01: 6 })) {
+    assert.equal(docs[id], n, "板块 " + id + " 块数应为 " + n + "，实际 " + docs[id]);
+  }
+  // 新增三个系列的规模（F 基础 / G 工程 / H 前沿）
+  const sum = (prefix) => Object.entries(docs).filter(([k]) => k.startsWith(prefix)).reduce((a, [, n]) => a + n, 0);
+  assert.equal(sum("F"), 83, "F 系列应为 83 块，实际 " + sum("F"));
+  assert.equal(sum("G"), 53, "G 系列应为 53 块，实际 " + sum("G"));
+  assert.equal(sum("H"), 61, "H 系列应为 61 块，实际 " + sum("H"));
+  assert.equal(Object.keys(docs).length, 34, "板块总数应为 34，实际 " + Object.keys(docs).length);
 });
 
 // =====================================================================
@@ -227,13 +233,13 @@ test("C5 status=present 过滤生效：missing_source / substitute 不出现在�
   }
 });
 
-test("C6 知识空白如实告知：「量子计算 光学」返回空且 note=「知识库中未找到相关依据」", async () => {
+test("C6 知识空白如实告知：「太赫兹 时域光谱」返回空且 note=「知识库中未找到相关依据」", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
-  const value = await execSearch({ query: "量子计算 光学" });
+  const value = await execSearch({ query: "太赫兹 时域光谱" });
   assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
-    "知识空白查询「量子计算 光学」应返回空结果(PLUGIN_PLAN 8.5/4.3)，实际 total_hits=" + value.total_hits + "，命中: " + JSON.stringify(value.results.map((r) => r.chunk_id + "(" + r.score + ")")) + "；应由 lib/index.js 的 isZeroCoverageQuery(query,chunks) 数据驱动守卫短路（topicHasPresentBasis 在 present 块可检索字段中 0 出现才成立），本用例按规范硬断言不静默跳过；H1 回归见 C6b/C6c/C6d。");
+    "知识空白查询「太赫兹 时域光谱」应返回空结果，实际 total_hits=" + value.total_hits + "，命中: " + JSON.stringify(value.results.map((r) => r.chunk_id + "(" + r.score + ")")) + "；应由 lib/index.js 的 isZeroCoverageQuery(query,chunks) 数据驱动守卫短路（topicHasPresentBasis 在 present 块可检索字段中 0 出现才成立），本用例按规范硬断言不静默跳过；H1 回归见 C6b/C6c/C6d。");
   assert.deepEqual(value.results, [], "知识空白查询的 results 应为空数组");
   assert.equal(value.note, "知识库中未找到相关依据", "note 应如实告知「知识库中未找到相关依据」，实际：" + value.note);
 });
@@ -272,13 +278,13 @@ test("C6c H1 回归：「自由曲面 光学设计」应命中 B01-10，不被�
   for (const r of value.results) assert.equal(r.status, "present");
 });
 
-test("C6d H1 回归：真 0 覆盖主题仍短路（白光干涉 present 块 0 出现）", async () => {
+test("C6d H1 回归：真 0 覆盖主题仍短路（空间光学 在 present 块 0 出现）", async () => {
   await booted;
   requireModule(kbEngine, "lib/kb-engine.js");
-  const value = await execSearch({ query: "白光干涉 测量" });
+  const value = await execSearch({ query: "空间光学 热控 仿真" });
   assertOutputShape("opticforge_search", value);
   assert.equal(value.total_hits, 0,
-    "『白光干涉』在 present 块可检索字段中 0 出现，应仍短路为空；实际命中：" +
+    "『空间光学』在 present 块可检索字段中 0 出现，应仍短路为空；实际命中：" +
     JSON.stringify(value.results.map((r) => r.chunk_id)));
   assert.equal(value.note, "知识库中未找到相关依据");
 });
@@ -337,173 +343,73 @@ test("C9 统一输出信封：docs/get/search 共享 ok + kb_version + action", 
 });
 
 // =====================================================================
-// D. opticforge_calc 端到端（5 个类型 + 错误路径）
+// D. opticforge_docs / opticforge_get 端到端（板块目录与完整条目）
 // =====================================================================
-function execCalc(type, params) {
-  return tool("opticforge_calc").execute({ type, params }, {});
-}
-function resultNumbers(v) {
-  // 从 result 对象里收集所有数值，便于与方案示例比对（容忍不同字段命名）
-  const out = [];
-  const walk = (o) => {
-    if (o && typeof o === "object" && !Array.isArray(o)) for (const [k, val] of Object.entries(o)) { if (typeof val === "number") out.push([k, val]); else walk(val); }
-  };
-  walk(v.result);
-  return out;
-}
-function assertHasNumberNear(v, expected, tol, label) {
-  const nums = resultNumbers(v);
-  assert.ok(nums.length > 0, label + "：result 中没有任何数值字段，无法核对示例值：" + JSON.stringify(v.result));
-  const near = nums.find(([, n]) => Math.abs(n - expected) <= tol);
-  assert.ok(near, label + "：result 中找不到 ≈" + expected + "(±" + tol + ") 的数值，实际：" + JSON.stringify(nums));
-  return near;
-}
-function assertCalcShape(v, label) {
-  assertOutputShape("opticforge_calc", v);
-  for (const f of ["type", "ok", "formula", "substitution", "steps", "result", "source"]) {
-    assert.ok(f in v, label + "：返回对象缺少必填字段 " + f);
+test("D1 opticforge_docs：34 个板块、逐块列出 chunk_id 与标题", async () => {
+  await booted;
+  const v = await tool("opticforge_docs").execute({}, {});
+  assertOutputShape("opticforge_docs", v);
+  assert.equal(v.ok, true, "docs 应返回 ok=true");
+  assert.equal(v.action, "docs");
+  assert.equal(v.total_docs, 34, "应列出 34 个板块，实际 " + v.total_docs);
+  const a01 = v.docs.find((d) => d.doc_id === "A01");
+  assert.ok(a01, "缺少 A01 板块");
+  assert.equal(a01.chunks, 13, "A01 应为 13 块");
+  assert.equal(a01.present, 12, "A01 应为 12 条 present");
+  assert.ok(Array.isArray(a01.items) && a01.items.length === 13, "docs 应逐块列出 items");
+  const withTitle = a01.items.filter((i) => typeof i.title === "string" && i.title.length > 0);
+  assert.ok(withTitle.length >= 12, "items 应带标题（从 text 的【】提取），实际带标题 " + withTitle.length + " 条");
+  // 编译型板块也要出现
+  assert.ok(v.docs.some((d) => d.doc_id === "F01"), "缺少 F01（基础理论板块）");
+  assert.ok(v.docs.some((d) => d.doc_id === "H08"), "缺少 H08（前沿板块）");
+});
+
+test("D2 opticforge_docs：doc_filter 生效，未知板块干净报错", async () => {
+  await booted;
+  const one = await tool("opticforge_docs").execute({ doc_id: "f02" }, {});
+  assert.equal(one.ok, true, "小写板块名应被规范化为大写后命中");
+  assert.equal(one.total_docs, 1);
+  assert.equal(one.docs[0].doc_id, "F02");
+  const bad = await tool("opticforge_docs").execute({ doc_id: "Z99" }, {});
+  assert.equal(bad.ok, false, "未知板块应返回 ok=false");
+  assert.equal(bad.error, "没有该板块");
+  assert.ok(Array.isArray(bad.available) && bad.available.length >= 34, "应回显可用板块清单");
+});
+
+test("D3 opticforge_get：返回 9 个字段的完整条目；不存在的 chunk_id 干净报错", async () => {
+  await booted;
+  const full = await tool("opticforge_get").execute({ chunk_id: "F01-01" }, {});
+  assert.equal(full.ok, true);
+  assert.equal(full.action, "get");
+  for (const f of ["doc_id", "chunk_id", "status", "is_original_excerpt", "text", "source", "page_or_section", "keywords_zh", "disclaimer"]) {
+    assert.ok(f in full, "get 返回缺少字段 " + f);
   }
-  assert.ok(Array.isArray(v.steps), label + "：steps 应为数组");
-  assert.equal(typeof v.formula, "string", label + "：formula 应为字符串");
-  assert.equal(typeof v.substitution, "string", label + "：substitution 应为字符串");
-}
-
-// 注：方案 §3.2 示例写 d=708nm，但公式精确值 1.22×550/0.95=706.3158nm（差 0.24%）。
-// calculators.js 按「不编造」保留精确值，并在 result.plan_example_d_nm=708 与 notes 标注差异；
-// 断言用 ±6 容差同时兼容两种口径，D1b 显式核验精确值与方案示例值都被如实保留。
-test("D1 diffraction_limit：λ=550nm, NA=0.95 → d≈708nm", async () => {
-  await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const v = await execCalc("diffraction_limit", { lambda_nm: 550, NA: 0.95 });
-  assertCalcShape(v, "diffraction_limit");
-  assert.equal(v.ok, true, "diffraction_limit 应成功，error=" + (v.error || "无"));
-  assertHasNumberNear(v, 708, 6, "衍射极限 d");
+  assert.equal(full.status, "present");
+  assert.ok(full.text.length >= 300, "编译型条目正文应 ≥300 字");
+  const miss = await tool("opticforge_get").execute({ chunk_id: "A99-99" }, {});
+  assert.equal(miss.ok, false, "不存在的 chunk_id 应返回 ok=false");
+  assert.equal(miss.error, "知识库中不存在该 chunk_id");
+  assert.ok(Array.isArray(miss.known_prefixes), "应回显已知板块前缀");
 });
 
-test("D1b diffraction_limit 精确值与方案示例值均如实保留（不编造）", async () => {
+test("D4 opticforge_get：非 present 块如实标注为缺口，不当依据", async () => {
   await booted;
-  const m = requireModule(calculators, "lib/calculators.js");
-  const v = await m.calculate("diffraction_limit", { lambda_nm: 550, NA: 0.95 });
-  assert.equal(v.ok, true);
-  const nums = resultNumbers(v);
-  const has = (n, tol) => nums.some(([, x]) => Math.abs(x - n) <= tol);
-  assert.ok(has(706.3158, 0.5), "应保留公式精确值 706.3158 nm（1.22×550/0.95），实际：" + JSON.stringify(nums));
-  assert.ok(has(708, 0.5), "应如实保留方案示例值 708（plan_example_d_nm），不偷偷改写公式凑数");
-  assert.ok(Array.isArray(v.notes) && v.notes.some((n) => /708|706|方案|示例/.test(n)),
-    "notes 应说明 708(方案示例) 与 706.3158(公式精确值) 的差异");
+  const v = await tool("opticforge_get").execute({ chunk_id: "A03-01" }, {});
+  assert.equal(v.ok, true, "缺口块仍应可读取（用于说明缺什么）");
+  assert.notEqual(v.status, "present", "A03-01 应为缺口块");
+  assert.ok(typeof v.note === "string" && /缺口|不可当作事实依据/.test(v.note),
+    "缺口块应带 note 说明不可作为依据，实际：" + v.note);
 });
 
-
-test("D2 coating_thermal_drift：1064nm, dn/dT=1e-5, α=5e-7, ΔT=40 → Δλ/λ≈4.2e-4, Δλ≈0.45nm", async () => {
+test("D5 编译型板块可被检索：几何光学与干涉衍射主题命中 F 系列", async () => {
   await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const v = await execCalc("coating_thermal_drift", { lambda_nm: 1064, dndT: 1e-5, alpha: 5e-7, deltaT: 40 });
-  assertCalcShape(v, "coating_thermal_drift");
-  assert.equal(v.ok, true, "coating_thermal_drift 应成功，error=" + (v.error || "无"));
-  assertHasNumberNear(v, 4.2e-4, 1e-5, "相对漂移 Δλ/λ");
-  assertHasNumberNear(v, 0.45, 0.05, "中心波长漂移 Δλ(nm)");
-});
-
-test("D3 confocal_range_select：输出 A01-02 IFS2402 选型与裕量说明", async () => {
-  await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const v = await execCalc("confocal_range_select", { range_min_mm: 0, range_max_mm: 2, precision_nm: 100, material: "反射" });
-  assertCalcShape(v, "confocal_range_select");
-  assert.equal(v.ok, true, "confocal_range_select 应成功，error=" + (v.error || "无"));
-  const blob = JSON.stringify(v);
-  assert.ok(/IFS2402/.test(blob), "共焦选型结果应引用 IFS2402 系列型号（PLUGIN_PLAN §3.2(3)）");
-  assert.ok(v.steps.length > 0, "应给出量程/分辨率/线性度的判定步骤");
-});
-
-test("D4 tolerance_rss：σ=[0.5,0.3,0.2]µm → σ_total≈0.62µm", async () => {
-  await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const v = await execCalc("tolerance_rss", { tolerances: [0.5, 0.3, 0.2], unit: "µm" });
-  assertCalcShape(v, "tolerance_rss");
-  assert.equal(v.ok, true, "tolerance_rss 应成功，error=" + (v.error || "无"));
-  assertHasNumberNear(v, 0.62, 0.02, "RSS 合成 σ_total");
-});
-
-test("D5 na_resolution：λ=550nm, NA=0.95 → δ≈0.61λ/NA≈353nm（含共焦提升说明）", async () => {
-  await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const v = await execCalc("na_resolution", { lambda_nm: 550, NA: 0.95 });
-  assertCalcShape(v, "na_resolution");
-  assert.equal(v.ok, true, "na_resolution 应成功，error=" + (v.error || "无"));
-  assertHasNumberNear(v, 353, 10, "Rayleigh 分辨率 δ(nm)");
-});
-
-test("D6 缺参 / 非法参数（工具层）：ok=false 且绝不抛异常", async () => {
-  await booted;
-  requireModule(calculators, "lib/calculators.js");
-  const cases = [
-    { label: "缺参 diffraction_limit", type: "diffraction_limit", params: {} },
-    { label: "缺参 tolerance_rss", type: "tolerance_rss", params: {} },
-    { label: "非法 NA=0", type: "diffraction_limit", params: { lambda_nm: 550, NA: 0 } },
-    { label: "非法负波长", type: "na_resolution", params: { lambda_nm: -1, NA: 0.95 } },
-    { label: "非法 tolerances 类型", type: "tolerance_rss", params: { tolerances: "bad" } },
-  ];
-  for (const c of cases) {
-    let v;
-    try {
-      v = await execCalc(c.type, c.params);
-    } catch (e) {
-      assert.fail(c.label + "：execute 抛出异常（应返回结构化 ok:false 对象）：" + (e && e.message ? e.message : String(e)));
-    }
-    assertCalcShape(v, c.label);
-    assert.equal(v.ok, false, c.label + "：应返回 ok=false，实际 ok=" + v.ok);
-    assert.equal(typeof v.error, "string", c.label + "：应含 error 说明");
-    assert.ok(v.error.length > 0, c.label + "：error 不应为空");
-    if ("suggestion" in v) assert.equal(typeof v.suggestion, "string", c.label + "：suggestion 应为字符串");
-  }
-});
-
-test("D6b 未知 type：工具层由 enum 干净拒绝，计算器层 calculate() 返回 ok:false 不抛", async () => {
-  await booted;
-  const m = requireModule(calculators, "lib/calculators.js");
-  // 1) 工具层：parameters.type 是 enum，未知 type 由插件自己的参数校验拦截。
-  //    这是合法行为（不是崩溃）：抛出的应是带可选值清单的普通 Error，
-  //    而不是 TypeError / 未捕获异常。
-  let toolErr = null;
-  try {
-    await execCalc("not_a_calculator", {});
-  } catch (e) {
-    toolErr = e;
-  }
-  assert.ok(toolErr, "未知 type 应被工具的 enum 参数校验拒绝（不应静默执行）");
-  assert.ok(/取值必须是|one of|enum|invalid arguments/i.test(toolErr.message),
-    "未知 type 的拒绝信息应列出可选值，实际：" + toolErr.message);
-  // 2) 计算器契约层：calculate() 对未知 type 必须返回结构化 ok:false、绝不抛异常。
-  let v;
-  try {
-    v = await m.calculate("not_a_calculator", {});
-  } catch (e) {
-    assert.fail("calculate(未知 type) 抛异常（契约要求绝不抛异常）：" + (e && e.message ? e.message : String(e)));
-  }
-  assert.ok(v && typeof v === "object", "calculate(未知 type) 应返回对象");
-  assert.equal(v.ok, false, "calculate(未知 type) 应为 ok=false");
-  for (const f of ["type", "ok", "formula", "substitution", "steps", "result", "source"]) {
-    assert.ok(f in v, "calculate(未知 type) 返回对象缺少字段 " + f);
-  }
-  assert.equal(typeof v.error, "string", "应含 error 说明");
-  assert.ok(v.error.length > 0, "error 不应为空");
-  assert.equal(typeof v.suggestion, "string", "应含 suggestion 合理建议");
-});
-
-test("D7 calculate() 直接调用也不抛异常（契约：任何分支返回同一形状）", async () => {
-  await booted;
-  const m = requireModule(calculators, "lib/calculators.js");
-  assert.equal(typeof m.calculate, "function", "lib/calculators.js 未导出 calculate");
-  for (const [type, params] of [["unknown_type", {}], ["diffraction_limit", {}], ["na_resolution", null], ["tolerance_rss", { tolerances: "bad" }]]) {
-    let v;
-    try { v = await m.calculate(type, params); }
-    catch (e) { assert.fail("calculate(" + type + ") 抛异常：" + (e && e.message ? e.message : String(e))); }
-    assert.ok(v && typeof v === "object", "calculate 应返回对象");
-    for (const f of ["type", "ok", "formula", "substitution", "steps", "result", "source"]) {
-      assert.ok(f in v, "calculate(" + type + ") 返回对象缺少字段 " + f);
-    }
-    assert.equal(v.ok, false, "calculate(" + type + ") 应为 ok=false");
-  }
+  requireModule(kbEngine, "lib/kb-engine.js");
+  const geo = await execSearch({ query: "薄透镜 成像公式 放大率", top_k: 5 });
+  assert.ok(geo.total_hits > 0, "几何光学查询应命中");
+  assert.ok(geo.results.some((r) => r.doc_id === "F01"), "应命中 F01，实际：" + JSON.stringify(geo.results.map((r) => r.chunk_id)));
+  const diff = await execSearch({ query: "艾里斑 衍射 分辨", top_k: 5 });
+  assert.ok(diff.total_hits > 0, "衍射查询应命中");
+  assert.ok(diff.results.some((r) => ["F02", "F01"].includes(r.doc_id)), "应命中 F02/F01，实际：" + JSON.stringify(diff.results.map((r) => r.chunk_id)));
 });
 
 // =====================================================================
@@ -520,7 +426,7 @@ test("E1 内置 kb-data.json 与 data/kb/*.json 合并结果逐字段一致", as
   const kbDir = path.join(PLUGIN, "data", "kb");
   assert.ok(fs.existsSync(kbDir), "缺少 data/kb 分板块目录");
   const parts = fs.readdirSync(kbDir).filter((f) => f.endsWith(".json")).sort();
-  assert.ok(parts.length >= 9, "分板块文件应至少 9 个，实际 " + parts.length);
+  assert.ok(parts.length >= 34, "分板块文件应至少 34 个，实际 " + parts.length);
   const merged = [];
   for (const f of parts) merged.push(...JSON.parse(fs.readFileSync(path.join(kbDir, f), "utf8")));
   merged.sort((a, b) => (a.doc_id + a.chunk_id).localeCompare(b.doc_id + b.chunk_id));

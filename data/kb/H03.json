@@ -1,0 +1,79 @@
+[
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-01",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光子统计与单光子源】\n定义：光子统计描述光场光子数分布的统计特性；相干态激光服从泊松分布，热光服从玻色-爱因斯坦分布，理想单光子源每次只发射一个光子。\n公式：二阶关联函数 g²(τ)；相干态 g²(0)=1（无聚束）；热光 g²(0)=2（聚束）；理想单光子源 g²(0)=0；判据 g²(0)<0.5 视为单光子源。\n判据：HBT 干涉仪（Hanbury Brown-Twiss）测量 g²(τ)；衰减激光不是真正的单光子源——存在多光子概率，服从泊松分布。\n边界：量子点单光子源纯度高但亮度和不可对线率受限制；纠缠光子对用 SPDC 产生但概率性发射；实际单光子源需在效率、纯度、不可对线率三者间折中。\n工程要点：测量 g²(0) 用 HBT 装置（50/50 分束器+两个单光子探测器+符合计数）；单光子源的三个核心指标是效率、不可对线率、重复频率。",
+    "source": "公开教材综合：Scully & Zubairy《Quantum Optics》；Loudon《The Quantum Theory of Light》3e；Saleh & Teich《Fundamentals of Photonics》2e",
+    "page_or_section": "综合：光子统计 / 单光子源判据",
+    "keywords_zh": "光子统计,二阶关联,HBT,单光子源,g2,SPDC",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-02",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【量子密钥分发】\n定义：QKD 利用量子力学原理在通信双方之间共享密钥；BB84 协议用两组共轭基的 4 个偏振态编码，通过测量基对比筛选出安全密钥。\n公式：安全密钥率 = 原始码率 × (1 - QBER 泄露信息 - 纠错开销)；QBER（量子比特错误率）超过阈值（约 11% 量级）时不再有安全密钥。\n判据：设备无关 QKD（DI-QKD）假设最少但实现困难；实际系统常基于「探测端无漏洞」假设；诱骗态（decoy state）防御光子数分离攻击。\n边界：QKD 安全距离受信道损耗和探测器噪声限制；探测侧信道（死时间、效率不一致、致盲攻击）是实际系统的主要薄弱点。\n工程要点：实际部署必须做诱骗态方案；探测器侧信道防护是工程重点——不能只信理论安全性，实际设备的物理漏洞是主要攻击面。",
+    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Lo et al., Reviews of Modern Physics, 2014",
+    "page_or_section": "综合：量子密钥分发 / BB84 与安全性",
+    "keywords_zh": "QKD,BB84,诱骗态,QBER,探测侧信道,安全密钥率",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-03",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【纠缠与贝尔测试】\n定义：纠缠态是两个或多个粒子的量子态不能分解为各自独立态的直积；Bell 态 |Φ⁺⟩=(|00⟩+|11⟩)/√2 是典型纠缠态，测量结果关联且不能用局域隐变量解释。\n公式：CHSH 不等式——局域实在论要求 |S|≤2，量子力学预言最大值 2√2；实验测得 S>2 即违反 CHSH。\n判据：无漏洞贝尔实验需同时关闭定域性漏洞（测量距离足够远）和探测漏洞（探测效率足够高）；SPDC 是产生纠缠光子对的常用方法。\n边界：贝尔测试排除了局域隐变量理论，但纠缠分发距离随信道损耗指数衰减；自由空间纠缠分发受大气湍流影响。\n工程要点：Bell 基测量用分束器+单光子探测器做符合计数；纠缠光子对的收集效率和符合计数率是实验关键指标。",
+    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；Scully & Zubairy《Quantum Optics》；Aspect, Aspect & Roger, PRL, 1982",
+    "page_or_section": "综合：量子纠缠 / CHSH 与实验漏洞",
+    "keywords_zh": "纠缠态,CHSH,贝尔不等式,SPDC,定域性漏洞,探测漏洞",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-04",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【压缩态与量子噪声】\n定义：散粒噪声极限（SNL）是相干态的量子噪声水平；压缩态光场在某一正交分量上的噪声低于 SNL，代价是另一分量噪声高于 SNL（不确定性守恒）。\n公式：压缩度以 dB 表示——10 dB 压缩表示该分量噪声功率降到 SNL 的 1/10；正交分量不确定性满足 ΔX·ΔP ≥ ℏ/2。\n判据：压缩光用于干涉测量可突破散粒噪声极限、提高 SNR；产生压缩态需要光学参量振荡器（OPO）。\n边界：压缩态对光学损耗极其敏感——任何信道损耗都会把噪声拉回 SNL；实际压缩量受限于光学损耗和相位噪声。\n工程要点：压缩光在引力波探测中已用于提高灵敏度；工程上要尽量降低干涉仪光路损耗，否则压缩增益被损耗抵消。",
+    "source": "公开教材综合：Scully & Zubairy《Quantum Optics》；Loudon《The Quantum Theory of Light》3e；Caves, Physical Review D, 1982",
+    "page_or_section": "综合：压缩态 / 量子噪声与干涉测量",
+    "keywords_zh": "压缩态,散粒噪声极限,正交分量,OPO,干涉测量,量子噪声",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-05",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【量子传感】\n定义：量子传感利用原子、光子等量子系统的精密能级结构测量物理量；典型包括原子钟（频率基准）、原子重力仪（重力加速度）、原子磁力仪（磁场）。\n公式：原子钟利用原子超精细能级跃迁频率 f=ΔE/h 作为时间基准；冷原子干涉仪用拉曼脉冲序列测量重力加速度 g。\n判据：量子传感优势在灵敏度和长期稳定性；但设备体积、功耗、环境鲁棒性是工程瓶颈——通常比经典设备大且昂贵。\n边界：原子钟需要真空系统和激光冷却；芯片级原子钟（CSAC）和芯片级磁力仪是微型化方向；量子传感的优势在精度而非便携性。\n工程要点：选方案先看精度需求是否真的需要量子极限——大多数工业测量用经典设备即可；只有在超高精度需求场景才值得量子设备的代价。",
+    "source": "公开教材综合：Scully & Zubairy《Quantum Optics》；Budker & Romalis, Nature Physics, 2007；Kitching, Applied Physics Reviews, 2018",
+    "page_or_section": "综合：量子传感 / 原子钟与磁力仪",
+    "keywords_zh": "量子传感,原子钟,冷原子干涉,原子磁力仪,重力仪,芯片级",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-06",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【单光子探测器件】\n定义：单光子探测器工作在盖革模式或超导失超模式，能探测单个光子事件；SPAD（雪崩二极管）室温工作，SNSPD（超导纳米线）需低温。\n公式：关键指标——探测效率（PDE）、暗计数率（DCR）、时间抖动、死时间；SPAD 在盖革模式下反偏电压超过击穿电压。\n判据：SPAD 室温工作但 DCR 较高；SNSPD 效率高、暗计数低、时间抖动小，但需要约 4 K 低温；DCR 随温度指数增长。\n边界：SPAD 的后脉冲效应限制重复频率；SNSPD 需要闭式循环制冷机，体积和功耗大；近红外波段 SNSPD 优势明显，可见光 SPAD 成熟。\n工程要点：选探测器先看工作波段和时间分辨要求——可见光选 SPAD，近红外选 SNSPD；时间抖动要求高（<50 ps）选 SNSPD。",
+    "source": "公开教材综合：Saleh & Teich《Fundamentals of Photonics》2e；Scully & Zubairy《Quantum Optics》；Hadfield, Nature Photonics, 2009",
+    "page_or_section": "综合：单光子探测 / SPAD 与 SNSPD",
+    "keywords_zh": "SPAD,SNSPD,暗计数,时间抖动,盖革模式,超导纳米线",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  },
+  {
+    "doc_id": "H03",
+    "chunk_id": "H03-07",
+    "status": "present",
+    "is_original_excerpt": false,
+    "text": "【光学量子计算路线】\n定义：光学量子计算用光子作为量子比特，通过线性光学元件（分束器、相移器）实现量子门；测量型量子计算（MBQC）先制备大纠缠簇态再通过测量实现计算。\n公式：量子纠错阈值——表面码物理比特错误率需低于约 1% 才能扩展到容错量子计算；LOQC 用概率性纠缠门，资源开销大。\n判据：离子阱是目前物理比特保真度最高的路线之一；光学路线优势在室温操作、光子相干性好；NISQ 阶段各路线都在含噪声中等规模阶段。\n边界：光学量子计算瓶颈在高保真度确定性纠缠门——概率性纠缠需要大量额外资源；离子阱保真度高但扩展困难。\n工程要点：目前光学量子计算还在实验验证阶段，离实用化远；工程上要关注单光子源效率和探测器效率这两个瓶颈指标。",
+    "source": "公开教材综合：Nielsen & Chuang《Quantum Computation and Quantum Information》；O'Brien, Science, 2007；Ladd et al., Nature, 2010",
+    "page_or_section": "综合：量子计算 / 线性光学与离子阱路线",
+    "keywords_zh": "量子计算,线性光学,MBQC,离子阱,量子纠错,NISQ",
+    "disclaimer": "本条为教材与公开综述通用结论的工程整理，非原文摘录；公式符号约定与推导以所列来源为准。"
+  }
+]
