@@ -62,7 +62,7 @@
 | `local_assets` | workspace 文件清单（名称/类型/大小/相关度） |
 | `plan.steps[]` | 每步 phase/goal/capability/actions/output/routing；web 步骤带 blocked_by |
 | `calc_specs[]` | 公式卡：公式、变量单位、假设、合理范围、算例、KB 来源；不执行计算 |
-| `search_pack` | KB 查询与带 when 条件的外部查询 |
+| `search_pack` | KB 查询与带 trigger/gated 条件的外部查询 |
 | `acceptance[]` | 验收清单 |
 | `success_criteria[]` | 前 6 条验收标准 |
 | `execution_contract` | 必须做什么、可调哪些 Skill/MCP/工具、何时停下 |
@@ -175,7 +175,7 @@ BM25 检索，只返回 `status=present`。
 ```
 assist(problem=..., workspace=..., known_capabilities=[...])
 → 执行 alignment.kb_queries，记录 coverage_matrix 与 verdict
-→ web_gate 未打开则不联网；打开后才执行满足 when 的 external_queries
+→ web_gate 未打开则不联网；打开后才执行 `search_pack` 中 `scope=external` 且 `gated=true` 的查询
 → 按 plan 调 sheet 做指标表、word 写报告，必要时联网核标准/厂商资料
 → docx/pdf 先导出 .md/.txt
 → verify(problem=原始问题, path="报告.md")
