@@ -1,10 +1,10 @@
-# OpticForge 架构（1.2.0）
+# OpticForge 架构（3.1.0）
 
 ## 一句话
 
-把“查知识库”升级成“接一个具体问题，产出可执行、可验收的交付路径”。
+把“查知识库”升级成“接一个具体问题，多剧本激活、按维度取证、交叉核对后产出可执行、可验收的交付路径”。
 
-插件不替 agent 干活，而是把活拆清楚：需要哪些依据、哪些本地素材、该调哪个 Skill/MCP、按什么顺序、每步产出什么、最后怎么验收。
+插件不替 agent 干活，而是把活拆清楚：这个问题属于哪几张主题卡、必须回答哪些维度、每个维度有哪些依据、维度之间怎么相互约束、哪些维度只能联网补、该调哪个 Skill/MCP、按什么顺序、每步产出什么、最后怎么验收。
 
 ---
 
@@ -54,8 +54,11 @@
 
 | 字段 | 内容 |
 |---|---|
-| `brief` | problem_id、目标、领域、意图、交付物、约束、待澄清问题 |
-| `coverage` | 检索面总数/覆盖数/证据数/置信度 |
+| `brief` | problem_id、目标、领域、意图、交付物、约束、待澄清问题、`active_playbooks`（多剧本及得分） |
+| `dimensions` | 按维度取证：id/label/priority/domains/boards/anchor/sources/status/evidence/hit_chunk_ids/queries/concept_cards/gap_reason/**source_matrix**（kb covered/gap + web 是否必须补） |
+| `relations` | 融合后的交叉关系：from/to/type/note/sources，只保留两端都存在的维度 |
+| `cross_checks` | 交叉核对清单（每条关系一行取舍/耦合说明），对应 plan 的「交叉复核」步 |
+| `coverage` | 维度总数/覆盖数/证据数/置信度 |
 | `coverage_matrix` | 每个检索面的命中 chunk_id 与状态 |
 | `evidence` | ≤10 条：chunk_id、doc_id、status、标题、分数、来源、章节、摘录、命中的检索面 |
 | `gaps` | 主题未覆盖 + 声明不覆盖（光刻工艺、空间光学） |
@@ -92,26 +95,27 @@
 
 ---
 
-## 任务剧本（data/assist-playbooks.json）
+## 任务剧本与 L2 数据层（16 张主题卡）
 
-每条 playbook 描述一类任务：
+`data/assist-playbooks.json`（version 3）现有 16 张主题卡：高光谱、光学设计、检测装调、共焦传感、光谱仪光栅、成像相机、薄膜镀膜、故障排查、技术调研，加 v3.1.0 新增的位置姿态、红外系统、光纤传感、干涉/OCT、波导 AR、信号链、不确定度与定标。每张卡除原有触发词/板块/检索面/步骤外，还声明：
 
 ```json
 {
-  "id": "hyperspectral",
-  "label": "高光谱成像",
-  "keywords": ["高光谱", "推扫", "快照", "Offner"],
-  "sections": ["I05", "I06", "G01"],
-  "aspects": ["推扫几何 速高比 幅宽", "Czerny-Turner 消像散"],
-  "focus": ["…"],
-  "steps": [{ "phase": "指标", "goal": "…", "capability": "calc", "output": "…" }],
-  "search": [{ "facet": "标准", "zh": "…", "en": "…" }]
+  "required_dimensions": [{ "id": "spec", "label": "指标分解与互斥", "domains": ["IM","DS"], "boards": ["IM03"], "anchor": "…", "priority": 1 }],
+  "relations": [{ "from": "spectrometer", "to": "aberration", "type": "constrains", "note": "分光方案决定像差形式" }],
+  "cross_check": ["幅宽与光谱分辨率的取舍", "推扫几何与信噪比耦合"],
+  "steps": [{ "phase": "指标", "capability": "calc", "dimension_id": "spec" }]
 }
 ```
 
-现有 9 类：高光谱、光学设计、检测装调、共焦传感、光谱仪光栅、成像相机、薄膜镀膜、故障排查、技术调研。未命中任何剧本时用通用剧本，仍会产出取证、盘点、交付、自检四段。
+**多剧本激活**：主剧本必选；其余剧本分数 ≥2 且必须命中至少一个非通用词才激活，最多 3 张。`GENERIC_KEYWORDS` 覆盖分辨率、噪声、灵敏度、精度、误差、带宽、动态范围、视场、设计、选型、检测、测量、标定、校准、预算、成本、方案、对比、调研、分析、成像——避免“光谱分辨率 5 nm”把共焦剧本、“高光谱成像”把相机剧本误带进来。
 
-**扩展方式**：加一个对象，不改代码。触发词、板块、检索面、步骤、交付物都能独立调。
+**维度融合**：同 id 维度合并，保留最小 priority，合并 domains/boards 并记录 sources，上限 12；`fuseRelations` 只保留两端都存在的维度关系。
+
+另有两只只读数据文件：
+
+- `data/concept-cards.json`：308 张概念卡，来自 `kb-data.json` 的 308 条 present 块**一块一卡**逐字抽取（定义/公式/判据/误差来源/前两句），不改写、不加数值；带 domain、v3_boards、kind、statement、source_chunk_ids、keywords、applies_to。由 `scripts/build-concept-cards.mjs` 生成，`build-kb --all` 写完 meta 后自动重建；`--check` 校验 sha256。
+- `data/cross-dimensions.json`：6 个通用维度模板（principle/design/calc/implementation/verification/risk），含 queries/boards/priority，供无命中剧本时兜底。
 
 ---
 
@@ -153,14 +157,14 @@ Skill 候选按名称匹配打分：精确匹配 > 前缀匹配 > 包含匹配�
 
 ---
 
-## 取证与缺口
+## 取证与缺口（按维度）
 
-1. 检索面 = 剧本 `aspects` + 问题关键词（去掉纯数字和量值，避免造出“400-1000”这种假主题）。
-2. 每个面 `searchKB(query, 6)`，只返回 present。
-3. 按 chunk 聚合，命中面越多排名越前，最多 10 条。
-4. 某面 0 命中 → `gaps`；问题命中声明不覆盖主题 → 追加“声明不覆盖”。
-5. `library_gaps` 由 `kb-meta.docs` 计算，固定检查 A03/C01/E01，给出缺失条数。
-6. 证据摘录取命中词附近 220 字，保留标题与来源。
+1. 维度来源 = 激活剧本的 `required_dimensions` 融合 + 通用维度补缺，上限 12。
+2. 每个维度独立检索：`label + anchor + anchorTerms + queries`，深度决定 topK（quick 2 / standard 4 / deep 5）。
+3. 每面输出 `evidence`、`hit_chunk_ids`、`queries`、`used_queries`、`concept_cards`、`gap_reason`；同块按最高分聚合。
+4. 全局证据优先剧本 `sections`，跨板块最多补 2 条，避免被单一长板块占满。
+5. 维度 0 命中 → `status=gap`，`source_matrix.web=required`，生成按维度的中英双语外部检索组（`facet:"缺口·X"`、`gate_id:"kb_gap"`、带 `dimension_id`）。
+6. `library_gaps` 由 `kb-meta.docs` 计算，固定检查 A03/C01/E01，给出缺失条数。
 
 ---
 
@@ -174,11 +178,12 @@ assist 返回体顶层 `alignment` 块，机器可读地留痕 KB 取证过程�
 
 | 字段 | 实际结构 |
 |---|---|
-| `kb_queries` | 本次实际发给 `opticforge_search` 的检索面字符串列表 |
-| `matched` | `[{query, hit_chunk_ids[]}]`，命中 present 条目的检索面 |
-| `unmatched` | `[{query, reason:"KB 无命中"}]`，0 命中的检索面（KB gap 候选） |
-| `coverage_matrix` | 逐检索面行（aspect / status / hit_chunk_ids） |
-| `verdict` | **`covered`**（所有检索面都命中）/ **`partial`**（部分命中）/ **`gap`**（0 面命中，含 total=0） |
+| `kb_queries` | 本次全部维度的查询去重后的字符串列表 |
+| `matched` | `[{query, dimension_id, hit_chunk_ids[]}]`，命中的维度 |
+| `unmatched` | `[{query, dimension_id, reason:"KB 无命中"}]`，gap 维度 |
+| `coverage_matrix` | 与 `dimensions` 同源：逐维度行，含 status、hit_chunk_ids 与 `source_matrix`（维度×来源） |
+| `source_summary` | `{kb_covered, kb_gap, web_required}`，一眼看出多少面必须联网补 |
+| `verdict` | **`covered`**（全部维度命中）/ **`partial`**（部分命中）/ **`gap`**（0 维命中，含 total=0） |
 | `evidence_count` | 证据条数 |
 | `declared_gaps` | 命中「声明不覆盖」主题的检索面列表 |
 
@@ -223,13 +228,20 @@ plan 对象除 `steps/critical_path/parallelizable` 外，还暴露 `kb_evidence
 - 条件未放行时该步 `blocked=true`、`web_gated=true`、`external_queries=[]`，且 `actions` 被替换为三条拦截提示（禁止发起外部检索 / 满足触发条件 / 本步仅保留意图）；
 - `parallelizable` 不含 web_gated 步——**不允许无约束并行**：先 KB 取证、出 gap、再按放行条件联网；专业步可并行，取证与门禁步不可跳过、不可越序。
 
+### plan 的交叉约束（3.1.0）
+
+- 专业步带 `dimension_id`；KB 取证步的 `dimension_ids` 覆盖全部维度；
+- 新增「缺口补证」web 步（只在有 gap 维度时出现）与「交叉复核」步：逐条 relation 写核对动作，要求两面数字同表比较并回写 `cross_checks`；
+- relation 两端步骤互写 `coordinates_with`，`parallelizable` 自动排除 critical、web_gated 与任何有 `coordinates_with` 的步——耦合对不许拆开并行。
+
 ---
 
 ## DSH Skill 软约束与 KB-first 评测
 
 - `skills/opticforge-task/SKILL.md` 固定执行顺序：assist → KB 对齐 → web_gate → 按 blocked_by 执行 → 公式卡计算轨迹 → docx/pdf 导出文本 → verify。
 - `scripts/install-local.mjs` 将 Skill 链接到 `~/.dsh/skills/opticforge-task`；目标是普通目录时不覆盖，卸载只删除链接。它是软约束，不是 DSH 中间件级硬拦截。
-- `eval/run-kb-first.mjs` 跑 10 类任务的离线契约评测，检查第一入口、alignment、web_gate、blocked_by、公式卡来源与 verify 使用。
+- `eval/run-kb-first.mjs` 跑 13 类任务的离线契约评测，检查第一入口、多剧本、维度与 `source_matrix`、交叉清单、alignment、web_gate、blocked_by、公式卡来源与 verify 使用；另用同一案例的维度/关系合成最小合规文本，单独跑一遍 verify 交叉契约。
+- 指标：契约通过率、assist 首调率、KB 先于 web、verify 使用率/通过率、`multi_playbook_rate`、`dimension_coverage_rate`、`source_matrix_rate`、`cross_relation_rate`。
 - 真实模型行为必须用 DSH 工具轨迹另测：`node eval/run-kb-first.mjs --trace <jsonl>` 统计 assist 首调率（门槛 ≥90%）、KB 先于 web（≥80%）、verify 使用率（100%）。没有轨迹时，评测结果只代表 harness，不宣称模型已达标。
 
 ---
@@ -292,9 +304,16 @@ plan 对象除 `steps/critical_path/parallelizable` 外，还暴露 `kb_evidence
 | KB 对齐 | 有对齐段与 covered/partial/gap verdict（传 problem 时） | warning（strict 下 error） |
 | 外部来源 | URL 带访问日期、厂商/型号/标准号等细节 | warning（strict 下 error） |
 | 公式卡 | 有数值时给 formula_id；用卡后有计算轨迹；未知 id 为 error | warning / error |
+| 维度齐全 | 传 `dimensions` 时，每个 label/id 必须出现；缺面报 `missing_dimension` | warning（strict 下 error） |
+| 每面有据 | 维度出现处前后 240/700 字内必须有 chunk_id 或 URL；否则 `dimension_without_evidence` | warning（strict 下 error） |
+| 耦合一致 | 传 `relations` 时两端必须同时出现（`relation_not_reflected`），且中间 220 字内写出约束/取舍（`relation_not_stated`） | warning（strict 下 error） |
+| 来源分级 | URL 段落标「一手 datasheet/标准/论文」或「二手博客/百科」；未标 `external_source_tier`，二手 `external_untrusted_source` | warning（strict 下 error） |
+| 多源交叉 | 含 URL 且含数值的段落至少 2 个来源，或标「单源待核」；否则 `external_single_source` | warning（strict 下 error） |
+| KB 冲突 | 同段混用 chunk_id 与 URL 必须说明一致/差异/以谁为准；写「冲突」须带 `conflict_with_kb` | warning（strict 下 error） |
+| 时效 | 价格/型号/标准/版本等 URL 段落有日期且超过 30 天 → `external_stale`（`now` 可注入） | warning（strict 下 error） |
 | 营销词 | 完美/最佳/领先/保证/唯一/颠覆 等 | warning |
 
-分数 = 100 − 18×error − 6×warning，下限 0；`pass` 只看 error。
+分数 = 100 − 18×error − 6×warning，下限 0；`pass` 只看 error。输出新增 `dimensions`（total/covered/missing/unevidenced/coupling_missing/coupling_unstated/rows）与 `adoption`（source_tier/corroborated/conflict_with_kb/stale/pass），checklist 增 `dimensions_complete` / `dimensions_evidenced` / `coupling_consistent` / `adoption_gate`。
 
 只支持文本：`.md/.txt/.json/.csv/.html/.xml/.yaml/.yml/.js/.mjs/.ts/.py/.m/.tex/.log`，≤2 MB。docx/pdf 需先导出文本。
 
@@ -306,14 +325,16 @@ plan 对象除 `steps/critical_path/parallelizable` 外，还暴露 `kb_evidence
 2. **不越权**：插件不联网、不写文件、不执行命令。
 3. **可核对**：每个证据带 chunk_id 与 source；每个数字要么有引用，要么有计算说明。
 4. **可降级**：数据/能力/素材任一缺失，都输出降级结果而不是失败；`formula-cards.json` 缺失时 `calc_specs` 为空列表。
-5. **版本一致**：`package.json`、`kb-meta.kb_version`、工具回显三处一致。
+5. **版本一致**：`package.json`、`kb-meta.kb_version`、概念卡 `kb_version`、工具回显四处一致。
 6. **先 KB 后联网**：assist 完成 KB 对齐且 web_gate 放行前，不调用 `general_search` / `web_search` / `web_fetch`；web 步骤必须 `blocked_by` 取证与门禁，禁止无约束并行。
+7. **交叉闭合**：必答维度一个不落；每个维度有 chunk_id/URL；关系两端必须同时出现并写出约束；缺面不补就过不了 verify 的 dimensions 检查。
+8. **采信可审计**：外部来源分级、多源交叉、KB 冲突口径、时效四项必须留痕；`adoption.pass=false` 不得交付。
 
 ---
 
 ## 已知限制
 
 - 能力发现依赖文件系统路径；DSH 内建 Skill 若在 app.asar 中，扫描不到，需用 `known_capabilities` 声明。
-- 剧本是规则匹配，不做语义理解；问题跨多个领域时只选得分最高的一个，其余领域靠证据覆盖。
+- 多剧本激活是规则匹配（分数 + 非通用词门槛），不做语义消歧；跨义项词（如“分辨率”）靠通用词表压误激活，仍可能有边界情况。
 - 计划粒度到“步骤 + 动作”，不生成具体代码或参数；参数由执行层计算并用 verify 复核。
-- `verify` 不判断技术正确性，只判断“是否有依据、是否有结构”。
+- `verify` 不判断技术正确性，只判断“是否有依据、是否有结构、采信是否留痕”。

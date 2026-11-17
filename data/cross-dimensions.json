@@ -1,0 +1,67 @@
+{
+  "version": 3,
+  "note": "通用交叉维度模板。主题卡未命中或维度不足时用它兜底；只描述“任何光电任务都要答的面”，不绑定具体领域，也不映射到叶子条目。",
+  "dimensions": [
+    {
+      "id": "principle",
+      "label": "原理与依据",
+      "domains": ["TF"],
+      "boards": ["TF01", "TF02", "TF05"],
+      "anchor": "原理/公式/判据",
+      "queries": ["原理 机理 公式", "判据 适用边界"],
+      "priority": 1,
+      "ask": "用什么原理/公式支撑这个结论？适用条件是什么？"
+    },
+    {
+      "id": "design",
+      "label": "设计与选型",
+      "domains": ["DS", "MT"],
+      "boards": ["DS01", "DS03", "MT01"],
+      "anchor": "方案/结构/选型",
+      "queries": ["设计 选型 方案", "参数 分解 权衡"],
+      "priority": 1,
+      "ask": "选了什么方案/器件？为什么不用另一种？"
+    },
+    {
+      "id": "calc",
+      "label": "计算与预算",
+      "domains": ["QE", "DS"],
+      "boards": ["QE01"],
+      "anchor": "预算/指标/误差分配",
+      "queries": ["预算 指标 计算", "误差 分配 量纲"],
+      "priority": 1,
+      "ask": "关键指标怎么算出来的？输入、单位、假设是什么？",
+      "needs_formula": true
+    },
+    {
+      "id": "implementation",
+      "label": "实现与工艺",
+      "domains": ["DS", "MT", "QE"],
+      "boards": ["DS04", "MT07", "QE03"],
+      "anchor": "装调/加工/流程",
+      "queries": ["装调 装配 工艺", "加工 实现 流程"],
+      "priority": 2,
+      "ask": "怎么做出来？装调顺序与工装是什么？"
+    },
+    {
+      "id": "verification",
+      "label": "验证与测试",
+      "domains": ["DT"],
+      "boards": ["DT01", "DT03", "DT04"],
+      "anchor": "检测/标定/验收",
+      "queries": ["检测 测试 标定", "验收 判据 不确定度"],
+      "priority": 2,
+      "ask": "怎么验证达标？判定限与不确定度是多少？"
+    },
+    {
+      "id": "risk",
+      "label": "误差与风险",
+      "domains": ["QE", "DS"],
+      "boards": ["DS05", "QE02", "QE04", "QE05"],
+      "anchor": "误差/失效/环境",
+      "queries": ["误差 失效 漂移", "杂散光 环境 可靠性"],
+      "priority": 2,
+      "ask": "最可能怎么失效？误差与环境的边界在哪？"
+    }
+  ]
+}

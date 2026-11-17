@@ -13,7 +13,7 @@
 统一信封：
 
 ```json
-{ "ok": true, "kb_version": "1.2.0", "action": "assist", "...": "各工具字段" }
+{ "ok": true, "kb_version": "3.1.0", "action": "assist", "...": "各工具字段" }
 ```
 
 ---
@@ -28,7 +28,7 @@
 拿到 chunk_id 想看全文     → opticforge_get
 ```
 
-典型顺序：**assist → 执行 alignment.kb_queries → 记录 matched/unmatched 与 verdict → 检查 web_gate → 按 blocked_by 执行 plan → verify → 交付**。不要让 general_search/web_search 成为第一个工具；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足才联网。随包 `opticforge-task` Skill 固定同一流程。
+典型顺序：**assist → 执行 alignment.kb_queries → 记录 matched/unmatched 与 verdict → 检查 web_gate → 按 blocked_by 执行 plan（专业步按 dimension_id，交叉步逐对核对）→ verify（传 dimensions/relations）→ 交付**。不要让 general_search/web_search 成为第一个工具；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足才联网。随包 `opticforge-task` Skill 固定同一流程。
 
 ---
 
@@ -51,22 +51,25 @@
 
 | 字段 | 说明 |
 |---|---|
-| `brief` | 目标、领域、意图、交付物、约束、待澄清（≤3 问） |
-| `alignment` | KB 查询、matched/unmatched、coverage_matrix、verdict |
+| `brief` | 目标、领域、意图、交付物、约束、待澄清（≤3 问）、`active_playbooks`（激活的主题卡与得分） |
+| `alignment` | KB 查询、matched/unmatched（带 dimension_id）、coverage_matrix、source_summary、verdict |
 | `web_gate` | 默认关闭；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件才打开 |
-| `coverage` | 检索面覆盖数与置信度 |
+| `dimensions[]` | 必答维度：status、evidence、hit_chunk_ids、queries、concept_cards、gap_reason、source_matrix（维度×来源） |
+| `relations[]` | 交叉关系：from/to/type/note，只保留两端存在的维度 |
+| `cross_checks[]` | 交叉核对清单（对应「交叉复核」步） |
+| `coverage` | 维度覆盖数与置信度 |
 | `evidence[]` | chunk_id、doc_id、status、标题、来源、摘录、命中的检索面 |
-| `gaps[]` | 主题未覆盖 / 声明不覆盖 |
+| `gaps[]` | 主题未覆盖 / 声明不覆盖；缺口维度带 gap_reason 与外部查询组 |
 | `library_gaps[]` | 原文缺口：A03、C01、E01 的缺失条数 |
 | `capabilities` | 扫描到的 Skill、MCP 服务器、说明 |
 | `local_assets` | workspace 文件清单（名称/类型/大小/相关度） |
-| `plan.steps[]` | 每步 phase/goal/capability/actions/output/routing；web 步骤带 blocked_by |
+| `plan.steps[]` | 每步 phase/goal/capability/actions/output/routing；专业步带 dimension_id，web 步骤带 blocked_by；relation 两端步骤互写 coordinates_with |
 | `calc_specs[]` | 公式卡：公式、变量单位、假设、合理范围、算例、KB 来源；不执行计算 |
-| `search_pack` | KB 查询与带 trigger/gated 条件的外部查询 |
-| `acceptance[]` | 验收清单 |
+| `search_pack` | KB 查询与带 trigger/gated 条件的外部查询；缺口维度另带 `缺口·X` 中英双语组 |
+| `acceptance[]` | 验收清单（含维度齐全、交叉核对、采信留痕） |
 | `success_criteria[]` | 前 6 条验收标准 |
 | `execution_contract` | 必须做什么、可调哪些 Skill/MCP/工具、何时停下 |
-| `risks[]` | 知识缺口、原文缺口、能力、输入、边界 |
+| `risks[]` | 知识缺口、原文缺口、维度耦合、采信、能力、输入、边界 |
 | `handoff` | 可直接交给子 agent 的 Markdown |
 
 **示例**
@@ -80,9 +83,9 @@
 }
 ```
 
-`plan` 会把任务拆成澄清 → 取证 → 盘点 → 指标 → 方案 → 预算 → 定标 → 外部核验 → 交付 → 自检 → 收口。步骤里的 `routing.recommended_skills` 是候选，不是保证可用；执行层按当前会话实际工具替换。
+`plan` 会把任务拆成澄清 → 取证 → 盘点 → 指标 → 方案 → 预算 → 定标 → 结构/杂散光/效率等专业步 → 缺口补证（仅 gap 时）→ 交叉复核 → 交付 → 自检 → 收口。步骤里的 `routing.recommended_skills` 是候选，不是保证可用；执行层按当前会话实际工具替换。同一问题会激活最多 3 张主题卡，维度去重合并后上限 12 个。
 
-**缺口处理**：`gaps` 与 `library_gaps` 只是说明，不可当事实。`opticforge_assist` 不会用通用常识补缺口。
+**缺口处理**：`gaps` 与 `library_gaps` 只是说明，不可当事实。`opticforge_assist` 不会用通用常识补缺口。某个维度 `status=gap` 时，`source_matrix.web.status=required`，必须走 `缺口·X` 外部检索组，并在交付物里标 `covered_by_web` 与来源等级。
 
 ---
 
@@ -94,8 +97,11 @@
 |---|---|---|---|
 | `text` | string | 二选一 | 待检查正文 |
 | `path` | string | 二选一 | 文本文件路径（.md/.txt/.json/.csv 等） |
-| `strict` | boolean | 否 | true 时“数量无来源”判 error |
+| `strict` | boolean | 否 | true 时“数量无来源”“缺维度/缺证据/采信不全”判 error |
 | `problem` | string | 否 | 原始问题，仅作上下文 |
+| `dimensions` | array | 否 | assist 返回的 `dimensions`（含 id/label/status），或字符串数组；用于维度齐全/每面有据 |
+| `relations` | array | 否 | assist 返回的 `relations`（from/to/type/note）；用于耦合一致检查 |
+| `now` | string | 否 | 当前日期 `YYYY-MM-DD`，用于外部来源时效判定；缺省用系统时间 |
 
 **检查项**
 
@@ -111,9 +117,12 @@
 | 外部 URL 缺访问日期或型号/标准号 | warning（strict=error） |
 | 有数值但缺 formula_id / 计算轨迹 | warning（strict=error） |
 | 引用了不存在的 formula_id | error |
+| 维度缺失 / 维度附近无据 | warning（strict=error） |
+| 关系两端缺失 / 未写约束 | warning（strict=error） |
+| 外部来源未标分级 / 二手源 / 单源数值 / 冲突未说明 / 超 30 天时效 | warning（strict=error） |
 | 绝对化/营销词 | warning |
 
-**返回**：`pass`、`score`（0–100）、`citations`、`external_citations`、`alignment`、`formula_cards`、`issues[]`、`checklist`、`summary`。
+**返回**：`pass`、`score`（0–100）、`citations`、`external_citations`、`alignment`、`formula_cards`、`dimensions`（total/covered/missing/unevidenced/coupling_*）、`adoption`（source_tier/corroborated/conflict_with_kb/stale/pass）、`issues[]`、`checklist`、`summary`。
 
 **限制**：只解析文本，不解析 docx/pdf；超过 2 MB 拒绝。
 

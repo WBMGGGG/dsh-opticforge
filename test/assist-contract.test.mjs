@@ -50,7 +50,7 @@ function fakeSearchKB(chunks, query, k) {
   return hits.slice(0, k || 5);
 }
 const fakeMeta = {
-  kb_version: "1.2.0",
+  kb_version: "3.1.0",
   zero_coverage_topics: ["空间光学", "光刻工艺"],
   covered_anchors: [],
   docs: [
@@ -521,4 +521,188 @@ test("C12b 无 domains 命中时退到 keywords，仍不混入 fallback 卡", as
   const ids = v.calc_specs.map((c) => c.card_id);
   assert.ok(ids.includes("KW_HIT"), "keywords 层应命中 KW_HIT：" + JSON.stringify(ids));
   assert.ok(!ids.includes("FALLBACK_ONLY"), "keywords 命中时不应混入 fallback 卡，实际：" + JSON.stringify(ids));
+});
+
+// ---- 14. 多剧本激活：交叉问题至少激活两个主题卡，且维度来自多卡 ----
+test("C14 多剧本激活：高光谱装调定标同时激活 hyperspectral 与 testing_alignment", async () => {
+  const v = await assist.buildAssist(
+    { problem: "高光谱系统的装调与定标怎么做" },
+    baseDeps()
+  );
+  const ids = v.brief.active_playbooks.map((p) => p.id);
+  assert.ok(ids.includes("hyperspectral"), "应激活 hyperspectral，实际：" + JSON.stringify(ids));
+  assert.ok(ids.includes("testing_alignment"), "应激活 testing_alignment，实际：" + JSON.stringify(ids));
+  assert.ok(v.brief.active_playbooks.length >= 2, "交叉问题应激活 ≥2 张主题卡");
+  for (const p of v.brief.active_playbooks) {
+    assert.ok(Array.isArray(p.dimensions) && p.dimensions.length > 0, p.id + " 应回显维度");
+    assert.ok(typeof p.score === "number");
+  }
+  // 维度去重合并：同 id 只出现一次
+  const dimIds = v.dimensions.map((d) => d.id);
+  assert.equal(new Set(dimIds).size, dimIds.length, "融合后维度 id 不应重复");
+});
+
+test("C14b 通用词不误激活：只说「光谱分辨率 5 nm」不应带进共焦剧本", async () => {
+  const v = await assist.buildAssist(
+    { problem: "设计一台 400-1000 nm 推扫式高光谱成像仪，光谱分辨率 5 nm" },
+    baseDeps()
+  );
+  const ids = v.brief.active_playbooks.map((p) => p.id);
+  assert.ok(ids.includes("hyperspectral"));
+  assert.ok(!ids.includes("confocal_sensing"), "「分辨率」是通用词，不应单独激活共焦剧本，实际：" + JSON.stringify(ids));
+  assert.ok(!ids.includes("imaging_camera"), "「成像」是通用词，不应单独激活相机剧本，实际：" + JSON.stringify(ids));
+});
+
+// ---- 15. 维度行与 维度×来源 覆盖矩阵 ----
+test("C15 coverage_matrix 升为维度×来源：每行带 kb/web 两列且与 dimensions 同源", async () => {
+  const v = await assist.buildAssist(
+    { problem: "高光谱系统的装调与定标怎么做" },
+    baseDeps({ searchKB: alwaysHitKB })
+  );
+  assert.ok(Array.isArray(v.dimensions) && v.dimensions.length >= 6, "交叉任务应有 ≥6 个维度");
+  assert.deepEqual(v.coverage_matrix, v.alignment.coverage_matrix, "顶层矩阵应与 alignment 一致");
+  for (const row of v.coverage_matrix) {
+    for (const f of ["id", "label", "status", "evidence", "hit_chunk_ids", "queries", "concept_cards", "gap_reason", "source_matrix"]) {
+      assert.ok(f in row, "维度行缺少字段 " + f);
+    }
+    assert.equal(row.source_matrix.kb.status, "covered", row.id + " 在 alwaysHit 下 KB 应 covered");
+    assert.ok(row.source_matrix.kb.hits > 0);
+    assert.equal(row.source_matrix.web.status, "not_required");
+  }
+  assert.equal(v.alignment.source_summary.kb_covered, v.dimensions.length);
+  assert.equal(v.alignment.source_summary.web_required, 0);
+  for (const m of v.alignment.matched) {
+    assert.ok(typeof m.dimension_id === "string" && m.dimension_id.length > 0, "matched 应带 dimension_id");
+    assert.ok(Array.isArray(m.hit_chunk_ids));
+  }
+});
+
+// ---- 16. 缺口 → 按维度的外部检索组 ----
+test("C16 缺口维度生成中英双语外部检索组，带 dimension_id 与 kb_gap 门禁", async () => {
+  const emptyKB = () => [];
+  const v = await assist.buildAssist(
+    { problem: "高光谱系统的装调与定标怎么做" },
+    baseDeps({ searchKB: emptyKB })
+  );
+  assert.equal(v.alignment.verdict, "gap");
+  const gapGroups = v.search_pack.filter((g) => g.dimension_id);
+  assert.ok(gapGroups.length >= 2, "每个缺口维度都应有外部检索组");
+  assert.equal(gapGroups.length, v.dimensions.length, "缺口数应与维度数一致");
+  for (const g of gapGroups) {
+    assert.equal(g.scope, "external");
+    assert.equal(g.gate_id, "kb_gap");
+    assert.ok(g.facet.includes("缺口·"), "面名应标缺口：" + g.facet);
+    assert.ok(Array.isArray(g.queries) && g.queries.length >= 2, "应有中英双语查询");
+    assert.ok(g.queries.some((q) => /[\u4e00-\u9fa5]/.test(q)) && g.queries.some((q) => /[a-zA-Z]/.test(q)), "应中英各一");
+  }
+  assert.equal(v.alignment.source_summary.web_required, v.dimensions.length);
+  for (const row of v.coverage_matrix) assert.equal(row.source_matrix.web.status, "required");
+  assert.ok(v.web_gate.conditions.find((c) => c.id === "kb_gap").granted, "有缺口应放行 kb_gap");
+});
+
+// ---- 17. plan：维度步、交叉步、coordinates_with 与并行约束 ----
+test("C17 plan 带 dimension_id / 交叉复核步 / coordinates_with 且并行步不拆耦合", async () => {
+  const v = await assist.buildAssist(
+    { problem: "设计一台 400-1000 nm 推扫式高光谱成像仪，光谱分辨率 5 nm，含分光方案与指标预算" },
+    baseDeps({ searchKB: alwaysHitKB })
+  );
+  const plan = v.plan;
+  assert.ok(Array.isArray(plan.cross_checks) && plan.cross_checks.length > 0, "应有交叉检查清单");
+  const crossStep = plan.steps.find((s) => s.phase === "交叉复核");
+  assert.ok(crossStep, "应有「交叉复核」步");
+  assert.ok(crossStep.actions.length >= plan.cross_checks.length, "每条关系应有核对动作");
+  assert.ok(crossStep.actions.every((a) => /核对/.test(a)), "交叉步动作应以「核对」开头");
+  assert.ok(crossStep.output.includes("交叉检查"), "交叉步应输出 cross_checks");
+
+  for (const s of plan.steps) {
+    if (["澄清", "取证", "盘点", "缺口补证", "交叉复核", "交付", "自检", "收口"].includes(s.phase)) continue;
+    if (s.capability === "clarify" || s.capability === "local_scan" || s.web_gated) continue;
+    assert.ok(typeof s.dimension_id === "string" && s.dimension_id.length > 0,
+      s.id + " 专业步应带 dimension_id");
+  }
+  // coordinates_with 必须双向
+  for (const s of plan.steps) {
+    for (const other of s.coordinates_with || []) {
+      const peer = plan.steps.find((x) => x.id === other || x.dimension_id === other);
+      if (peer) assert.ok((peer.coordinates_with || []).some((x) => x === s.id || x === s.dimension_id),
+        s.id + " 的 coordinates_with 应双向");
+    }
+  }
+  // 有耦合的步不能进并行集
+  for (const id of plan.parallelizable) {
+    const s = plan.steps.find((x) => x.id === id);
+    assert.ok(s, "parallelizable 引用了不存在的步 " + id);
+    assert.equal((s.coordinates_with || []).length, 0, id + " 有 coordinates_with 不应并行");
+    assert.ok(!s.web_gated, id + " web 步不应并行");
+  }
+  const coveredIds = plan.dimensions_covered ? String(plan.dimensions_covered).split(",").filter(Boolean) : [];
+  const gapIds = plan.dimensions_gap ? String(plan.dimensions_gap).split(",").filter(Boolean) : [];
+  assert.equal(coveredIds.length + gapIds.length, v.dimensions.length,
+    "计划应覆盖全部维度（covered+gap=" + (coveredIds.length + gapIds.length) + "）");
+});
+
+// ---- 18. verify 交叉检查与采信闸门 ----
+test("C18 verify：缺维度/缺耦合报错，采信四判据可机器核对", async () => {
+  const verifyMod = await import(pathToFileURL(path.join(LIB, "verify.js")).href);
+  const chunks = makeChunks();
+  const dims = [
+    { id: "spectrometer", label: "分光结构设计", status: "covered" },
+    { id: "aberration", label: "像差与光机", status: "covered" }
+  ];
+  const rels = [{ from: "spectrometer", to: "aberration", type: "constrains", note: "分光方案决定像差形式" }];
+  const good = [
+    "## 结论",
+    "分光结构设计采用 Offner 结构，依据 A01-01；像差与光机按消像散条件分配，依据 F01-01，两者相互约束：分光结构决定狭缝像弯曲。",
+    "",
+    "## 外部来源",
+    "一手源：厂商 datasheet https://example.com/offner 型号 OFF-100，访问日期：2026-11-10。",
+    "",
+    "## 假设",
+    "近轴。",
+    "",
+    "## 缺口",
+    "无。",
+    "",
+    "## 复现",
+    "略。"
+  ].join("\n");
+  const r = verifyMod.verifyText(good, chunks, { dimensions: dims, relations: rels, now: "2026-11-17" });
+  assert.equal(r.dimensions.total, 2);
+  assert.equal(r.dimensions.missing, 0);
+  assert.equal(r.dimensions.unevidenced, 0);
+  assert.equal(r.adoption.external_source_tier.primary, 1);
+  assert.equal(r.adoption.pass, true);
+  assert.equal(r.checklist.dimensions_complete, true);
+  assert.equal(r.checklist.coupling_consistent, true);
+
+  const bad = good.replace("像差与光机按消像散条件分配，依据 F01-01，两者相互约束：分光结构决定狭缝像弯曲。", "");
+  const b = verifyMod.verifyText(bad, chunks, { dimensions: dims, relations: rels, now: "2026-11-17" });
+  assert.equal(b.dimensions.missing, 1, "删掉一面应报缺维度");
+  assert.equal(b.dimensions.coupling_missing, 1, "关系两端缺一应报耦合缺失");
+  const types = b.issues.map((i) => i.type);
+  assert.ok(types.includes("missing_dimension"));
+  assert.ok(types.includes("relation_not_reflected"));
+  assert.equal(b.checklist.dimensions_complete, false);
+  assert.equal(b.checklist.coupling_consistent, false);
+
+  // 四判据：二手源 + 单源数值 + 混用 KB/URL 未说明 + 过期
+  const risky = [
+    "## 结论",
+    "A01-01 给出 5 nm 分辨率。博客 https://blog.example.com/a 说 3 nm 分辨率，报价 2 万元，访问日期：2026-09-01。",
+    "",
+    "## 假设",
+    "无。",
+    "",
+    "## 缺口",
+    "无。"
+  ].join("\n");
+  const q = verifyMod.verifyText(risky, chunks, { now: "2026-11-17" });
+  assert.equal(q.adoption.external_source_tier.untrusted, 1);
+  assert.equal(q.adoption.corroborated.single_source, 1);
+  assert.equal(q.adoption.conflict_with_kb.undeclared, 1);
+  assert.equal(q.adoption.stale.stale, 1);
+  assert.equal(q.adoption.pass, false);
+  for (const t of ["external_untrusted_source", "external_single_source", "conflict_with_kb_unstated", "external_stale"]) {
+    assert.ok(q.issues.some((i) => i.type === t), "应报 " + t);
+  }
 });

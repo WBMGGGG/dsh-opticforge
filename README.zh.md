@@ -1,9 +1,9 @@
 # OpticForge
 
 光电工程师的**任务辅助插件**，DeepSeek Harness（DSH）。
-输入一个具体问题，输出一套能直接执行的作战包：任务简报、知识证据、能力路由、分阶段计划、定向检索词、验收清单。
+输入一个具体问题，输出一套能直接执行的作战包：任务简报、维度化知识证据、交叉关系、能力路由、分阶段计划、定向检索词、验收清单。
 
-纯 Node.js，零运行时依赖。**1.2.0 起把“先知识库、后联网”落成可检查的执行契约，并附 DSH Skill 与公式卡；插件仍不联网、不执行动作。**
+纯 Node.js，零运行时依赖。**3.1.0 起把“交叉覆盖”落成可检查的执行契约：多剧本激活、按维度取证、维度×来源覆盖矩阵、交叉核对与采信闸门；插件仍不联网、不执行动作。**
 
 ---
 
@@ -17,9 +17,9 @@
 
 OpticForge 把这三件事收进一个插件：
 
-- **证据层**：40 个板块、324 条带来源的事实条目，检索命中给 chunk_id + 来源 + 摘录，没依据就明说。
-- **路由层**：按问题类型选剧本，盘点本机 Skill / MCP / 工作目录素材，生成带能力标签的执行计划；`alignment` 先固定 KB 查询与覆盖判定，`web_gate` 决定何时才允许联网。
-- **验收层**：交付前检查引用、数量、KB 对齐段、外部来源日期、公式卡计算轨迹、假设/缺口/复现。
+- **证据层**：40 个板块、324 条带来源的事实条目 + 16 张主题卡、308 张概念卡、6 个通用维度；检索命中给 chunk_id + 来源 + 摘录，按维度取证，没依据就明说。
+- **路由层**：按问题激活最多 3 张主题卡，融合必答维度，盘点本机 Skill / MCP / 工作目录素材，生成带能力标签与 dimension_id 的执行计划；`alignment` 固定维度覆盖判定，`web_gate` 决定何时才允许联网。
+- **验收层**：交付前检查引用、数量、KB 对齐段、外部来源日期、公式卡计算轨迹、维度齐全/每面有据/耦合一致，以及来源分级、多源交叉、KB 冲突、时效四项采信判据。
 
 ---
 
@@ -29,14 +29,16 @@ OpticForge 把这三件事收进一个插件：
 问题
  │
  ├─ opticforge_assist ── 受理与路由
- │    ├─ brief          目标 / 交付物 / 约束 / 待澄清
- │    ├─ alignment      KB 查询 / matched / unmatched / verdict
+ │    ├─ brief          目标 / 交付物 / 约束 / 待澄清 / active_playbooks
+ │    ├─ alignment      KB 查询 / matched / unmatched / verdict（按维度）
  │    ├─ web_gate       默认关闭；缺口、版本、厂商规格或时效才打开
- │    ├─ evidence       知识库证据 + 覆盖矩阵 + 缺口
+ │    ├─ dimensions      按维度取证 + 概念卡 + 缺口原因 + source_matrix
+ │    ├─ relations       交叉关系 + cross_checks 核对清单
+ │    ├─ evidence       知识库证据 + 维度×来源覆盖矩阵 + 缺口
  │    ├─ capabilities   本机 Skill / MCP / 工作目录素材
  │    ├─ calc_specs     公式卡（公式、单位、假设、算例；不执行计算）
- │    ├─ plan           分阶段步骤；web 步骤带 blocked_by
- │    ├─ search_pack    KB 查询与带 trigger/gated 条件的外部查询
+ │    ├─ plan           分阶段步骤；专业步带 dimension_id，web 步骤带 blocked_by，耦合步 coordinates_with
+ │    ├─ search_pack    KB 查询与带 trigger/gated 条件的外部查询；缺口维度单列
  │    └─ acceptance     验收清单 + 风险 + 可交接 Markdown
  │
  ├─ 执行层（agent）── 按 plan 调用
@@ -50,6 +52,8 @@ OpticForge 把这三件事收进一个插件：
       ├─ 数量：数字是否有引用或计算说明
       ├─ 结构：假设 / 缺口 / 复现 / 来源
       ├─ KB-first：对齐段、verdict、外部 URL 日期与来源细节
+      ├─ 交叉：维度齐全、每面有据、耦合一致
+      ├─ 采信：来源分级、多源交叉、KB 冲突、时效
       ├─ 计算：formula_id、输入、单位、输出与复算路径
       └─ 措辞：绝对化与营销词
 ```
@@ -90,7 +94,7 @@ OpticForge 把这三件事收进一个插件：
 
 `handoff` 是一段可直接交给子 agent 的 Markdown，包含目标、依据、执行顺序与验收。另附 `execution_contract`：必须做什么、可调哪些 Skill/MCP/工具、什么情况必须停下。
 
-**KB-first 执行契约**：先 `assist`，再执行 `alignment.kb_queries` 形成 matched/unmatched 与 `verdict`，然后才检查 `web_gate`。KB 已覆盖的原理不允许直接改用网页；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足时才联网。`search_pack` 中 KB 查询与外部查询分开，外部查询带 `trigger/gated/gate_id/blocked_by`，只有 `gated=true` 才可执行；web 步骤带 `blocked_by`。随包 `skills/opticforge-task/SKILL.md` 给 DSH 固定同一流程。
+**KB-first 执行契约**：先 `assist`，再按 `dimensions` 逐面执行 `alignment.kb_queries` 形成 matched/unmatched 与 `verdict`，然后核对 `relations` / `cross_checks`，最后才检查 `web_gate`。KB 已覆盖的原理不允许直接改用网页；只有 KB 缺口、标准版本、厂商规格、价格/时效等条件满足时才联网。`search_pack` 中 KB 查询与外部查询分开，外部查询带 `trigger/gated/gate_id/blocked_by`，只有 `gated=true` 才可执行；web 步骤带 `blocked_by`。随包 `skills/opticforge-task/SKILL.md` 给 DSH 固定同一流程。
 
 ### 公式卡与文档前置提取
 
@@ -112,9 +116,9 @@ docx/pdf 不直接交给 `verify`。先用 word/pdf Skill 导出 `.md` 或 `.txt
 
 ---
 
-## 知识库现状（1.2.0，内容基线不变）
+## 知识库现状（3.1.0，内容基线不变）
 
-**40 个板块、324 条条目，其中 308 条可作为依据**（`status=present`）。
+**40 个板块、324 条条目，其中 308 条可作为依据**（`status=present`）。在此之上叠了三层只读数据：16 张主题卡（98 条维度声明）、308 张概念卡（一块一卡，逐字抽取）、6 个通用维度模板。
 
 | 系列 | 板块 | 内容 | 条目 |
 |---|---|---|---|
@@ -124,11 +128,17 @@ docx/pdf 不直接交给 `verify`。先用 word/pdf Skill 导出 `.md` 或 `.txt
 | H | 8 | 前沿交叉：超表面与 DOE、光波导与光子集成、量子光学、高光谱、激光三角/共焦/雷达、失效现场、前沿专题、半导体光源 | 61 |
 | I | 6 | 场景深化：像差判读、物理光学与传递函数、光学检测、光学设计、高光谱推扫/快照、Czerny-Turner 与 Offner 分光系统 | 60 |
 
+**L2 数据层**
+
+- `data/assist-playbooks.json`：16 张主题卡，每张声明 `required_dimensions`（合计 98 条）、`relations`、`cross_check`，每个步骤绑定 `dimension_id`。
+- `data/concept-cards.json`：308 张概念卡，来自 308 条 present 块的**一块一卡**逐字抽取，不改写、不加数值；8 域分布 IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8，全部带 applies_to。
+- `data/cross-dimensions.json`：principle/design/calc/implementation/verification/risk 六个通用维度，无命中主题卡时兜底。
+
 ### 缺口
 
 **原文层只剩三处**：A03（《光学学报》峰值定位综述，1 条）、C01（ZYGO CSI 白皮书，5 条）、E01（JJF 1990-2022，6 条）的原始条文未取得。合计 16 条非 present：11 条 `missing_source`、5 条 `substitute`（用同类公开资料补一般原理，并注明非原出处）。
 
-`opticforge_assist` 会把这三处单列为 `library_gaps`，`opticforge_verify` 会把引用非 present 条目直接判错。
+`opticforge_assist` 会把这三处单列为 `library_gaps`，`opticforge_verify` 会把引用非 present 条目直接判错。**维度缺口另算**：某维度 0 命中时 `source_matrix.web.status=required`，生成 `缺口·X` 中英双语外部检索组，交付物必须标 `covered_by_web` 与来源等级。
 
 主题层另有两条按维护者要求不纳入：光刻工艺与光刻胶、空间光学与热控。检索为空即无依据，不编造；其他未列主题同理。
 
@@ -198,8 +208,8 @@ node scripts/install-local.mjs --uninstall
 ```bash
 node test/run.mjs                        # 集成测试
 node scripts/verify-all.mjs              # 发布前验收
-node eval/run-kb-first.mjs               # 10 类任务的 KB-first 契约评测
-node scripts/build-kb.mjs --all --version 1.2.0
+node eval/run-kb-first.mjs               # 13 类任务的 KB-first 契约评测 + 交叉契约
+node scripts/build-kb.mjs --all --version 3.1.0
 node scripts/build-kb.mjs --check
 ```
 

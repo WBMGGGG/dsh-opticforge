@@ -61,6 +61,14 @@ async function runContractEvaluation(tools, cases) {
     check(["covered", "partial", "gap"].includes(a.alignment?.verdict), "alignment.verdict 非法：" + a.alignment?.verdict);
     check(Array.isArray(a.alignment?.matched) && Array.isArray(a.alignment?.unmatched), "alignment 缺 matched/unmatched");
     check(Array.isArray(a.coverage_matrix), "缺 coverage_matrix");
+    check(Array.isArray(a.dimensions) && a.dimensions.length > 0, "缺 dimensions（交叉维度）");
+    check(a.dimensions.every((d) => d.source_matrix && d.source_matrix.kb && d.source_matrix.web), "维度行缺 source_matrix（维度×来源）");
+    check(a.dimensions.filter((d) => d.status === "covered").every((d) => (d.hit_chunk_ids || []).length > 0), "covered 维度没有 chunk 证据");
+    check(Array.isArray(a.relations), "缺 relations（交叉关系）");
+    check(Array.isArray(a.plan?.cross_checks), "plan 缺 cross_checks");
+    if (a.relations.length > 0) {
+      check(a.plan.cross_checks.length > 0, "有关系但没有交叉复核清单");
+    }
     check(a.web_gate?.policy === "default_deny_explicit_allowlist", "web_gate 不是 default deny");
     check(typeof a.web_gate?.allowed === "boolean" && Array.isArray(a.web_gate?.conditions), "web_gate 字段不全");
     const must = (a.execution_contract?.must || []).join("\n");
@@ -126,6 +134,7 @@ async function runContractEvaluation(tools, cases) {
     events.push({ tool: "opticforge_verify" });
     check(v.ok === true, "verify 调用失败：" + (v.error || "unknown"));
     check(v.pass === true, "verify 未通过：" + JSON.stringify(v.issues || []));
+    check(v.dimensions && typeof v.dimensions.total === "number" && v.adoption && typeof v.adoption.pass === "boolean", "verify 缺 dimensions/adoption 输出");
 
     const firstWeb = events.findIndex((e) => e.tool === "external_allowed" || WEB_TOOLS.has(e.tool));
     const lastKb = events.map((e, i) => ({ e, i })).filter((x) => KB_TOOLS.has(x.e.tool)).at(-1)?.i ?? -1;
@@ -134,6 +143,12 @@ async function runContractEvaluation(tools, cases) {
     rows.push({
       id: c.id,
       domain: a.brief?.domain?.id,
+      active_playbooks: (a.brief?.active_playbooks || []).map((p) => p.id),
+      dimensions_total: a.dimensions.length,
+      dimensions_covered: a.dimensions.filter((d) => d.status === "covered").length,
+      relations: a.relations.length,
+      cross_checks: a.plan.cross_checks.length,
+      source_matrix_rows: a.dimensions.filter((d) => d.source_matrix?.kb && d.source_matrix?.web).length,
       verdict: a.alignment?.verdict,
       web_allowed: a.web_gate?.allowed,
       calc_cards: (a.calc_specs || []).map((x) => x.card_id),
@@ -146,6 +161,10 @@ async function runContractEvaluation(tools, cases) {
     });
   }
   const n = rows.length;
+  const dimTotal = rows.reduce((s, r) => s + r.dimensions_total, 0);
+  const dimCovered = rows.reduce((s, r) => s + r.dimensions_covered, 0);
+  const withRels = rows.filter((r) => r.relations > 0);
+  const sourceRows = rows.reduce((s, r) => s + r.source_matrix_rows, 0);
   return {
     scope: "offline_contract_harness_no_real_network",
     cases: n,
@@ -154,9 +173,83 @@ async function runContractEvaluation(tools, cases) {
       assist_first_rate_in_harness: pct(rows.filter((r) => r.events[0]?.tool === "opticforge_assist").length, n),
       kb_before_web_rate_in_harness: pct(rows.filter((r) => r.kb_before_web).length, n),
       verify_usage_rate_in_harness: pct(rows.filter((r) => r.verify_called).length, n),
-      verify_pass_rate: pct(rows.filter((r) => r.verify_pass).length, n)
+      verify_pass_rate: pct(rows.filter((r) => r.verify_pass).length, n),
+      multi_playbook_rate: pct(rows.filter((r) => r.active_playbooks.length >= 2).length, n),
+      dimension_coverage_rate: pct(dimCovered, dimTotal),
+      source_matrix_rate: pct(sourceRows, dimTotal),
+      cross_relation_rate: pct(withRels.filter((r) => r.cross_checks > 0).length, withRels.length || 1)
     },
     rows
+  };
+}
+
+/**
+ * 交叉契约评测：用同一案例的维度与关系合成一份“最小合规”文本，
+ * 再让 verify 走 dimensions/relations 与采信闸门，确认交叉链路真的接通。
+ */
+async function runCrossContract(tools, c) {
+  const a = await tools.opticforge_assist.execute({ problem: c.problem, deliverable: c.deliverable }, {});
+  const dims = a.dimensions || [];
+  const rels = a.relations || [];
+  const byId = new Map(dims.map((d) => [d.id, d]));
+  const allCovered = dims.length > 0 && dims.every((d) => d.status === "covered" && (d.hit_chunk_ids || []).length > 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const lines = [
+    "## KB 对齐",
+    `verdict: ${a.alignment?.verdict}；维度覆盖 ${dims.filter((d) => d.status === "covered").length}/${dims.length}。`,
+    "",
+    "## 结论",
+    dims.map((d) => `${d.label}：依据 ${d.hit_chunk_ids[0]}，按该面判据给结论。`).join("\n"),
+    "",
+  ];
+  if (rels.length) {
+    lines.push(
+      "## 交叉核对",
+      rels.slice(0, 4).map((r) => {
+        const from = byId.get(r.from);
+        const to = byId.get(r.to);
+        return `${from.label}（依据 ${from.hit_chunk_ids[0]}）与 ${to.label}（依据 ${to.hit_chunk_ids[0]}）相互约束：${r.note}。`;
+      }).join("\n"),
+      ""
+    );
+  }
+  lines.push(
+    "## 外部来源",
+    `一手源：厂商 datasheet https://example.com/spec 型号 X-100，访问日期：${today}，与 KB 一致。`,
+    "",
+    "## 假设",
+    "仅验证交叉契约，不代表光学结论已复核。",
+    "",
+    "## 缺口",
+    "无新增缺口；A03/C01/E01 仍按 library_gaps 处理。",
+    "",
+    "## 复现",
+    "运行 node eval/run-kb-first.mjs --json。"
+  );
+  const v = await tools.opticforge_verify.execute({
+    problem: c.problem,
+    text: lines.join("\n"),
+    strict: true,
+    dimensions: dims,
+    relations: rels,
+    now: today
+  }, {});
+  const failures = [];
+  if (!allCovered) failures.push("案例存在 gap 维度，无法合成全覆盖文本");
+  if (!v || v.ok !== true) failures.push("verify 调用失败：" + (v?.error || "unknown"));
+  if (v?.dimensions?.missing !== 0) failures.push("维度未被识别：" + v?.dimensions?.missing);
+  if (v?.dimensions?.unevidenced !== 0) failures.push("维度缺证据：" + v?.dimensions?.unevidenced);
+  if (v?.dimensions?.coupling_missing !== 0) failures.push("耦合两端缺失：" + v?.dimensions?.coupling_missing);
+  if (v?.dimensions?.coupling_unstated !== 0) failures.push("耦合关系未写：" + v?.dimensions?.coupling_unstated);
+  if (v?.adoption?.pass !== true) failures.push("采信闸门未过：" + JSON.stringify(v?.adoption || {}));
+  if (v?.checklist?.adoption_gate !== true) failures.push("checklist.adoption_gate 未通过");
+  return {
+    case_id: c.id,
+    dimensions: dims.length,
+    relations: rels.length,
+    pass: failures.length === 0,
+    failures,
+    verify: { pass: v?.pass, missing: v?.dimensions?.missing, adoption: v?.adoption?.pass }
   };
 }
 
@@ -206,15 +299,19 @@ async function scoreRealTrace(file) {
 const cases = JSON.parse(await readFile(CASES_URL, "utf8"));
 const tools = await boot();
 const contract = await runContractEvaluation(tools, cases);
+const crossCase = cases.find((c) => c.id === "pushbroom_hyperspectral") || cases[0];
+const crossContract = await runCrossContract(tools, crossCase);
 const report = {
-  kb_version: "1.2.0",
+  kb_version: "3.1.0",
   contract,
+  cross_contract: crossContract,
   model_trace: tracePath ? await scoreRealTrace(tracePath) : null,
   note: tracePath ? "真实轨迹指标与离线契约分开报告。" : "未提供 --trace；assist 首调率等只代表评测 harness，不代表真实模型行为已达标。"
 };
 const contractPass = contract.metrics.contract_pass_rate === 1 && contract.metrics.verify_usage_rate_in_harness === 1;
+const crossPass = crossContract.pass === true;
 const tracePass = !report.model_trace || report.model_trace.pass;
-report.pass = contractPass && tracePass;
+report.pass = contractPass && crossPass && tracePass;
 
 if (jsonOnly) {
   console.log(JSON.stringify(report, null, 2));
@@ -225,6 +322,8 @@ if (jsonOnly) {
     for (const f of r.failures || []) console.log("  - " + f);
   }
   console.log(JSON.stringify(contract.metrics, null, 2));
+  console.log(`== 交叉契约 ==\n${crossContract.pass ? "ok" : "FAIL"} ${crossContract.case_id} dims=${crossContract.dimensions} rels=${crossContract.relations}`);
+  for (const f of crossContract.failures || []) console.log("  - " + f);
   if (report.model_trace) console.log("== 真实轨迹 ==\n" + JSON.stringify(report.model_trace, null, 2));
   else console.log("NOTE " + report.note);
   console.log(report.pass ? "OK KB-first 评测通过" : "FAIL KB-first 评测未通过");

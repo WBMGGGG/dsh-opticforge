@@ -103,7 +103,7 @@ async function main() {
   } catch {
     bad("npm pack 可解析", (pack.stderr || pack.stdout || "无输出").slice(0, 200));
   }
-  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/assist.js", "lib/capabilities.js", "lib/verify.js", "data/kb-data.json", "data/kb-meta.json", "data/assist-playbooks.json", "data/formula-cards.json", "skills/opticforge-task/SKILL.md", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
+  const mustHave = ["lib/index.js", "lib/kb-data.js", "lib/kb-engine.js", "lib/assist.js", "lib/capabilities.js", "lib/verify.js", "data/kb-data.json", "data/kb-meta.json", "data/assist-playbooks.json", "data/concept-cards.json", "data/cross-dimensions.json", "data/formula-cards.json", "skills/opticforge-task/SKILL.md", "cordis.patch.yml", "package.json", "README.md", "LICENSE"];
   for (const f of mustHave) assert("打包含 " + f, files.includes(f), "实际清单：" + files.join(", "));
   const mustNot = files.filter((f) => f.startsWith("_kb-raw/") || f.startsWith("test/") || f.startsWith("scripts/") || f.includes("HANDOVER"));
   assert("打包不含私有/内部文件", mustNot.length === 0, mustNot.join(", "));
@@ -130,9 +130,59 @@ async function main() {
   const skill = await readFile(path.join(ROOT, "skills", "opticforge-task", "SKILL.md"), "utf8");
   assert("Skill frontmatter 与工作流完整", /^---\nname: opticforge-task\ndescription: /.test(skill) && skill.includes("opticforge_assist") && skill.includes("web_gate") && skill.includes("opticforge_verify") && !skill.includes("TODO"), "检查 name/description/assist/web_gate/verify/TODO");
   const evalRun = runNode([path.join(ROOT, "eval", "run-kb-first.mjs")]);
-  assert("10 类 KB-first 契约评测通过", evalRun.code === 0, evalRun.out.trim().split("\n").slice(-5).join(" | "));
+  assert("13 类 KB-first 契约评测通过", evalRun.code === 0, evalRun.out.trim().split("\n").slice(-5).join(" | "));
   const installDry = runNode([path.join(ROOT, "scripts", "install-local.mjs"), "--dry-run"]);
   assert("安装器 dry-run 通过且包含 Skill 链接", installDry.code === 0 && installDry.out.includes("Skill"), installDry.out.trim().split("\n").slice(-4).join(" | "));
+
+  console.log("== H. 交叉数据层 ==");
+  const concept = JSON.parse(await readFile(path.join(ROOT, "data", "concept-cards.json"), "utf8"));
+  assert("概念卡一块一卡（数量=present 块数）", concept.card_count === concept.cards.length && concept.cards.length === meta.present_chunks,
+    "card_count=" + concept.card_count + " cards=" + concept.cards.length + " present=" + meta.present_chunks);
+  assert("概念卡 kb_version 与包版本一致", concept.kb_version === pkg.version, "concept=" + concept.kb_version + " pkg=" + pkg.version);
+  assert("概念卡 id 唯一", new Set(concept.cards.map((c) => c.id)).size === concept.cards.length, "存在重复 id");
+  let conceptBadSource = 0;
+  let conceptBadApplies = 0;
+  let conceptTooShort = 0;
+  for (const c of concept.cards) {
+    if (!Array.isArray(c.source_chunk_ids) || !c.source_chunk_ids.length || c.source_chunk_ids.some((id) => byId.get(id)?.status !== "present")) conceptBadSource += 1;
+    if (!Array.isArray(c.applies_to) || c.applies_to.length === 0) conceptBadApplies += 1;
+    if (String(c.statement || "").length < 30) conceptTooShort += 1;
+  }
+  assert("概念卡来源全部为 present", conceptBadSource === 0, conceptBadSource + " 张来源无效");
+  assert("概念卡 applies_to 非空", conceptBadApplies === 0, conceptBadApplies + " 张缺 applies_to");
+  assert("概念卡正文不短于 30 字", conceptTooShort === 0, conceptTooShort + " 张过短");
+
+  const crossDims = JSON.parse(await readFile(path.join(ROOT, "data", "cross-dimensions.json"), "utf8"));
+  const dimIds = (crossDims.dimensions || crossDims.cross_dimensions || []).map((d) => d.id);
+  assert("通用维度模板 6 个", dimIds.length === 6, "实际 " + dimIds.length);
+  assert("通用维度 id 不重复", new Set(dimIds).size === dimIds.length, "存在重复 id");
+
+  const playbooks = JSON.parse(await readFile(path.join(ROOT, "data", "assist-playbooks.json"), "utf8"));
+  assert("主题卡 16 张且 version=3", playbooks.version === 3 && playbooks.playbooks.length === 16, "version=" + playbooks.version + " n=" + playbooks.playbooks.length);
+  let pbIssues = [];
+  let dimDeclarations = 0;
+  for (const pb of playbooks.playbooks) {
+    const ids = new Set((pb.required_dimensions || []).map((d) => d.id));
+    dimDeclarations += ids.size;
+    if (!ids.size) pbIssues.push(pb.id + " 缺 required_dimensions");
+    if (!Array.isArray(pb.cross_check) || pb.cross_check.length === 0) pbIssues.push(pb.id + " 缺 cross_check");
+    for (const r of pb.relations || []) {
+      if (!ids.has(r.from) || !ids.has(r.to)) pbIssues.push(pb.id + " 关系端点不存在：" + r.from + "->" + r.to);
+    }
+    for (const s of pb.steps || []) {
+      if (!s.dimension_id || !ids.has(s.dimension_id)) pbIssues.push(pb.id + " 步骤 " + (s.phase || "?") + " 的 dimension_id 无效");
+    }
+  }
+  assert("主题卡维度声明 ≥96 条", dimDeclarations >= 96, "实际 " + dimDeclarations);
+  assert("主题卡维度/关系/步骤闭合", pbIssues.length === 0, pbIssues.slice(0, 5).join("；"));
+
+  const indexMod = await import(new URL("../lib/index.js", import.meta.url).href);
+  const registered = [];
+  indexMod.apply({ tools: { register(t) { registered.push(t); } } });
+  const assistTool = registered.find((t) => t.name === "opticforge_assist");
+  const echo = assistTool ? await assistTool.execute({ problem: "共焦位移传感器选型" }, {}) : null;
+  assert("assist 工具回显版本与 package.json 一致", echo?.ok === true && echo.kb_version === pkg.version,
+    "echo=" + (echo?.kb_version || echo?.error || "no-tool") + " pkg=" + pkg.version);
 
   console.log("");
   if (failures.length) {

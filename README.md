@@ -1,9 +1,9 @@
 # OpticForge
 
 A **task assistant plugin** for optical engineers, built for DeepSeek Harness (DSH).
-Give it one concrete problem; it returns an executable package: brief, knowledge evidence, capability routing, staged plan, targeted search queries and acceptance checks.
+Give it one concrete problem; it returns an executable package: brief, dimension-based knowledge evidence, cross-relations, capability routing, staged plan, targeted search queries and acceptance checks.
 
-Pure Node.js, zero runtime dependencies. **1.2.0 makes KB-first an inspectable execution contract and adds a DSH Skill plus formula cards; the plugin still performs no network or external actions.**
+Pure Node.js, zero runtime dependencies. **3.1.0 turns cross-coverage into an inspectable contract: multi-playbook activation, per-dimension evidence, a dimension×source matrix, cross-checks and an adoption gate; the plugin still performs no network or external actions.**
 
 > 中文文档见 [README.zh.md](README.zh.md)。
 
@@ -19,9 +19,9 @@ Optical design, alignment and acceptance work is blocked less by formulas than b
 
 OpticForge handles all three:
 
-- **Evidence layer**: 40 sections, 324 source-attributed fact entries; hits carry chunk_id, source and excerpt; no basis is stated as such.
-- **Routing layer**: classify the problem, inspect local Skills / MCP / workspace assets, and produce a capability-tagged plan. `alignment` fixes KB queries and coverage first; `web_gate` controls when external search is allowed.
-- **Verification layer**: check citations, quantities, the KB-alignment section, external-source dates, formula-card traces, assumptions, gaps and reproducibility.
+- **Evidence layer**: 40 sections, 324 source-attributed fact entries plus 16 playbooks, 308 concept cards and 6 generic dimensions; hits carry chunk_id, source and excerpt, evidence is collected per dimension, and no basis is stated as such.
+- **Routing layer**: activate up to 3 playbooks, fuse required dimensions, inspect local Skills / MCP / workspace assets, and produce a capability-tagged plan with dimension_id. `alignment` fixes dimension coverage first; `web_gate` controls when external search is allowed.
+- **Verification layer**: check citations, quantities, the KB-alignment section, external-source dates, formula-card traces, dimension completeness / evidence / coupling, plus the adoption gate (source tier, corroboration, KB conflict, staleness).
 
 ---
 
@@ -31,14 +31,16 @@ OpticForge handles all three:
 Problem
  │
  ├─ opticforge_assist ── intake & routing
- │    ├─ brief           goal / deliverable / constraints / questions
- │    ├─ alignment       KB queries / matched / unmatched / verdict
+ │    ├─ brief           goal / deliverable / constraints / questions / active_playbooks
+ │    ├─ alignment       KB queries / matched / unmatched / verdict (per dimension)
  │    ├─ web_gate        closed by default; opens for gaps, versions, vendors, freshness
- │    ├─ evidence        KB chunks + coverage matrix + gaps
+ │    ├─ dimensions      per-dimension evidence + concept cards + gap_reason + source_matrix
+ │    ├─ relations       cross-relations + cross_checks
+ │    ├─ evidence        KB chunks + dimension×source matrix + gaps
  │    ├─ capabilities    local Skills / MCP / workspace assets
  │    ├─ calc_specs      formula cards, never a calculator
- │    ├─ plan            staged steps; web steps carry blocked_by
- │    ├─ search_pack     KB queries + conditional external queries
+ │    ├─ plan            staged steps; dimension_id, web blocked_by, coupling via coordinates_with
+ │    ├─ search_pack     KB queries + conditional external queries, per gap dimension
  │    └─ acceptance      checklist + risks + handoff Markdown
  │
  ├─ execution layer (agent) ── follows the plan
@@ -52,6 +54,8 @@ Problem
       ├─ quantities: numbers carry a citation or a calculation note
       ├─ structure: assumptions / gaps / reproduction / sources
       ├─ KB-first: alignment verdict, URL dates and source details
+      ├─ cross: dimensions complete, each evidenced, coupling stated
+      ├─ adoption: source tier, corroboration, KB conflict, staleness
       ├─ calculation: formula_id, inputs, units, outputs and reproduction
       └─ wording: absolute or marketing claims
 ```
@@ -110,9 +114,9 @@ Failures degrade to empty lists with a note, never block the task. `known_capabi
 
 ---
 
-## Knowledge base (1.2.0, content baseline unchanged)
+## Knowledge base (3.1.0, content baseline unchanged)
 
-**40 sections, 324 entries, 308 usable** (`status=present`):
+**40 sections, 324 entries, 308 usable** (`status=present`), plus three read-only layers: 16 playbooks (98 dimension declarations), 308 concept cards (one card per present chunk, extracted verbatim) and 6 generic dimension templates.
 
 | Series | Sections | Content | Entries |
 |---|---|---|---|
@@ -122,11 +126,17 @@ Failures degrade to empty lists with a note, never block the task. `known_capabi
 | H | 8 | Frontier: metasurfaces & DOEs, waveguides & photonic integration, quantum optics, hyperspectral imaging, laser triangulation/confocal/lidar, field failures, frontier topics, semiconductor sources | 61 |
 | I | 6 | Scenario-focused: aberration judgement, physical optics & transfer functions, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny-Turner and Offner spectrometer design | 60 |
 
+**L2 data layer**
+
+- `data/assist-playbooks.json`: 16 playbooks, each with `required_dimensions` (98 total), `relations`, `cross_check` and a `dimension_id` on every step.
+- `data/concept-cards.json`: 308 concept cards, one per present chunk, extracted verbatim with no rewriting or added numbers; 8 domains IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8, all with applies_to.
+- `data/cross-dimensions.json`: 6 generic dimensions (principle/design/calc/implementation/verification/risk) used when no playbook matches.
+
 ### Gaps
 
 **Only three source-level gaps remain**: A03 (Acta Optica Sinica peak-localization review, 1 entry), C01 (ZYGO CSI white paper, 5 entries) and E01 (JJF 1990-2022, 6 entries). Their verbatim clauses were never obtained. In total 16 non-present entries: 11 `missing_source`, 5 `substitute` (comparable public material, explicitly marked as not the original).
 
-`opticforge_assist` lists them as `library_gaps`; `opticforge_verify` treats a citation to a non-present entry as an error.
+`opticforge_assist` lists them as `library_gaps`; `opticforge_verify` treats a citation to a non-present entry as an error. **Dimension gaps are separate**: a zero-hit dimension gets `source_matrix.web.status=required` and a bilingual `缺口·X` external query group; the deliverable must mark `covered_by_web` and the source tier.
 
 Two topics remain intentionally out of scope: lithography process and space optics. An empty result means no basis — nothing is invented.
 
@@ -192,7 +202,7 @@ Restart DSH afterwards. Editing this repo and restarting picks up changes. The i
 node test/run.mjs
 node scripts/verify-all.mjs
 node eval/run-kb-first.mjs
-node scripts/build-kb.mjs --all --version 1.2.0
+node scripts/build-kb.mjs --all --version 3.1.0
 node scripts/build-kb.mjs --check
 ```
 

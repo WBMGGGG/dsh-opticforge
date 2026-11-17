@@ -63,7 +63,7 @@ node scripts/install-local.mjs --profile "C:\Users\X\.dsh\profiles\desktop"
 opticforge_docs
 ```
 
-预期返回 `ok: true`、`kb_version` 与 `docs` 列表（9 个板块）。再调 `opticforge_search`（如 `query="共焦色散 测量原理"`）应命中 A01。
+预期返回 `ok: true`、`kb_version: "3.1.0"` 与 `docs` 列表（40 个板块）。再调 `opticforge_search`（如 `query="共焦色散 测量原理"`）应命中 A01。
 
 不放心可以先跑一遍离线验收，不依赖 DSH：
 
@@ -71,7 +71,7 @@ opticforge_docs
 node scripts/verify-all.mjs
 ```
 
-它检查发布契约、源码零宿主依赖、知识库产物一致性、25 个集成用例、打包清单和版本号，共 29 项。
+它检查发布契约、源码零宿主依赖、知识库产物一致性、三套测试、交叉数据层、打包清单与版本号，共 57 项。
 
 ---
 
@@ -85,7 +85,7 @@ link 安装后，改仓库里的代码或数据，**重启 DSH 就加载最新�
 node scripts/build-kb.mjs --all --version <新版本号>
 ```
 
-版本号同时写进 `data/kb-meta.json`，工具返回里的 `kb_version` 会回显它——这就是判断"有没有用上最新数据"的依据。
+版本号同时写进 `data/kb-meta.json`，工具返回里的 `kb_version` 会回显它——这就是判断"有没有用上最新数据"的依据。`build-kb --all` 会顺带重建 308 张概念卡，概念卡的 `kb_version` 与概念内容一起更新；只改概念卡映射时单独跑 `node scripts/build-concept-cards.mjs --write`，再用 `--check` 核对 sha256。
 
 ## 卸载
 

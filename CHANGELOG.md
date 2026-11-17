@@ -1,5 +1,51 @@
 # 变更记录
 
+## 3.1.0
+
+交叉化改造：从“单剧本 + 检索面”升级为“多剧本激活 + 维度取证 + 交叉核对 + 采信闸门”。仍是五个工具，插件不联网、不写文件、不执行命令；知识内容不变（40 板块 / 324 条 / 308 present）。
+
+### L2 数据层
+
+- `data/assist-playbooks.json` 升到 version 3：9 → **16 张主题卡**，新增位置姿态、红外系统、光纤传感、干涉/OCT、波导 AR、信号链、不确定度与定标；每张卡补 `required_dimensions`（共 98 条维度声明）、`relations`、`cross_check`，每个步骤补 `dimension_id`
+- 新增 `data/concept-cards.json`：308 张概念卡，从 `kb-data.json` 的 308 条 present 块**一块一卡**逐字抽取，不改写、不加数值；8 域分布 IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8，全部带 `applies_to`
+- 新增 `scripts/build-concept-cards.mjs`：40 板块 → v3 八域/54 族映射，支持 `--write`/`--check`；`build-kb --all` 写完 meta 后自动重建概念卡
+- 新增 `data/cross-dimensions.json`：principle/design/calc/implementation/verification/risk 六个通用维度模板，含 queries/boards/priority
+
+### assist：多剧本与维度化
+
+- `detectPlaybooks` 改为多激活：主剧本必选，其余需分数 ≥2 且命中至少一个非通用词，最多 3 张；`GENERIC_KEYWORDS` 21 词压掉“分辨率/成像”这类跨义项误激活
+- 新增 `fuseDimensions`（同 id 合并、最小 priority、合并 domains/boards、记录 sources，上限 12）与 `fuseRelations`（只留两端存在的维度）
+- `collectEvidenceByDimensions`：每维度独立检索（label+anchor+anchorTerms+queries），输出 evidence/hit_chunk_ids/queries/concept_cards/gap_reason；全局证据优先剧本 sections、跨板块最多补 2
+- `coverage_matrix` 升为**维度×来源**：每行带 `source_matrix`（kb covered/gap + web not_required/required），alignment 增 `source_summary`
+- `buildSearchPack` 增按缺口维度的中英双语外部组（`facet:"缺口·X"`、`gate_id:"kb_gap"`、带 `dimension_id`）
+- `buildPlan` 维度化：KB 步 `dimension_ids` 覆盖全部维度，专业步带 `dimension_id`，新增「缺口补证」与「交叉复核」步；relation 两端互写 `coordinates_with`，`parallelizable` 排除 critical/web_gated/有耦合的步
+- `brief.active_playbooks` 回显激活主题卡与得分；alignment 改为维度口径（matched/unmatched 带 `dimension_id`）
+
+### verify：交叉检查与采信闸门
+
+- 新增可选入参 `dimensions` / `relations` / `now`，`VERIFY_PARAMS` 与 execute 透传
+- 维度：缺面报 `missing_dimension`；维度附近无 chunk_id/URL 报 `dimension_without_evidence`
+- 耦合：两端缺一报 `relation_not_reflected`；220 字内无约束/取舍词报 `relation_not_stated`
+- 采信四判据：来源分级（一手/二手/未标，`external_source_tier` / `external_untrusted_source`）、多源交叉（单源报 `external_single_source`）、KB 冲突（未标 `conflict_with_kb` / 未说明 `conflict_with_kb_unstated`）、时效（价格/型号/标准超 30 天报 `external_stale`）
+- 输出新增 `dimensions`（total/covered/missing/unevidenced/coupling_*）与 `adoption`（四判据 + pass）；checklist 增 `dimensions_complete` / `dimensions_evidenced` / `coupling_consistent` / `adoption_gate`
+
+### 测试、评测与发布门禁
+
+- `test/assist-contract.test.mjs` 18 → **24 例**：多剧本、通用词不误激活、维度×来源矩阵、缺口外部组、plan 维度/交叉/并行约束、verify 交叉与采信
+- `test/run.mjs` 仍 30 例全绿；`test/entry-contract.test.mjs` 5 例全绿
+- `eval/run-kb-first.mjs` 10 → **13 类**，新增光纤传感、AR 波导、不确定度定标；指标增 `multi_playbook_rate` / `dimension_coverage_rate` / `source_matrix_rate` / `cross_relation_rate`，并单独跑「交叉契约」合成文本
+- `scripts/verify-all.mjs` 43 → **57 项**：打包清单增概念卡/通用维度、版本四处一致、概念卡一块一卡/来源/applies_to、主题卡 16 张/维度关系步骤闭合、assist 回显版本
+
+### 文档
+
+- `docs/ARCHITECTURE.zh.md`、`USAGE.zh.md`、`TESTING.zh.md`、`KB-OUTLINE.zh.md`、`KB.zh.md`、`INSTALL.zh.md`、`README.md`、`README.zh.md`、`skills/opticforge-task/SKILL.md` 更新为 3.1.0 与交叉契约/采信闸门
+
+### 基线
+
+- `package.json`、`data/kb-meta.json`、`data/concept-cards.json` 均为 **3.1.0**
+- 知识内容不变：40 板块 / 324 条 / 308 present；A03/C01/E01 原文缺口不变
+- 五工具名不变：`opticforge_assist` / `opticforge_verify` / `opticforge_docs` / `opticforge_search` / `opticforge_get`
+
 ## 1.2.0
 
 把“先知识库、后联网”从建议升级为可检查的执行契约，同时落地软约束 Skill、公式卡、文档前置提取检查与 KB-first 评测。仍为五个插件工具，无计算器，插件不联网、不执行动作。

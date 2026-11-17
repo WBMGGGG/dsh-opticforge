@@ -47,6 +47,21 @@
     "deliverable": "探测器选型表"
   },
   {
+    "id": "fiber_sensing_interrogation",
+    "problem": "设计一套光纤传感解调系统，比较 FBG 与光纤干涉方案，给出波长解调、信号链噪声与温度补偿",
+    "deliverable": "方案报告"
+  },
+  {
+    "id": "waveguide_ar",
+    "problem": "设计 AR 波导显示模组，评估视场、出瞳扩展、光栅耦入耦合效率与杂散光",
+    "deliverable": "设计评审报告"
+  },
+  {
+    "id": "uncertainty_calibration",
+    "problem": "为高光谱辐射定标建立不确定度预算，区分系统误差与随机误差，给出合成与验证方法",
+    "deliverable": "不确定度预算表"
+  },
+  {
     "id": "standard_whitepaper",
     "problem": "调研相干扫描干涉测量的 ZYGO 白皮书和 JJF 1990-2022 原始条文，说明哪些结论只能标为 KB 缺口",
     "deliverable": "资料核验报告",

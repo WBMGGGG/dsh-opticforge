@@ -5,10 +5,10 @@
 | 命令 | 内容 | 用时 |
 |---|---|---|
 | `node test/run.mjs` | 30 个集成用例（node:test） | 约 1 秒 |
-| `node test/assist-contract.test.mjs` | 18 个 KB-first / 公式卡契约用例 | 约 1 秒 |
+| `node test/assist-contract.test.mjs` | 24 个 KB-first / 公式卡 / 交叉契约用例 | 约 1 秒 |
 | `node test/entry-contract.test.mjs` | 5 个五工具与入口契约用例 | 约 1 秒 |
-| `node eval/run-kb-first.mjs` | 10 类任务离线契约评测 | 约 1 秒 |
-| `node scripts/verify-all.mjs` | 43 项发布前验收 | 约 5 秒（含 npm pack） |
+| `node eval/run-kb-first.mjs` | 13 类任务离线契约评测 + 交叉契约 | 约 2 秒 |
+| `node scripts/verify-all.mjs` | 57 项发布前验收 | 约 8 秒（含 npm pack） |
 
 CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑 `verify-all`，由它统一执行上述测试与评测。
 
@@ -38,19 +38,22 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑 `
 
 **F. 辅助层**
 
-`opticforge_assist` 对高光谱问题必须识别剧本、给出证据、≥8 步计划、能力路由、检索包、验收与 handoff；声明不覆盖主题必须进 `gaps` 且证据只含 present；`known_capabilities` 必须并入能力清单且排在前面，`workspace` 盘点不阻断任务。KB-first 检查覆盖 `alignment`、`web_gate`、`blocked_by` 与禁网条款；公式卡检查覆盖直接关键词命中、来源均为 present；`opticforge_verify` 检查有效引用、KB 对齐段、外部 URL 日期/来源细节、formula_id 与计算轨迹，并对不存在引用/无来源数量/营销词判问题；`kb_version` 为 1.2.0；`library_gaps` 恰好是 A03/C01/E01。
+`opticforge_assist` 对高光谱问题必须识别剧本、给出证据、≥8 步计划、能力路由、检索包、验收与 handoff；声明不覆盖主题必须进 `gaps` 且证据只含 present；`known_capabilities` 必须并入能力清单且排在前面，`workspace` 盘点不阻断任务。KB-first 检查覆盖 `alignment`、`web_gate`、`blocked_by` 与禁网条款；公式卡检查覆盖直接关键词命中、来源均为 present；`opticforge_verify` 检查有效引用、KB 对齐段、外部 URL 日期/来源细节、formula_id 与计算轨迹，并对不存在引用/无来源数量/营销词判问题；`kb_version` 为 3.1.0；`library_gaps` 恰好是 A03/C01/E01。
+
+**F2 交叉契约（v3.1.0 新增）**：多剧本激活 ≥2 且维度去重；`coverage_matrix` 每行带 `source_matrix`（kb/web 两列）；缺口维度生成中英双语 `缺口·X` 外部组并带 `dimension_id`；plan 专业步带 `dimension_id`、存在「交叉复核」步、`coordinates_with` 双向、有耦合的步不进 `parallelizable`；verify 在缺面/缺耦合时分别报 `missing_dimension` / `relation_not_reflected`，并在二手源、单源数值、KB 冲突未说明、超 30 天时效四种情况下让 `adoption.pass=false`。
 
 ---
 
-## verify-all 的七组
+## verify-all 的八组
 
 - **A 发布契约**：包名 `dsh-opticforge`、semver、`type=module`、`main`、`files`、`dsh.bundle.patch`、无 `peerDependencies`、无 `dependencies`、`repository`、`engines`
 - **B 零宿主依赖**：`lib/` 全部文件不得出现 `@deepseek-ai/`，否则 link 安装会解析失败
 - **C 产物一致**：跑 `build-kb.mjs --check`
 - **D 集成测试**：跑主集成、assist 契约、入口契约三套，必须全绿
-- **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/` 全部模块、`data/kb-data.json`、`data/kb-meta.json`、`data/assist-playbooks.json`、`data/formula-cards.json`、`skills/opticforge-task/SKILL.md`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
-- **F 版本一致**：`package.json` 与 `kb-meta.kb_version` 相同
-- **G 新增契约**：19 张公式卡字段与 present 来源、Skill 工作流、10 类 KB-first 评测、安装器 dry-run
+- **E 打包清单**：`npm pack --dry-run` 必须包含 `lib/` 全部模块、`data/kb-data.json`、`data/kb-meta.json`、`data/assist-playbooks.json`、`data/concept-cards.json`、`data/cross-dimensions.json`、`data/formula-cards.json`、`skills/opticforge-task/SKILL.md`、`cordis.patch.yml`、`README.md`、`LICENSE`；不得包含 `_kb-raw/`、`test/`、`scripts/`、内部文档
+- **F 版本一致**：`package.json`、`kb-meta.kb_version`、概念卡 `kb_version` 与 assist 工具回显四处相同
+- **G 新增契约**：19 张公式卡字段与 present 来源、Skill 工作流、13 类 KB-first 评测、安装器 dry-run
+- **H 交叉数据层**：概念卡一块一卡（数量=present 数）、id 唯一、来源全 present、applies_to 非空、正文 ≥30 字；通用维度 6 个；主题卡 16 张、version=3、维度声明 ≥96 条、关系端点与步骤 `dimension_id` 全部闭合
 
 任一项失败即退出码 1，不做"警告后继续"。
 
@@ -71,7 +74,7 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑 `
 ```bash
 node scripts/build-kb.mjs --doc F02    # 单板块校验
 node scripts/build-kb.mjs --check      # 产物一致性
-node eval/run-kb-first.mjs             # 10 类任务离线契约评测
+node eval/run-kb-first.mjs             # 13 类任务离线契约评测 + 交叉契约
 node scripts/verify-all.mjs            # 发布门禁
 ```
 

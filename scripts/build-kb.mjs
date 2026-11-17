@@ -40,6 +40,8 @@ const DEFAULT_ANCHORS = [
   "photodiode", "光电二极管", "数值孔径", "Airy", "Rayleigh", "线性度", "量程", "分辨率",
   "几何光学", "像差", "MTF", "偏振", "激光", "高斯光束", "薄膜", "探测器", "噪声",
   "高光谱", "波导", "量子", "超表面", "白光干涉", "定标", "装调", "可靠性",
+  "红外", "无热化", "光纤传感", "OCT", "增强现实", "信号链", "不确定度",
+  "杂散光", "鬼像", "推扫", "分光", "光谱仪", "相机", "照明",
 ];
 
 const args = process.argv.slice(2);
@@ -211,6 +213,12 @@ async function main() {
     await writeFile(OUT_META, JSON.stringify(meta, null, 2) + "\n", "utf8");
     console.log(`\nOK  已写出 data/kb-data.json（${merged.length} 块 / present ${present}，sha256 ${sha.slice(0, 12)}…）`);
     console.log(`OK  已写出 data/kb-meta.json（version ${meta.kb_version}）`);
+
+    // L2 概念卡随 KB 一起重建，保证 kb_version 与来源一致
+    const { buildConceptCards } = await import(new URL("./build-concept-cards.mjs", import.meta.url).href);
+    const { payload } = await buildConceptCards({ kbVersion: meta.kb_version });
+    await writeFile(join(ROOT, "data", "concept-cards.json"), JSON.stringify(payload, null, 2) + "\n", "utf8");
+    console.log(`OK  已写出 data/concept-cards.json（${payload.card_count} 张 / kb_version ${payload.kb_version}）`);
   } else {
     console.log(`\nOK  ${docs.join(", ")} 校验通过`);
   }
