@@ -38,6 +38,38 @@ async function boot() {
   return Object.fromEntries(registered.map((t) => [t.name, t]));
 }
 
+/**
+ * 用 assist 的五段骨架合成一份最小呈现样例，专测 L4 结构，不改写技术结论。
+ */
+function outlineToReport(a) {
+  const o = a.report_outline || [];
+  const c = o[0] || {};
+  const sev = o[1] || {};
+  const branch = o[2] || {};
+  const routes = o[3] || {};
+  const verify = o[4] || {};
+  return [
+    "## ① 结论",
+    (c.hints || []).slice(0, 1).join("；") || "先给判断。",
+    "",
+    "## ② 严重性对号入座",
+    "| 工况 | 判据/量级 | 相对裕度 | 处理 |",
+    "| --- | --- | --- | --- |",
+    ...(sev.rows || []).slice(0, 3).map((r) => `| ${r.dimension} | ${r.status || "covered"} | 待定 | 按依据核对 |`),
+    "",
+    "## ③ 分流判断",
+    branch.criterion || "做一个对照实验，判断主约束。",
+    "",
+    "## ④ 路线建议",
+    ...(routes.routes || []).slice(0, 3).map((r, i) => `${i + 1}. ${r.goal}；适用条件：按第 ${i + 1} 条路线复核。`),
+    "推荐：先做第 1 条。",
+    "",
+    "## ⑤ 验证与待补",
+    ...(verify.verifications || []).slice(0, 3).map((x, i) => `${i + 1}. ${x}`),
+    ...(verify.open_params || []).slice(0, 4).map((x) => `待补：${x}`)
+  ].join("\n").replace(/chunk_id/g, "依据编号");
+}
+
 async function runContractEvaluation(tools, cases) {
   const rows = [];
   for (const c of cases) {
@@ -136,6 +168,13 @@ async function runContractEvaluation(tools, cases) {
     check(v.pass === true, "verify 未通过：" + JSON.stringify(v.issues || []));
     check(v.dimensions && typeof v.dimensions.total === "number" && v.adoption && typeof v.adoption.pass === "boolean", "verify 缺 dimensions/adoption 输出");
 
+    // L4 呈现契约：用 report_outline 合成最小五段样例，专测结构合规。
+    const structureText = outlineToReport(a);
+    const sv = await tools.opticforge_verify.execute({ text: structureText, presentation: true }, {});
+    check(sv.ok === true && sv.presentation?.applicable === true && sv.presentation?.pass === true,
+      "结构合规样例未通过：" + JSON.stringify(sv.issues || []));
+    check(Array.isArray(a.report_outline) && a.report_outline.length === 5, "assist 未输出五段 report_outline");
+
     const firstWeb = events.findIndex((e) => e.tool === "external_allowed" || WEB_TOOLS.has(e.tool));
     const lastKb = events.map((e, i) => ({ e, i })).filter((x) => KB_TOOLS.has(x.e.tool)).at(-1)?.i ?? -1;
     const kbBeforeWeb = firstWeb < 0 || (lastKb >= 0 && lastKb < firstWeb);
@@ -154,6 +193,8 @@ async function runContractEvaluation(tools, cases) {
       calc_cards: (a.calc_specs || []).map((x) => x.card_id),
       verify_called: true,
       verify_pass: v.pass === true,
+      structure_compliant: sv.presentation?.pass === true && sv.presentation?.applicable === true,
+      report_outline_sections: (a.report_outline || []).length,
       kb_before_web: kbBeforeWeb,
       pass: failures.length === 0,
       failures,
@@ -174,6 +215,7 @@ async function runContractEvaluation(tools, cases) {
       kb_before_web_rate_in_harness: pct(rows.filter((r) => r.kb_before_web).length, n),
       verify_usage_rate_in_harness: pct(rows.filter((r) => r.verify_called).length, n),
       verify_pass_rate: pct(rows.filter((r) => r.verify_pass).length, n),
+      structure_compliance_rate: pct(rows.filter((r) => r.structure_compliant).length, n),
       multi_playbook_rate: pct(rows.filter((r) => r.active_playbooks.length >= 2).length, n),
       dimension_coverage_rate: pct(dimCovered, dimTotal),
       source_matrix_rate: pct(sourceRows, dimTotal),
@@ -302,13 +344,13 @@ const contract = await runContractEvaluation(tools, cases);
 const crossCase = cases.find((c) => c.id === "pushbroom_hyperspectral") || cases[0];
 const crossContract = await runCrossContract(tools, crossCase);
 const report = {
-  kb_version: "3.1.0",
+  kb_version: "3.1.1",
   contract,
   cross_contract: crossContract,
   model_trace: tracePath ? await scoreRealTrace(tracePath) : null,
   note: tracePath ? "真实轨迹指标与离线契约分开报告。" : "未提供 --trace；assist 首调率等只代表评测 harness，不代表真实模型行为已达标。"
 };
-const contractPass = contract.metrics.contract_pass_rate === 1 && contract.metrics.verify_usage_rate_in_harness === 1;
+const contractPass = contract.metrics.contract_pass_rate === 1 && contract.metrics.verify_usage_rate_in_harness === 1 && contract.metrics.structure_compliance_rate === 1;
 const crossPass = crossContract.pass === true;
 const tracePass = !report.model_trace || report.model_trace.pass;
 report.pass = contractPass && crossPass && tracePass;

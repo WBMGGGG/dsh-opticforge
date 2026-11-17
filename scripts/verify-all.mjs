@@ -183,6 +183,36 @@ async function main() {
   const echo = assistTool ? await assistTool.execute({ problem: "共焦位移传感器选型" }, {}) : null;
   assert("assist 工具回显版本与 package.json 一致", echo?.ok === true && echo.kb_version === pkg.version,
     "echo=" + (echo?.kb_version || echo?.error || "no-tool") + " pkg=" + pkg.version);
+  assert("assist 输出五段 report_outline", echo?.report_outline?.length === 5 &&
+    echo.report_outline.map((s) => s.id).join(",") === "conclusion,severity,branch,routes,verification",
+    "outline=" + JSON.stringify(echo?.report_outline?.map((s) => s.id)));
+  assert("assist 输出 report_style 契约", echo?.report_style?.evidence_ids === "hidden" && echo?.report_style?.max_tables === 3,
+    "style=" + JSON.stringify(echo?.report_style));
+
+  const verifyTool = registered.find((t) => t.name === "opticforge_verify");
+  const structureSample = [
+    "## ① 结论",
+    "先做对照实验，判断主约束。",
+    "",
+    "## ② 严重性对号入座",
+    "| 工况 | 判据/量级 | 相对裕度 | 处理 |",
+    "| --- | --- | --- | --- |",
+    "| A | 覆盖 | 中 | 复测 |",
+    "",
+    "## ③ 分流判断",
+    "比较两条路线，判断哪条先满足指标。",
+    "",
+    "## ④ 路线建议",
+    "1. 先做第一条；推荐此路线。",
+    "",
+    "## ⑤ 验证与待补",
+    "1. 复测。待补：物方 NA。"
+  ].join("\n");
+  const vPresent = verifyTool ? await verifyTool.execute({ text: structureSample, presentation: true }, {}) : null;
+  assert("verify presentation 五段结构通过", vPresent?.presentation?.applicable === true && vPresent?.presentation?.pass === true,
+    "presentation=" + JSON.stringify(vPresent?.presentation || vPresent?.error));
+  assert("I01-07 默认焦深口径可核对", String(byId.get("I01-07")?.text || "").includes("默认采用 G02-07") && String(byId.get("I01-07")?.text || "").includes("±λ/(2NA²)"),
+    "I01-07 缺默认口径说明");
 
   console.log("");
   if (failures.length) {

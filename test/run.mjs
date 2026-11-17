@@ -514,13 +514,13 @@ test("F4 opticforge_verify：有效引用通过，无效引用与无来源数量
   assert.ok(bad.score < 100, "有问题时分数应低于 100");
 });
 
-test("F5 版本一致：assist/verify 与 KB 同版本 3.1.0", async () => {
+test("F5 版本一致：assist/verify 与 KB 同版本 3.1.1", async () => {
   await booted;
   const m = requireModule(kbData, "lib/kb-data.js");
   const meta = await m.getKBMeta();
-  assert.equal(meta.kb_version, "3.1.0", "kb_version 应为 3.1.0，实际 " + meta.kb_version);
+  assert.equal(meta.kb_version, "3.1.1", "kb_version 应为 3.1.1，实际 " + meta.kb_version);
   const v = await execAssist({ problem: "共焦位移传感器选型" });
-  assert.equal(v.kb_version, "3.1.0", "assist 应回显 3.1.0");
+  assert.equal(v.kb_version, "3.1.1", "assist 应回显 3.1.1");
   assert.deepEqual(
     v.library_gaps.map((g) => g.doc_id).sort(),
     ["A03", "C01", "E01"],

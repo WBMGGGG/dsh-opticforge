@@ -75,15 +75,34 @@ KB 已覆盖的物理原理、公式和判据，不要重复用网页替代。
 7. `复现步骤`
 8. `来源`
 
+### 6.1 交付结构契约（L4 呈现层）
+
+用户看到的正文固定五段，顺序不可换。直接按 `assist.report_outline` 写，不把作战包原样倒给用户。
+
+1. **结论**：≤3 句。先给判断，再给决定性分叉和立即行动；可独立成段。
+2. **严重性对号入座**：一张表。列只放工况、判据/量级、相对裕度、处理；只留影响决策的量。
+3. **分流判断**：只给一个实验或一个判据，说明它把哪两条路线分开。
+4. **路线建议**：≤3 条，每条一句话适用条件，最后给明确推荐。
+5. **验证与待补**：验证≤3 条；待补参数≤4 个，只在本段出现一次，并说明补上后能给出什么。
+
+硬规则：
+
+- 全文表格 ≤3 张；超过 5 个带单位数字时，拆表或只留决策量。
+- 正文不写 `alignment`、`web_gate`、`source_matrix`、`coverage_matrix`、`blocked_by`、`active_playbooks` 等内部字段名，也不出现 `chunk_id`、`A01-01`、`IM04` 这类层级/条目编号；来源只写文献、标准、厂商手册或 URL 名称。
+- 讲解顺序固定：一句话原理 → 关键公式/判据 → 具体思路 → 操作步骤。图片只作辅助理解，不替代公式和依据。
+- 口径分歧给默认值和差异倍数，不把选择题丢给用户；说明差异是否改变路线判断。
+- 不写“KB 对齐完成”“我查了知识库”这类过程叙述；不中英越混杂（专业术语可保留）；不用“别省”“翻车”等口语；不写推销式收尾。
+
 docx/pdf 交付前先用 `word` / `pdf` Skill 导出 `.md` 或 `.txt`，不要把二进制文件直接交给 `opticforge_verify`。
 
 ## 7. 自检
 
-交付前调用 `opticforge_verify`，传 `problem`、导出后的 `text`/`path`，并把 assist 的 `dimensions` 与 `relations` 原样传入；需要固定日期时传 `now`。修正所有 error，再处理 warning，重点看：
+交付前调用 `opticforge_verify`，传 `problem`、导出后的 `text`/`path`，并把 assist 的 `dimensions` 与 `relations` 原样传入；需要固定日期时传 `now`。报告/方案再传 `presentation: true`，强制检查五段呈现。修正所有 error，再处理 warning，重点看：
 
 - `dimensions.missing` / `unevidenced` / `coupling_missing` / `coupling_unstated` 是否为 0
 - `adoption.pass` 是否为 true（来源分级、多源交叉、KB 冲突、时效）
-- `checklist.dimensions_complete` / `coupling_consistent` / `adoption_gate`
+- `presentation.pass` 是否为 true；`missing_sections`、`internal_field_hits`、`table_count` 是否越界
+- `checklist.dimensions_complete` / `coupling_consistent` / `adoption_gate` / `presentation_structure`
 
 `verify` 只检查文本结构与证据，不判断技术结论一定正确；关键技术结论仍需人工或独立 agent 复核。
 

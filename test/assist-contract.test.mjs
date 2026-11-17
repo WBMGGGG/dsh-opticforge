@@ -50,7 +50,7 @@ function fakeSearchKB(chunks, query, k) {
   return hits.slice(0, k || 5);
 }
 const fakeMeta = {
-  kb_version: "3.1.0",
+  kb_version: "3.1.1",
   zero_coverage_topics: ["空间光学", "光刻工艺"],
   covered_anchors: [],
   docs: [
@@ -705,4 +705,83 @@ test("C18 verify：缺维度/缺耦合报错，采信四判据可机器核对", 
   for (const t of ["external_untrusted_source", "external_single_source", "conflict_with_kb_unstated", "external_stale"]) {
     assert.ok(q.issues.some((i) => i.type === t), "应报 " + t);
   }
+});
+
+// ---- 19. report_outline：固定五段与上限 ----
+test("C19 assist：report_outline 固定五段，带 chunk_id/关键数值提示与硬上限", async () => {
+  const v = await assist.buildAssist(
+    { problem: "高光谱相机光谱分辨率 5 nm，狭缝宽度怎么定" },
+    baseDeps({ searchKB: alwaysHitKB })
+  );
+  assert.equal(v.ok, true);
+  assert.ok(Array.isArray(v.report_outline), "应输出 report_outline[]");
+  assert.equal(v.report_outline.length, 5, "必须是五段");
+  assert.deepEqual(v.report_outline.map((s) => s.id), ["conclusion", "severity", "branch", "routes", "verification"]);
+  assert.deepEqual(v.report_outline.map((s) => s.title), ["结论", "严重性对号入座", "分流判断", "路线建议", "验证与待补"]);
+  const c = v.report_outline[0];
+  assert.equal(c.max_sentences, 3);
+  assert.ok(c.must_include.includes("一句话原理") && c.must_include.includes("关键公式/判据"));
+  assert.ok(!("chunk_ids" in c), "呈现骨架不应暴露条目编号");
+  assert.ok(Array.isArray(c.sources) && c.sources.length > 0, "结论段应带来源名称");
+  const severity = v.report_outline[1];
+  assert.equal(severity.max_tables, 1);
+  assert.deepEqual(severity.table_columns, ["工况", "判据/量级", "相对裕度", "处理"]);
+  assert.ok(severity.rows.length <= 3, "严重性表最多 3 行");
+  assert.ok(!("dimension_id" in severity.rows[0]), "表格行不应暴露维度编号");
+  const routes = v.report_outline[3];
+  assert.equal(routes.max_routes, 3);
+  assert.equal(routes.recommendation_required, true);
+  assert.ok(routes.routes.length <= 3);
+  assert.ok(!("dimension_id" in routes.routes[0]), "路线不应暴露维度编号");
+  const verification = v.report_outline[4];
+  assert.equal(verification.max_verifications, 3);
+  assert.equal(verification.max_open_params, 4);
+  assert.ok(verification.verifications.length <= 3);
+  assert.ok(verification.open_params.length <= 4);
+  assert.equal(v.report_style.evidence_ids, "hidden");
+  assert.ok(Array.isArray(v.report_style.explain) && v.report_style.explain.includes("一句话原理"));
+  assert.equal(v.report_style.images, "optional_aid_only");
+  assert.ok(v.execution_contract.must.some((m) => /report_outline|五段/.test(m)), "执行契约应写五段呈现");
+});
+
+// ---- 20. presentation：五段齐/表格≤3/内部字段名/待补位置 ----
+test("C20 verify：presentation 五段结构可判 pass，表格/内部字段/chunk_id/待补位置可报错", async () => {
+  const verifyMod = await import(pathToFileURL(path.join(LIB, "verify.js")).href);
+  const text = [
+    "## ① 结论",
+    "先做狭缝宽度对照实验，判断主约束是分辨率还是信噪比。",
+    "",
+    "## ② 严重性对号入座",
+    "| 工况 | 判据/量级 | 相对裕度 | 处理 |",
+    "| --- | --- | --- | --- |",
+    "| 5 nm | 狭缝 20 µm | 中 | 复测 |",
+    "",
+    "## ③ 分流判断",
+    "比较 10 µm 与 20 µm 两条路线的信噪比，判断哪条先满足 5 nm。",
+    "",
+    "## ④ 路线建议",
+    "1. 先用 20 µm 验证；推荐此路线。",
+    "",
+    "## ⑤ 验证与待补",
+    "1. 复测分辨率。待补：物方 NA。",
+    "",
+    "依据：《光学系统设计》。"
+  ].join("\n");
+  const good = verifyMod.verifyText(text, makeChunks(), { presentation: true });
+  assert.equal(good.presentation.applicable, true);
+  assert.equal(good.presentation.pass, true);
+  assert.equal(good.presentation.table_count, 1);
+  assert.equal(good.checklist.presentation_structure, true);
+
+  const bad = text
+    .replace("| 5 nm | 狭缝 20 µm | 中 | 复测 |", "| 5 nm | 狭缝 20 µm | 中 | 复测 |\n| 3 nm | 狭缝 10 µm | 低 | 复测 |\n\n| a | b |\n| --- | --- |\n| 1 | 2 |\n\n| c | d |\n| --- | --- |\n| 3 | 4 |\n\n| e | f |\n| --- | --- |\n| 5 | 6 |")
+    .replace("先做狭缝宽度对照实验", "先做狭缝宽度对照实验，alignment=covered，chunk_id 在主段，IM04 域")
+    .replace("## ⑤ 验证与待补", "待补：先补一个参数。\n\n## ⑤ 验证与待补");
+  const r = verifyMod.verifyText(bad, makeChunks(), { presentation: true });
+  assert.equal(r.presentation.pass, false);
+  assert.ok(r.issues.some((i) => i.type === "presentation_table_overload"));
+  assert.ok(r.issues.some((i) => i.type === "presentation_internal_field"));
+  assert.ok(r.issues.some((i) => i.type === "presentation_chunk_id_in_body"));
+  assert.ok(r.issues.some((i) => i.type === "presentation_layer_code"));
+  assert.ok(r.issues.some((i) => i.type === "presentation_open_params_early"));
 });

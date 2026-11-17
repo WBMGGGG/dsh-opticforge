@@ -5,10 +5,10 @@
 | 命令 | 内容 | 用时 |
 |---|---|---|
 | `node test/run.mjs` | 30 个集成用例（node:test） | 约 1 秒 |
-| `node test/assist-contract.test.mjs` | 24 个 KB-first / 公式卡 / 交叉契约用例 | 约 1 秒 |
+| `node test/assist-contract.test.mjs` | 26 个 KB-first / 公式卡 / 交叉 / 呈现契约用例 | 约 1 秒 |
 | `node test/entry-contract.test.mjs` | 5 个五工具与入口契约用例 | 约 1 秒 |
-| `node eval/run-kb-first.mjs` | 13 类任务离线契约评测 + 交叉契约 | 约 2 秒 |
-| `node scripts/verify-all.mjs` | 57 项发布前验收 | 约 8 秒（含 npm pack） |
+| `node eval/run-kb-first.mjs` | 13 类任务离线契约评测 + 交叉契约 + 结构合规 | 约 2 秒 |
+| `node scripts/verify-all.mjs` | 61 项发布前验收 | 约 8 秒（含 npm pack） |
 
 CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑 `verify-all`，由它统一执行上述测试与评测。
 
@@ -38,9 +38,11 @@ CI（`.github/workflows/test.yml`）在 Ubuntu + Windows、Node 20 + 22 上跑 `
 
 **F. 辅助层**
 
-`opticforge_assist` 对高光谱问题必须识别剧本、给出证据、≥8 步计划、能力路由、检索包、验收与 handoff；声明不覆盖主题必须进 `gaps` 且证据只含 present；`known_capabilities` 必须并入能力清单且排在前面，`workspace` 盘点不阻断任务。KB-first 检查覆盖 `alignment`、`web_gate`、`blocked_by` 与禁网条款；公式卡检查覆盖直接关键词命中、来源均为 present；`opticforge_verify` 检查有效引用、KB 对齐段、外部 URL 日期/来源细节、formula_id 与计算轨迹，并对不存在引用/无来源数量/营销词判问题；`kb_version` 为 3.1.0；`library_gaps` 恰好是 A03/C01/E01。
+`opticforge_assist` 对高光谱问题必须识别剧本、给出证据、≥8 步计划、能力路由、检索包、验收与 handoff；声明不覆盖主题必须进 `gaps` 且证据只含 present；`known_capabilities` 必须并入能力清单且排在前面，`workspace` 盘点不阻断任务。KB-first 检查覆盖 `alignment`、`web_gate`、`blocked_by` 与禁网条款；公式卡检查覆盖直接关键词命中、来源均为 present；`opticforge_verify` 检查有效引用、KB 对齐段、外部 URL 日期/来源细节、formula_id 与计算轨迹，并对不存在引用/无来源数量/营销词判问题；`kb_version` 为 3.1.1；`library_gaps` 恰好是 A03/C01/E01。
 
 **F2 交叉契约（v3.1.0 新增）**：多剧本激活 ≥2 且维度去重；`coverage_matrix` 每行带 `source_matrix`（kb/web 两列）；缺口维度生成中英双语 `缺口·X` 外部组并带 `dimension_id`；plan 专业步带 `dimension_id`、存在「交叉复核」步、`coordinates_with` 双向、有耦合的步不进 `parallelizable`；verify 在缺面/缺耦合时分别报 `missing_dimension` / `relation_not_reflected`，并在二手源、单源数值、KB 冲突未说明、超 30 天时效四种情况下让 `adoption.pass=false`。
+
+**F3 呈现契约（v3.1.1 新增）**：`assist.report_outline` 必须固定五段，且带 `max_sentences=3`、`max_tables=1`、`max_routes=3`、`max_verifications=3`、`max_open_params=4`；verify 传 `presentation:true` 时检查五段齐、表格≤3、内部字段名不入正文、正文不出现 `chunk_id`/源板块/域族编码、待补参数只在第⑤段；评测输出 `structure_compliance_rate`。
 
 ---
 

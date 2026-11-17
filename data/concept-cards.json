@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "kb_version": "3.1.0",
+  "kb_version": "3.1.1",
   "generated_by": "scripts/build-concept-cards.mjs",
   "note": "L2 概念卡：一块一卡，statement 逐字取自该块对应段落（定义/公式/判据/误差来源），不改写、不新增数值；applies_to 为维度 id。",
   "total_chunks": 308,

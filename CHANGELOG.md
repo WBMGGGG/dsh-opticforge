@@ -1,6 +1,36 @@
 # 变更记录
 
-> 当前版本 **3.1.0**。以下 1.2.0 及更早章节仅保留变更历史，不代表当前能力；当前能力以 README 与 3.1.0 章节为准。
+> 当前版本 **3.1.1**。以下 3.1.0、1.2.0 及更早章节仅保留变更历史，不代表当前能力；当前能力以 README 与 3.1.1 章节为准。
+
+## 3.1.1
+
+呈现层与口径修正：机制不变、知识内容不变，新增 L4 五段呈现契约，并统一焦深口径。仍是五个工具，插件不联网、不写文件、不执行命令；知识库仍为 40 来源板块 / 324 条 / 308 present。
+
+### 回答结构与风格（P0）
+
+- `opticforge_assist` 新增 `report_outline[]` 与 `report_style`：固定五段（结论 / 严重性对号入座 / 分流判断 / 路线建议 / 验证与待补），每段附来源名称、关键数值提示、表格列与待补上限；不输出 `chunk_id`
+- `report_outline` 明确 `max_sentences=3`、`max_tables=1`、`max_routes=3`、`max_verifications=3`、`max_open_params=4`，并要求路线给明确推荐
+- `report_style` 固定讲解顺序：一句话原理 → 关键公式/判据 → 具体思路 → 操作步骤；图片只作辅助理解，不替代依据
+- `skills/opticforge-task/SKILL.md` 新增「交付结构契约」：五段顺序、表格≤3、内部字段名不入正文、正文不出现 `chunk_id`/源板块/域族编码、待补参数只在第⑤段、口径分歧给默认值
+- 风格红线：禁止“KB 对齐完成/我查了知识库”式过程叙述，禁止中英越混杂、口语化、推销式收尾；一段超过 5 个带单位数字应拆表或只留决策量
+
+### verify 呈现检查（P0）
+
+- 新增可选入参 `presentation`；文本已带 3 个以上五段标题时自动启用
+- 输出新增 `presentation`：`applicable` / `pass` / `sections` / `missing_sections` / `table_count` / `internal_field_hits` / `chunk_id_in_body` / `layer_code_hits` / `pending_params_before_final`
+- 新增问题类型：`presentation_section_missing`、`presentation_table_overload`、`presentation_internal_field`、`presentation_chunk_id_in_body`、`presentation_layer_code`、`presentation_open_params_early`、`presentation_open_params_overload`
+- checklist 增 `presentation_structure`；旧样例在未触发五段时 `applicable=false`，不误伤
+
+### KB 焦深口径（P1）
+
+- `I01-07` 补口径说明：`±λ/NA²` 与 `G02-07` 的 `±λ/(2NA²)` 相差 2 倍，源于半焦深/全焦深定义不同
+- 默认采用 `G02-07` 的 `±λ/(2NA²)`（折合全深 `4λF²`，保守）；差异只影响装调余量取值，不改变路线判断
+
+### 版本与基线
+
+- `package.json`、`data/kb-meta.json`、`data/concept-cards.json`、测试 fixture、文档统一为 **3.1.1**
+- 知识内容不变：40 来源板块 / 324 条 / 308 present；A03/C01/E01 原文缺口不变；五工具名不变
+- 概念卡仍为 308 张，8 域分布 IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8
 
 ## 3.1.0
 

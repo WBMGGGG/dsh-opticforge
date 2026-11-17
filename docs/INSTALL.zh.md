@@ -63,7 +63,7 @@ node scripts/install-local.mjs --profile "C:\Users\X\.dsh\profiles\desktop"
 opticforge_docs
 ```
 
-预期返回 `ok: true`、`kb_version: "3.1.0"` 与 `docs` 列表（40 个板块）。再调 `opticforge_search`（如 `query="共焦色散 测量原理"`）应命中 A01。
+预期返回 `ok: true`、`kb_version: "3.1.1"` 与 `docs` 列表（40 个板块）。再调 `opticforge_search`（如 `query="共焦色散 测量原理"`）应命中 A01。
 
 不放心可以先跑一遍离线验收，不依赖 DSH：
 

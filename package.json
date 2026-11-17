@@ -1,7 +1,7 @@
 {
   "name": "dsh-opticforge",
-  "version": "3.1.0",
-  "description": "OpticForge —— 光电工程师任务辅助插件，DeepSeek Harness。KB-first 任务受理与能力路由 + 40 个板块、324 条事实条目 + 16 张主题卡、308 张概念卡、6 个通用维度 + 19 张公式卡 + 交叉覆盖与采信闸门。输入一个具体问题，多剧本激活、按维度取证，再按 web_gate 三断点决定是否联网；纯 Node.js，零运行时依赖。",
+  "version": "3.1.1",
+  "description": "OpticForge —— 光电工程师任务辅助插件，DeepSeek Harness。KB-first 任务受理与能力路由 + 40 个板块、324 条事实条目 + 16 张主题卡、308 张概念卡、6 个通用维度 + 19 张公式卡 + 交叉覆盖与采信闸门 + 五段呈现。输入一个具体问题，多剧本激活、按维度取证，再按 web_gate 三断点决定是否联网；纯 Node.js，零运行时依赖。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {

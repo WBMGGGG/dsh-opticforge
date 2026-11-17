@@ -1,4 +1,4 @@
-# OpticForge 架构（3.1.0）
+# OpticForge 架构（3.1.1）
 
 ## 一句话
 
@@ -58,6 +58,8 @@
 | `dimensions` | 按维度取证：id/label/priority/domains/boards/anchor/sources/status/evidence/hit_chunk_ids/queries/concept_cards/gap_reason/**source_matrix**（kb covered/gap + web 是否必须补） |
 | `relations` | 融合后的交叉关系：from/to/type/note/sources，只保留两端都存在的维度 |
 | `cross_checks` | 交叉核对清单（每条关系一行取舍/耦合说明），对应 plan 的「交叉复核」步 |
+| `report_outline` | L4 五段呈现骨架：结论/严重性/分流/路线/验证待补；带来源名称、关键数值提示与硬上限，不输出 chunk_id |
+| `report_style` | 呈现红线：表格≤3、讲解顺序（原理→公式→思路→步骤）、不暴露层级/条目编号、图片仅辅助 |
 | `coverage` | 维度总数/覆盖数/证据数/置信度 |
 | `coverage_matrix` | 每个检索面的命中 chunk_id 与状态 |
 | `evidence` | ≤10 条：chunk_id、doc_id、status、标题、分数、来源、章节、摘录、命中的检索面 |
@@ -97,7 +99,7 @@
 
 ## 任务剧本与 L2 数据层（16 张主题卡）
 
-`data/assist-playbooks.json`（version 3）现有 16 张主题卡：高光谱、光学设计、检测装调、共焦传感、光谱仪光栅、成像相机、薄膜镀膜、故障排查、技术调研，加 v3.1.0 新增的位置姿态、红外系统、光纤传感、干涉/OCT、波导 AR、信号链、不确定度与定标。每张卡除原有触发词/板块/检索面/步骤外，还声明：
+`data/assist-playbooks.json`（version 3）现有 16 张主题卡：高光谱、光学设计、检测装调、共焦传感、光谱仪光栅、成像相机、薄膜镀膜、故障排查、技术调研，加 3.1.0 新增的位置姿态、红外系统、光纤传感、干涉/OCT、波导 AR、信号链、不确定度与定标。每张卡除原有触发词/板块/检索面/步骤外，还声明：
 
 ```json
 {
@@ -289,6 +291,28 @@ plan 对象除 `steps/critical_path/parallelizable` 外，还暴露 `kb_evidence
 卡片本身不作为独立证据，引用时仍以 chunk_id 为准。
 
 ---
+
+## L4 呈现层（3.1.1）
+
+`assist` 不只给作战包，还给用户正文的固定骨架。执行层按 `report_outline` 写，不把 15+ 个内部字段原样倒出来。
+
+| 段 | 内容 | 硬上限 |
+|---|---|---|
+| ① 结论 | 一句话原理 + 关键公式/判据 + 最可能诊断 + 立即行动 | 3 句 |
+| ② 严重性对号入座 | 工况 / 判据量级 / 相对裕度 / 处理 | 1 张表、≤3 行 |
+| ③ 分流判断 | 一个实验或一个判据，把两条路线分开 | 1 条判据 |
+| ④ 路线建议 | 每条一句话适用条件，最后给明确推荐 | 3 条 |
+| ⑤ 验证与待补 | 验证项 + 待补参数，说明补上后能给出什么 | 3 验证、4 待补 |
+
+`report_style` 红线：
+
+- 全文表格 ≤3；一段超过 5 个带单位数字时拆表或只留决策量。
+- 讲解顺序固定：一句话原理 → 关键公式/判据 → 具体思路 → 操作步骤；图片只辅助理解，不替代依据。
+- 正文不出现 `alignment` / `web_gate` / `source_matrix` / `coverage_matrix` / `blocked_by` / `active_playbooks` 等内部字段名。
+- 正文不出现 `chunk_id`、`A01-01`、`IM04` 这类层级/条目编号；来源只写文献、标准、厂商手册或 URL 名称。内部证据仍保留 ID，供审计与复核。
+- 待补参数只在第⑤段出现一次；口径分歧给默认值和差异倍数，不把选择题丢给用户。
+
+`verify` 传 `presentation: true` 时检查五段齐、表格≤3、内部字段名、`chunk_id`、源板块/域族编码、待补参数位置；文本已带 3 个以上五段标题时自动启用，避免误伤普通短答。
 
 ## 交付自检（opticforge_verify）
 

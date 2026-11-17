@@ -13,7 +13,7 @@
 统一信封：
 
 ```json
-{ "ok": true, "kb_version": "3.1.0", "action": "assist", "...": "各工具字段" }
+{ "ok": true, "kb_version": "3.1.1", "action": "assist", "...": "各工具字段" }
 ```
 
 ---
@@ -57,6 +57,8 @@
 | `dimensions[]` | 必答维度：status、evidence、hit_chunk_ids、queries、concept_cards、gap_reason、source_matrix（维度×来源） |
 | `relations[]` | 交叉关系：from/to/type/note，只保留两端存在的维度 |
 | `cross_checks[]` | 交叉核对清单（对应「交叉复核」步） |
+| `report_outline[]` | 五段呈现骨架：结论/严重性/分流/路线/验证待补；带来源名称、关键数值提示与上限 |
+| `report_style` | 呈现红线：表格≤3、讲解顺序（原理→公式→思路→步骤）、不暴露层级/条目编号、图片仅辅助 |
 | `coverage` | 维度覆盖数与置信度 |
 | `evidence[]` | chunk_id、doc_id、status、标题、来源、摘录、命中的检索面 |
 | `gaps[]` | 主题未覆盖 / 声明不覆盖；缺口维度带 gap_reason 与外部查询组 |
@@ -102,6 +104,7 @@
 | `dimensions` | array | 否 | assist 返回的 `dimensions`（含 id/label/status），或字符串数组；用于维度齐全/每面有据 |
 | `relations` | array | 否 | assist 返回的 `relations`（from/to/type/note）；用于耦合一致检查 |
 | `now` | string | 否 | 当前日期 `YYYY-MM-DD`，用于外部来源时效判定；缺省用系统时间 |
+| `presentation` | boolean | 否 | 强制检查 L4 五段呈现；文本已带 3 个以上五段标题时自动启用 |
 
 **检查项**
 
@@ -122,7 +125,7 @@
 | 外部来源未标分级 / 二手源 / 单源数值 / 冲突未说明 / 超 30 天时效 | warning（strict=error） |
 | 绝对化/营销词 | warning |
 
-**返回**：`pass`、`score`（0–100）、`citations`、`external_citations`、`alignment`、`formula_cards`、`dimensions`（total/covered/missing/unevidenced/coupling_*）、`adoption`（source_tier/corroborated/conflict_with_kb/stale/pass）、`issues[]`、`checklist`、`summary`。
+**返回**：`pass`、`score`（0–100）、`citations`、`external_citations`、`alignment`、`formula_cards`、`dimensions`（total/covered/missing/unevidenced/coupling_*）、`adoption`（source_tier/corroborated/conflict_with_kb/stale/pass）、`presentation`（applicable/pass/sections/missing_sections/table_count/layer_code_hits）、`issues[]`、`checklist`、`summary`。
 
 **限制**：只解析文本，不解析 docx/pdf；超过 2 MB 拒绝。
 

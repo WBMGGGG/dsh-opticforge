@@ -1,101 +1,191 @@
 # OpticForge
 
-A **task-assistant plugin** for optical engineers, built for DeepSeek Harness (DSH). Give it one concrete optics problem and it returns an executable work package: task brief, dimension-based evidence, cross-domain relations, capability routing, a staged plan, targeted search queries and acceptance checks.
+> Optical engineering tasks are not blocked by "finding one paragraph". They are blocked by four questions: which dimensions must be answered, whether each dimension has evidence, what to do next, and how to verify before delivery.
+>
+> OpticForge turns that into an executable work package. It does not calculate, browse, or write files for you. It tells the execution layer **what to retrieve, how to prove each dimension, when browsing is allowed, and which gates a deliverable must pass**.
 
-Pure Node.js, zero runtime dependencies. It never accesses the network and never performs external actions — it decides *how* the work should be done; the DSH agent does the work.
+Built for DeepSeek Harness (DSH). Pure Node.js, zero runtime dependencies. Current version **3.1.1**.
 
-> 中文文档见 [README.zh.md](README.zh.md)。
-
----
-
-## 1. What it is
-
-Most optical-engineering tasks are not blocked by formulas. They are blocked by three things, and OpticForge addresses each with a dedicated layer.
-
-| Problem | OpticForge response |
-|---|---|
-| Evidence is scattered across manuals, standards and papers | **Evidence layer** — 40 sections / 324 source-attributed entries (308 usable), retrieved per required dimension; every hit carries `chunk_id`, source and excerpt; no basis is stated as such |
-| The work path is unclear — what to search, compute, draw, write, and in what order | **Routing layer** — multi-playbook activation, dimension fusion, local Skill / MCP / workspace discovery, a capability-tagged plan with `dimension_id` and cross-step `coordinates_with` |
-| Deliverables look right until someone checks citations, units, assumptions and gaps | **Verification layer** — citation, quantity, structure, formula-trace, dimension-coverage and adoption-gate checks before delivery |
-
-The plugin is an **advisory layer**, not an executor. Everything in `plan` is carried out by the DSH execution layer.
+> 中文: [README.zh.md](README.zh.md)
 
 ---
 
-## 2. Version and knowledge-base truth
+## 0. One architecture, two numbering systems
 
-This section is the authoritative description of **what actually ships in 3.1.0**. Read it before assuming the knowledge base changed.
+This is the most misunderstood point, so it comes first.
 
-### 2.1 Version
+**OpticForge has only one KB architecture: the v3 architecture defined by `OpticForge知识库-v3纯净版`. The runtime KB is not a second architecture; it is the filled subset of that architecture.**
 
-| Item | Value |
-|---|---|
-| `package.json` version | `3.1.0` |
-| `data/kb-meta.json` `kb_version` | `3.1.0` |
-| Tool `kb_version` echo | `3.1.0` (all five tools) |
-
-Version is checked in three places by the entry-contract test; changing one without the others fails CI.
-
-### 2.2 What changed in 3.1.0 — mechanics, not content
-
-**The knowledge entries did not change.** 3.1.0 is a mechanics release: cross-coverage became an inspectable contract (multi-playbook activation, per-dimension evidence, dimension×source coverage matrix, cross-checks, adoption gate). The fact base is still the same 40 sections / 324 entries / 308 present.
-
-### 2.3 Two different things both called "knowledge base"
-
-Confusing these two is the single most common source of wrong expectations:
-
-| | Runtime KB (what the plugin queries) | v3 content map (a planning baseline) |
+| What you see | What it actually is | What it is not |
 |---|---|---|
-| Where | `data/kb/*.json` → `data/kb-data.json` | A design target, not shipped as queryable entries |
-| Shape | 40 sections (A–E, F, G, H, I), 324 entries | 8 domains × 54 families, ~470 leaf topics |
-| Role | The only citable source; `status=present` only | Defines *what should be covered* and which dimensions a cross-domain task must answer |
-| Used at | Every `assist` / `search` call | Designing topic cards and evaluation coverage |
+| v3 baseline: 8 domains / 54 families / ~470 leaf topics | **L1 coverage baseline**: the skeleton, families, leaf topics and required dimensions | Not a legacy library that only exists on paper |
+| 40 source sections / 324 entries / 308 present (A–I) | **L2 filled subset**: source-backed, citable partitions under the v3 architecture | Not a second KB, and not 40 v3 families |
+| 308 concept cards | **L3 atomic layer**: one card per present chunk, mapped to v3 domains/families | Not a separate index, and not a replacement for 470 full entries |
 
-**The v3 map is a coverage baseline and search-term pool, not 470 fully written chunks.** It is not abandoned — it is the source from which the 16 topic cards derive their required dimensions. Exhaustively enumerating a *catalogue* of topics is finite and useful; exhaustively writing a *full entry* for every leaf would explode storage and dilute BM25 precision. 3.1.0 deliberately does only the former.
+One sentence: **v3 is the map; the 40 source sections are the districts already built on it. The A–I labels are construction-document numbers, not new city districts.**
 
-### 2.4 The three read-only layers added on top of the runtime KB
+---
+
+## 1. What it solves
+
+| Bottleneck | OpticForge response |
+|---|---|
+| Evidence is scattered across manuals, standards and papers; you cannot prove "nothing exists" | **Evidence layer**: per-dimension retrieval; every hit has a source and excerpt; internal IDs stay internal; a missing dimension is marked as a gap, never invented |
+| You do not know what to retrieve, calculate, draw or write first | **Routing layer**: multi-playbook activation, dimension fusion, local Skill/MCP/workspace discovery, a staged plan with `dimension_id` and `coordinates_with` |
+| A deliverable looks right until citations, units, assumptions and gaps are checked | **Verification layer**: citation, quantity, structure, formula trace, dimension coverage, adoption gate and five-section presentation |
+
+Three "nots" distinguish it from a Q&A knowledge base:
+
+- **No browsing first**: establish the KB baseline; browse only for KB gaps, standard versions, vendor parameters, or price/freshness.
+- **No hidden gaps**: mark `gap`, list source-level gaps, label second-hand sources `untrusted`; never fill a missing dimension with a neighbouring one.
+- **No internal fields dumped on the user**: since 3.1.1 the answer is five sections — conclusion ≤3 sentences, one severity table, one branch criterion, ≤3 routes, ≤3 verifications + ≤4 open parameters.
+
+The user-facing explanation always follows **one-sentence principle → key formula/criterion → concrete approach → operating steps**. No KB layer or entry numbers; sources are named as documents, standards, manuals or URLs. Images are optional aids, never a substitute for evidence.
+
+---
+
+## 2. Architecture
+
+### 2.1 Three layers
+
+```
+L1  v3 coverage baseline    8 domains / 54 families / ~470 leaf topics / 16 playbooks / 34 formula cards (target)
+         │  defines skeleton, families, leaf topics, required dimensions per topic
+         ▼
+L2  runtime evidence layer  40 source sections (A–I) / 324 entries / 308 present
+         │  only source-backed, citable content; BOARD_MAP maps it to v3 domains/families
+         ▼
+L3  concept cards           308 cards, one per present chunk, extracted verbatim
+            each has domain (one of 8) + v3_boards (mapped v3 families) + applies_to
+```
+
+**L1 is a coverage baseline, not a queryable corpus.** It says what should be covered. L2 says what can actually be cited now. L3 compresses L2 into non-duplicated atoms for dimension evidence and topic cards.
+
+### 2.2 How 40 maps to 54
+
+The 40 source sections are **source partitions**, numbered by origin: A–E are vendor-material rewrites, F is fundamentals, G is engineering systems, H is frontier/cross-domain, I is scenario depth. They map to 8 domains / 54 families **many-to-many**: one source section can feed 2–3 families; one family can be fed by several sections.
+
+`BOARD_MAP` in `scripts/build-concept-cards.mjs` is the single source of truth. Mapping stops at family level, never forced down to leaf topics. Examples:
+
+| Source section | Mapped v3 families | Why |
+|---|---|---|
+| `A01` confocal sensors | `IM04` / `DT02` / `TF02` | Confocal content feeds imaging, metrology and theory |
+| `C01` tolerance analysis | `DT02` / `IM05` / `TF02` | Metrology, imaging chain and theory |
+| `I05` hyperspectral pushbroom | `IM03` / `DS03` / `TF02` | Imaging, design and theory |
+| `F01` geometrical optics | `TF01` | Fundamentals, single family |
+| `G01` opto-mechanical assembly | `DS04` | Design and simulation |
+
+Therefore:
+
+- **40 is not a replacement for 54, and not a second partition.** 40 = source sections with content today; 54 = the full v3 family set.
+- One source section spanning several families is the source of cross-coverage, not an architectural conflict.
+- The domain distribution of 308 cards (IM53 / QE33 / MT65 / DT26 / TF67 / EL3 / DS53 / AL8) is the distribution of **filled content**, not the v3 coverage target.
+
+### 2.3 Why "the architecture looks completely different"
+
+Three numbering systems coexist because they answer different questions:
+
+| Numbering | Example | Question answered | Not |
+|---|---|---|---|
+| v3 domain/family | `IM04`, `DT02`, `TF02` | Where this content sits in the v3 architecture | Not a chunk ID, not a source-section ID |
+| Source section | `A01`, `C01`, `I05` | Which source partition this content comes from | Not a v3 family; no one-to-one requirement |
+| Runtime chunk | `A01-01`, `I01-07` | Which specific fact is citable | Not an architecture level |
+
+Mistaking a source-section ID for an architecture partition makes 40 and 54 look incompatible. Mistaking the v3 baseline for another runtime library makes it look like two KBs. In reality it is **one v3 architecture: L1 baseline + L2 filled subset + L3 atomic cards**.
+
+### 2.4 Current coverage and gaps
+
+`BOARD_MAP` currently covers **39/54 v3 families**:
+
+| Domain | v3 families | Mapped | Concept cards |
+|---|---:|---:|---:|
+| TF fundamentals | 9 | 7 | 67 |
+| MT materials/devices | 7 | 7 | 65 |
+| DS design/simulation | 8 | 6 | 53 |
+| IM imaging/spectroscopy | 7 | 5 | 53 |
+| AL algorithms/signal | 7 | 2 | 8 |
+| EL electronics | 6 | 4 | 3 |
+| DT metrology | 4 | 4 | 26 |
+| QE quality/reliability | 6 | 4 | 33 |
+| **Total** | **54** | **39** | **308** |
+
+The remaining 15 families (TF04/TF08, DS05/DS06, IM01/IM06, AL01/02/03/05/07, EL04/06, QE03/06) have no runtime entries yet; they are treated as gaps, not filled with generic prose. 3.1.1 does not rewrite 324 entries into 470. That is a content migration, not a mechanics release. The skeleton, dimensions, topic cards and mapping are in place.
+
+### 2.5 Three read-only layers on top of the runtime KB
 
 | File | Contents | Role |
 |---|---|---|
-| `data/assist-playbooks.json` | 16 topic cards, 98 dimension declarations, `relations` + `cross_check`, `dimension_id` on every step | Cross-domain coverage is declared here, not left to retrieval luck |
-| `data/concept-cards.json` | 308 atomic cards, one per present chunk, extracted verbatim (no rewriting, no added numbers); 8 domains IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8, each with `applies_to` | Turns v3 leaves into compact, reusable atoms without duplicating the KB |
-| `data/cross-dimensions.json` | 6 generic dimensions: principle / design / calc / implementation / verification / risk | Fallback so cross-coverage still happens when no topic card matches |
+| `data/assist-playbooks.json` | 16 topic cards, 98 dimension declarations, `relations` + `cross_check`, `dimension_id` on every step | Cross-domain coverage is declared, not left to retrieval luck |
+| `data/concept-cards.json` | 308 atomic cards, one per present chunk, verbatim; 8 domains IM53/QE33/MT65/DT26/TF67/EL3/DS53/AL8, each with `applies_to` | Compresses v3 leaves into reusable atoms without duplicating the KB |
+| `data/cross-dimensions.json` | 6 generic dimensions: principle / design / calc / implementation / verification / risk | Fallback when no topic card matches |
 
 ---
 
-## 3. How the three layers work
+## 3. Task flow
 
 ```
 Problem
  │
- ├─ opticforge_assist ── intake & routing (no network)
- │    ├─ brief           goal / deliverable / constraints / questions / active_playbooks
- │    ├─ alignment       KB queries / matched / unmatched / verdict — per dimension
- │    ├─ web_gate        closed by default; opens on gap / version / vendor / freshness
- │    ├─ dimensions      per-dimension evidence + concept cards + gap_reason + source_matrix
- │    ├─ relations       cross relations + cross_checks
- │    ├─ evidence        KB chunks + dimension×source matrix + gaps
- │    ├─ capabilities    local Skills / MCP / workspace assets
- │    ├─ calc_specs      formula cards, never a calculator
- │    ├─ plan            staged steps; dimension_id, blocked_by, coordinates_with
- │    ├─ search_pack     KB queries + conditional external queries, grouped per gap dimension
- │    └─ acceptance      checklist + risks + handoff Markdown
+ ├─ opticforge_assist ── intake & routing (offline)
+ │    ├─ brief              goal / deliverable / constraints / questions / active_playbooks
+ │    ├─ alignment          KB queries / matched / unmatched / verdict (per dimension)
+ │    ├─ dimensions         evidence / hit_chunk_ids / concept_cards / gap_reason / source_matrix
+ │    ├─ relations          cross-domain relations + cross_checks
+ │    ├─ web_gate           closed by default; opens only for KB gap / version / vendor params / price
+ │    ├─ plan               staged steps; dimension_id, blocked_by, coordinates_with
+ │    ├─ report_outline     five-section skeleton + source names + key-value hints
+ │    ├─ search_pack        KB queries + external groups per gap dimension
+ │    └─ acceptance         acceptance list + risks + handoff Markdown
  │
- ├─ execution layer (DSH agent) ── follows the plan
+ ├─ execution layer (DSH agent)
  │    ├─ Skills: opticforge-task / sheet / word / ppt / browser …
  │    ├─ MCP: desktop / browser / GitHub …
- │    ├─ Local: PowerShell / Python / file I/O
- │    └─ Search: general_search + web_fetch, only after web_gate opens
+ │    ├─ local: PowerShell / Python / files
+ │    └─ search: only after web_gate opens
  │
- └─ opticforge_verify ── pre-delivery check (no network)
+ └─ opticforge_verify ── delivery self-check (offline)
       ├─ citations / quantities / structure / wording
-      ├─ KB-first: alignment verdict, URL dates and source detail
-      ├─ cross: dimensions complete, each evidenced, coupling stated
-      ├─ adoption: source tier, corroboration, KB conflict, staleness
-      └─ calculation: formula_id, inputs, units, outputs, reproduction
+      ├─ KB-first: alignment section, verdict, URL dates and source detail
+      ├─ cross: dimensions complete, each evidenced, coupling consistent
+      ├─ adoption: source tier, multi-source, KB conflict, freshness
+      ├─ calc: formula_id, inputs, units, outputs, recheck path
+      └─ presentation: five sections, ≤3 tables, no internal fields/layer codes, open params only in §5
 ```
 
-**Boundary**: `assist` and `verify` are advisory and read-only. They do not search the web, write files or run commands. The execution layer does.
+`assist` and `verify` are advisory and read-only. They never browse, write files, or execute commands. The execution layer does.
+
+### 3.1 Five-section delivery
+
+`assist.report_outline` gives the skeleton. The user-facing answer follows this order and does not dump internal fields:
+
+1. **Conclusion** — ≤3 sentences: judgement, decisive branch, immediate action.
+2. **Severity fit** — one table: condition, criterion/magnitude, margin, action.
+3. **Branch test** — one experiment or criterion that separates two routes.
+4. **Route recommendation** — ≤3 routes, one-line applicability each, then a clear recommendation.
+5. **Verification and open parameters** — ≤3 verifications; ≤4 open parameters, only in this section.
+
+Hard rules: ≤3 tables; no `alignment` / `web_gate` / `source_matrix` / `coverage_matrix` / `blocked_by` / `active_playbooks` in the body; no `chunk_id`, `A01-01`, `IM04` or similar KB layer/entry numbers; sources are named as documents, standards, manuals or URLs. Explanation order: one-sentence principle → key formula/criterion → concrete approach → operating steps. Images are optional aids only.
+
+### 3.2 Web gate
+
+Call `assist` first, execute `alignment.kb_queries`, record matched/unmatched and `verdict`, then read `web_gate`. `alignment.verdict` **describes coverage only and never opens the gate**.
+
+`web_gate` is closed by default; it opens only on `kb_gap`, `standard_version`, `vendor_params`, or `price_timeliness`. Even then, each external query still needs its own `granted` condition and its `blocked_by` resolved; web steps never run in parallel with evidence collection. The bundled `skills/opticforge-task/SKILL.md` enforces the same flow.
+
+**Explicit gap expression**: when a dimension has zero KB hits, `source_matrix.web.status = "required"`, and bilingual `缺口·X` external query groups are produced. The deliverable must mark `covered_by_web` and source tier. This closes the gap between "retrieval returned nothing" and "the plugin quietly invented something".
+
+### 3.3 Adoption gate
+
+The web gate decides whether browsing is allowed. The adoption gate decides whether retrieved knowledge is trustworthy enough to count as coverage. A dated URL is not automatically correct.
+
+| Criterion | Rule |
+|---|---|
+| Source tier | Primary sources (standards, vendor datasheets, official manuals, papers) are citable; secondary sources (blogs, forums, aggregators, self-media) are `untrusted` — leads only, not evidence |
+| Multi-source | Key numbers (bandwidth, efficiency, temperature, precision) need ≥2 independent primary sources, or one primary source labelled "single-source pending" |
+| KB conflict | If an external fact conflicts with a present KB entry, mark `conflict_with_kb`; prefer KB, or explain the difference (test conditions / version / model) |
+| Freshness | Price, model, standard version and lead time need an access date; beyond threshold (e.g. price 30 days) mark `stale` |
+
+Only evidence passing adoption flips a dimension from `gap` to `covered_by_web` and counts toward coverage. Secondary/conflicting sources stay `unverified`. `verify` returns `adoption` (four criteria + pass); in strict mode failure is an error.
 
 ---
 
@@ -103,179 +193,130 @@ Problem
 
 | Tool | Layer | Purpose |
 |---|---|---|
-| `opticforge_assist` | assist | **Primary entry**. Problem → brief + evidence + routing + plan + search pack + acceptance + handoff |
-| `opticforge_verify` | assist | Pre-delivery check. Accepts `text` or a `.md/.txt/.json/.csv` path; 0–100 score plus issue list. New inputs: `dimensions`, `relations`, `now` |
-| `opticforge_search` | evidence | BM25 retrieval; chunk_id, score, matched terms, excerpt, source, section |
-| `opticforge_get` | evidence | Full 9-field entry for one chunk_id |
-| `opticforge_docs` | evidence | Catalogue of 40 sections and entry titles |
+| `opticforge_assist` | Advisory | **Main entry**. Problem → brief + evidence + routing + plan + search pack + acceptance + five-section outline + handoff |
+| `opticforge_verify` | Advisory | Delivery self-check. Pass `text` or a `.md/.txt/.json/.csv` path; 0–100 score and issue list. Optional `dimensions`, `relations`, `now`, `presentation` |
+| `opticforge_search` | Evidence | BM25 retrieval; chunk_id, score, matched terms, excerpt, source, section |
+| `opticforge_get` | Evidence | Fetch a full entry by chunk_id (9 fields) |
+| `opticforge_docs` | Evidence | List 40 sections and their titles |
 
 All tools share the envelope `{ ok, kb_version, action, ... }`.
 
-### 4.1 A typical call
+### 4.1 Typical call
 
 ```json
 {
-  "problem": "Design a 400–1000 nm pushbroom hyperspectral imager: 5 nm spectral resolution, 0.5 m @ 1 km GSD, 30 km swath. Cover dispersion architecture, budgets and calibration.",
+  "problem": "Design a 400–1000 nm pushbroom hyperspectral imager: 5 nm spectral resolution, 0.5 m@1 km spatial resolution, 30 km swath. Give the dispersion scheme, budget and calibration flow.",
   "deliverable": "design report",
   "workspace": "D:/AI/projects/hyperspectral",
   "known_capabilities": ["sheet", "word", "general_search"]
 }
 ```
 
-`assist` activates up to three topic cards (here typically hyperspectral + spectrometer + optical design), fuses their required dimensions (spectrometer / aberration / detector / algorithm / circuit / calibration), and returns:
+`assist` activates up to three topic cards (typically hyperspectral + spectrometer + optical design), fuses their required dimensions (dispersion / aberration / detector / algorithm / electronics / calibration), and returns:
 
-- `brief` — goal, deliverable, constraints, questions, `active_playbooks`
-- `alignment` — `kb_queries`, `matched` / `unmatched`, `coverage_matrix`, `verdict` (`covered` / `partial` / `gap`) — all per dimension
-- `dimensions` — one row per dimension with evidence, `hit_chunk_ids`, `concept_cards`, `gap_reason` and `source_matrix` (`kb`: covered/gap; `web`: not_required/required)
-- `relations` / `cross_checks` — cross-domain constraints and points to address explicitly
-- `plan.steps[]` — each with `capability`, `actions`, `routing`, `output`, `dimension_id`, `blocked_by`; coupled steps carry `coordinates_with` and are excluded from `parallelizable`
-- `search_pack` — KB queries plus external query groups tagged `trigger` / `gated` / `gate_id` / `blocked_by` / `dimension_id`
+- `brief` — goal, deliverable, constraints, open questions, `active_playbooks`
+- `alignment` — `kb_queries`, `matched` / `unmatched`, `coverage_matrix`, `verdict` (`covered` / `partial` / `gap`), all per dimension
+- `dimensions` — one row per dimension: evidence, `hit_chunk_ids`, `concept_cards`, `gap_reason`, `source_matrix` (`kb`: covered/gap; `web`: not_required/required)
+- `relations` / `cross_checks` — cross-domain constraints and the points that must be answered explicitly
+- `plan.steps[]` — `capability`, `actions`, `routing`, `output`, `dimension_id`, `blocked_by`; coupled steps carry `coordinates_with` and are excluded from `parallelizable`
+- `report_outline` / `report_style` — five-section skeleton and style rules
+- `search_pack` — KB queries + external groups with `trigger` / `gated` / `gate_id` / `blocked_by` / `dimension_id`
 - `handoff`, `acceptance`, `risks`
 
-### 4.2 KB-first and the web gate
+### 4.2 Calculation and self-check
 
-Call `assist` first. Run `alignment.kb_queries`, record matched/unmatched and `verdict`, then inspect `web_gate`. `alignment.verdict` describes **coverage only** — it never grants network access.
+`calc_specs` selects from 19 formula cards (formula, variables, units, assumptions, sanity range, worked example, KB source ID). The plugin does not calculate; the execution layer calculates and records `formula_id`, inputs, outputs, units and a recheck path.
 
-`web_gate` defaults to deny. One of four conditions must be met: `kb_gap`, `standard_version`, `vendor_params`, `price_timeliness`. Even then, a web query runs only when its condition is granted and the step's `blocked_by` is cleared. Web steps are never parallel with evidence collection. The bundled `skills/opticforge-task/SKILL.md` fixes the same workflow for DSH.
-
-**Cross-dimension gaps are explicit.** A dimension with zero KB hits gets `source_matrix.web.status = "required"` and a bilingual `缺口·X` external query group; the deliverable must mark `covered_by_web` and the source tier. This closes the gap between "a query returned nothing" and "the plugin silently guessed".
-
-### 4.3 Calculation and verification
-
-`calc_specs` selects from 19 formula cards (formula, variables, units, assumptions, sanity range, worked example, KB source IDs). The plugin does not calculate. The execution layer computes and records `formula_id`, inputs, outputs, units and a reproduction path.
-
-Export docx/pdf to `.md` / `.txt` with the word/pdf Skills before calling `verify`.
+For docx/pdf, export to `.md` / `.txt` with the word/pdf Skill first, then call `verify`. Reports/proposals should pass `presentation: true` to enforce the five sections.
 
 ---
 
-## 5. Adoption gate — the second gate
+## 5. Runtime knowledge base
 
-The web gate decides **whether** to search. The adoption gate decides **whether to trust and count** what came back. A cited URL with a date is not evidence of correctness.
+### 5.1 Content
 
-| Criterion | Rule |
-|---|---|
-| Source tier | Primary sources (standard text, vendor datasheet, official manual, paper) are admissible. Secondary sources (blog, forum, aggregator, self-media) are marked `untrusted` — a lead, not a basis |
-| Corroboration | Key figures (bandwidth, efficiency, temperature, accuracy) need ≥2 independent primary sources, or 1 primary source explicitly labelled "single source, to verify" |
-| KB conflict | If a web fact conflicts with a present KB entry, mark `conflict_with_kb`; prefer the KB or explain the difference (test conditions / version / model) |
-| Freshness | Price, model, standard-version and lead-time facts require an access date; beyond a threshold (e.g. 30 days for price) they are `stale` |
-
-Only adopted web evidence flips a dimension from `gap` to `covered_by_web` and counts toward coverage. Untrusted or conflicting evidence is marked `unverified` and does not count. `verify` emits `adoption` with all four criteria and a pass flag; strict mode turns failures into errors.
-
-`assist` pushes the requirement upstream: external query groups carry `require_source_tier: "primary"` and `min_corroborations: 2` for key figures, so retrieval looks for admissible sources instead of being rejected at delivery time.
-
----
-
-## 6. Capability discovery
-
-`assist` performs three read-only scans and degrades to empty lists with a note on failure:
-
-1. **Skills** — common roots (`~/.dsh/skills`, `~/.agents/skills`, `~/Doubao/skills`, workspace `.skills` / `.user_skills`); reads `name` / `description` from `SKILL.md`.
-2. **MCP** — common `.mcp.json` / `mcp.json` files; server names only, never credentials.
-3. **Local assets** — with `workspace`, scans two levels for drawings, data, code and documents; names and sizes only.
-
-DSH built-in Skills inside `app.asar` are not visible to filesystem scans. Pass `known_capabilities` (and `known_mcp`) to declare what is actually available this session; declared names rank first in routing.
-
----
-
-## 7. Runtime knowledge base
-
-### 7.1 Contents
-
-40 sections / 324 entries / 308 `present`, organized by source type (A–E) or engineering theme (F–I):
+40 sections / 324 entries / 308 `present`:
 
 | Series | Sections | Content | Entries |
 |---|---|---|---|
-| A–E | 9 | Rewritten from vendor documents: confocal sensors, spectrometer build, tolerancing, DOE, white-light interferometry, RCWA gratings, photodiodes, metrology standards | 67 (51 present) |
-| F | 10 | Foundations: geometric optics, interference/diffraction, polarization, lasers, radiometry & colorimetry, thin films, detection & noise, spectroscopy, interferometry, materials & fabrication | 83 |
-| G | 7 | Engineering: opto-mechanics, tolerance & uncertainty, thermal optics, spectral/radiometric calibration, inspection & image processing, COMSOL, SolidWorks | 53 |
-| H | 8 | Frontier: metasurfaces & DOEs, waveguides & photonic integration, quantum optics, hyperspectral imaging, laser triangulation/confocal/lidar, field failures, frontier topics, semiconductor sources | 61 |
-| I | 6 | Scenarios: aberration judgement, physical optics & transfer functions, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny–Turner and Offner spectrometers | 60 |
+| A–E | 9 | Vendor-material rewrites: confocal sensors, spectrometer builds, tolerance analysis, DOE, white-light interferometry, RCWA gratings, photodiodes, metrology specs | 67 (51 present) |
+| F | 10 | Fundamentals: geometrical optics, interference/diffraction, polarization, lasers, radiometry/color, thin films, detection/noise, spectroscopy, interferometry, materials | 83 |
+| G | 7 | Engineering systems: opto-mechanical assembly, tolerance/uncertainty, athermalization, spectral/radiometric calibration, inspection/image processing, COMSOL, SolidWorks | 53 |
+| H | 8 | Frontier/cross-domain: metasurfaces/DOE, waveguides/photonics, quantum optics, hyperspectral, laser triangulation/confocal/lidar, failure cases, frontier topics, semiconductor sources | 61 |
+| I | 6 | Scenario depth: aberration reading, physical optics/MTF, optical testing, optical design, hyperspectral pushbroom/snapshot, Czerny–Turner/Offner | 60 |
 
-Concept cards are grouped into 8 domains: IM53 / QE33 / MT65 / DT26 / TF67 / EL3 / DS53 / AL8. These domain IDs are the bridge to the v3 content map described in §2.3.
-
-### 7.2 Accuracy rules
+### 5.2 Accuracy rules
 
 Enforced by `scripts/build-kb.mjs`:
 
-**A–E (source-backed, 67 entries)** — `chunk_id` set equals the vendor snapshot exactly; entries are rewritten facts (`is_original_excerpt = false`) beginning with `【title】`; every number appears verbatim in the source chunk; no verbatim vendor text ships publicly (`_kb-raw/` stays local).
+**A–E (source-based, 67 entries)** — `chunk_id` sets match vendor snapshots exactly; entries are rewritten facts (`is_original_excerpt = false`), start with `【title】`; every number is found verbatim in the same source block; no long verbatim excerpts in the public repo (`_kb-raw/` stays local).
 
-**F/G/H/I (compiled, 257 entries)** — no single source; consensus of textbooks, standards and reviews; `source` names a real reference; text ≥300 chars with at least three field lines; `disclaimer` states "非原文摘录"; no product model numbers or vendor specifications.
+**F/G/H/I (compiled, 257 entries)** — no single source; based on textbooks, standards and reviews; `source` is a real, checkable reference; ≥300 characters, ≥3 field lines; `disclaimer` marks "not a source excerpt"; no product models or vendor claims.
 
-### 7.3 Gaps
+### 5.3 Gaps and conventions
 
-Three source-level gaps: A03 (peak-localization review, 1), C01 (ZYGO CSI white paper, 5), E01 (JJF 1990-2022, 6). In total 16 non-present entries: 11 `missing_source`, 5 `substitute` (comparable public material, explicitly marked as not the original). `assist` lists these as `library_gaps`; `verify` treats citing a non-present entry as an error. Two topics are intentionally out of scope: lithography process and space optics. An empty result means no basis — nothing is invented.
+Three source-level gaps: A03 (peak-location review, 1 entry), C01 (ZYGO CSI white paper, 5), E01 (JJF 1990-2022, 6). Of 16 non-present entries: 11 `missing_source`, 5 `substitute` (similar public material, explicitly labelled non-original). `assist` lists them separately as `library_gaps`; `verify` treats citing a non-present entry as an error. Lithography process and space optics are intentionally out of scope. Empty retrieval means no evidence, not permission to invent.
 
----
-
-## 8. Layout
-
-```
-lib/index.js                tool registration (5 tools)
-lib/assist.js               intake, evidence, routing, plan, acceptance
-lib/capabilities.js         read-only Skill / MCP / asset scan
-lib/verify.js               pre-delivery check + adoption gate
-lib/kb-engine.js            BM25 engine
-lib/kb-data.js              data loading
-data/kb/                    40 section files (human-readable, git-diffable)
-data/kb-data.json           merged runtime artefact
-data/kb-meta.json           version, sha256, sections, gap topics (generated)
-data/assist-playbooks.json  16 topic cards
-data/concept-cards.json     308 atomic concept cards
-data/cross-dimensions.json  6 generic fallback dimensions
-data/formula-cards.json     19 formula cards, no calculator
-skills/opticforge-task/     KB-first DSH workflow Skill
-eval/                       KB-first + cross contract evaluation; real-trace scoring
-docs/ARCHITECTURE.zh.md     architecture and extension points
-```
+Depth-of-focus convention: `I01-07` uses `±λ/NA²` while `G02-07` uses `±λ/(2NA²)`; the 2× difference comes from half- vs full-depth definitions. The library defaults to `G02-07`'s `±λ/(2NA²)` (full depth `4λF²`, conservative). It changes alignment margin, not route decisions.
 
 ---
 
-## 9. Install
+## 6. Install and marketplace
 
-**From the plugin market** (listing submitted): search `OpticForge`.
+### 6.1 Install
 
-**Local link install** (development):
+npm publication is currently on hold. Install from the GitHub repository:
 
 ```bash
-node scripts/install-local.mjs            # write profile dependency + bundles + directory link
+git clone https://github.com/WBMGGGG/dsh-opticforge.git
+cd dsh-opticforge
+node scripts/install-local.mjs            # profile dependency + bundles + directory links
 node scripts/install-local.mjs --dry-run  # preview only
 node scripts/install-local.mjs --uninstall
 ```
 
-Restart DSH afterwards. Editing this repo and restarting picks up changes. The installer links `skills/opticforge-task` to `~/.dsh/skills/opticforge-task`; it never overwrites a real directory, and uninstall removes only the link.
+Restart DSH after install. The installer links `skills/opticforge-task` to `~/.dsh/skills/opticforge-task`; it will not overwrite a real directory, and uninstall removes only links.
+
+### 6.2 Why dsh-market does not list it
+
+dsh-market only reads `https://awesome-dsh-plugin.com/plugins.json`. OpticForge's awesome entry is still PR **#15752**, status OPEN, not merged. Until merge, that JSON has no such entry, so the marketplace cannot find it. Both checks (`check`, `Submission gate`) pass and `mergeable=MERGEABLE`; after merge it is usually indexed within one day. Marketplace listing depends only on the awesome entry, not on npm publication.
 
 ---
 
-## 10. Development
+## 7. Development and tests
 
 ```bash
-node test/run.mjs                              # integration tests
-node test/assist-contract.test.mjs             # assist contract (24 cases)
-node test/entry-contract.test.mjs              # entry contract (5 cases)
-node scripts/verify-all.mjs                    # release gate (57 checks)
-node eval/run-kb-first.mjs                     # 13 task classes + cross contracts
-node scripts/build-kb.mjs --all --version 3.1.0
+node test/run.mjs                              # integration (30)
+node test/assist-contract.test.mjs             # assist/verify contracts (26)
+node test/entry-contract.test.mjs              # entry contracts (5)
+node scripts/verify-all.mjs                    # release gate (61)
+node eval/run-kb-first.mjs                     # 13 task classes + cross contract + structure compliance
+node scripts/build-kb.mjs --all --version 3.1.1
 node scripts/build-kb.mjs --check
-node eval/run-kb-first.mjs --trace <trace.jsonl>   # real tool-trace scoring
+node eval/run-kb-first.mjs --trace <trace.jsonl>
 ```
 
-Edit knowledge: `data/kb/<section>.json` → `--doc` validate → `--all` rebuild → tests. Rebuild regenerates concept cards and `kb_version`.
-Edit topic cards: `data/assist-playbooks.json` — no code change needed.
+To change KB content: edit `data/kb/<section>.json` → `--doc` self-check → `--all` rebuild → tests. Rebuild also refreshes concept cards and `kb_version`.
 
-`.github/workflows/test.yml` runs the same gates on Ubuntu and Windows, Node 20 and 22.
+To change topic cards: edit `data/assist-playbooks.json`; no code change.
+
+To change mapping: edit `BOARD_MAP` in `scripts/build-concept-cards.mjs`, then rebuild concept cards. Mapping stays at v3 family level, never forced to leaves.
+
+CI (`.github/workflows/test.yml`) runs the same checks on Ubuntu + Windows, Node 20 + 22.
 
 ---
 
-## 11. Boundaries
+## 8. Boundaries
 
-- Only the 40 sections in §7; lithography process and space optics are not covered.
-- Compiled entries are engineering summaries — check `source` before external citation.
-- Vendor numbers appear only where a source snapshot exists.
-- Gap entries state what is missing; they are not evidence.
-- The plugin does not access the network or perform actions.
-- `verify` is text-level only; export docx/pdf to text first.
-- `alignment.verdict` reports coverage, not permission to search; web access follows `web_gate`.
+- Covers only the 40 sections in §5; lithography process and space optics are out of scope.
+- Compiled entries are engineering syntheses; check the `source` before external citation.
+- Vendor numbers appear only in A–E with source snapshots.
+- Gap entries mean "no evidence here", never citable facts.
+- The plugin never browses or executes; external retrieval and Skill/MCP calls belong to the execution layer.
+- `verify` is text-level only; docx/pdf must be exported to text first.
+- `alignment.verdict` reports coverage, not permission to browse; `web_gate` decides that.
+- 40 source sections are not 54 v3 families; the mapping is many-to-many. Do not force one-to-one.
 
 ## License
 
-MIT. Third-party material remains the property of its authors; this repository contains rewritten engineering facts with source attribution only.
+MIT. Third-party material remains with its original authors; this repository stores rewritten engineering facts with source attribution.
