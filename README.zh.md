@@ -281,7 +281,7 @@ node scripts/install-local.mjs --uninstall
 
 ### 6.2 为什么 dsh-market 里搜不到
 
-dsh-market 只读 `https://awesome-dsh-plugin.com/plugins.json`；OpticForge 的 awesome 条目还在 PR **#15752**，状态 OPEN，尚未合并。合并前该 JSON 里没有这个条目，所以市场搜不到。PR 的两个检查（`check`、`Submission gate`）已通过，`mergeable=MERGEABLE`；合并后通常 1 天内自动收录。市场收录只看 awesome 条目，与是否发布 npm 无关。
+dsh-market 只读 `https://awesome-dsh-plugin.com/plugins.json`；OpticForge 的 awesome 条目还在 PR **#15752**，状态 OPEN，尚未合并。合并前该 JSON 里没有这个条目，所以市场搜不到。PR 更新到 3.1.1 后检查会重新排队；当前 `mergeable=MERGEABLE`，合并后通常 1 天内自动收录。市场收录只看 awesome 条目，与是否发布 npm 无关。
 
 ---
 

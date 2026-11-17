@@ -279,7 +279,7 @@ Restart DSH after install. The installer links `skills/opticforge-task` to `~/.d
 
 ### 6.2 Why dsh-market does not list it
 
-dsh-market only reads `https://awesome-dsh-plugin.com/plugins.json`. OpticForge's awesome entry is still PR **#15752**, status OPEN, not merged. Until merge, that JSON has no such entry, so the marketplace cannot find it. Both checks (`check`, `Submission gate`) pass and `mergeable=MERGEABLE`; after merge it is usually indexed within one day. Marketplace listing depends only on the awesome entry, not on npm publication.
+dsh-market only reads `https://awesome-dsh-plugin.com/plugins.json`. OpticForge's awesome entry is still PR **#15752**, status OPEN, not merged. Until merge, that JSON has no such entry, so the marketplace cannot find it. After the 3.1.1 entry update, checks are re-queued; it is currently `mergeable=MERGEABLE`, and after merge it is usually indexed within one day. Marketplace listing depends only on the awesome entry, not on npm publication.
 
 ---
 
