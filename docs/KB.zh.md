@@ -90,7 +90,7 @@ node scripts/build-kb.mjs --all --version 3.1.0
 - 9 个字段齐全、类型正确、`doc_id` 与文件名一致
 - `present` 条目以`【`开头、长度达标、`is_original_excerpt=false`、不含营销词
 - A–E：`chunk_id` 集合与原文完全一致；**数字逐字回查**
-- F/G/H：`chunk_id` 连续编号；字段行 ≥3；`source` 非空；`keywords_zh` ≥4；`disclaimer` 含"非原文摘录"
+- F/G/H/I：`chunk_id` 连续编号；字段行 ≥3；`source` 非空；`keywords_zh` ≥4；`disclaimer` 含"非原文摘录"
 - `--check`：合并产物必须与分部文件完全一致，`content_sha256` 与 `total/present` 对得上
 
 这套规则抓过真问题：把原文的 "three cycles" 写成 `3`、"one hundredth" 写成 `1/100`，校验器全部拦下——这些数字原文里并不存在。
@@ -143,4 +143,4 @@ node scripts/build-kb.mjs --all --version 3.1.0
 
 ## 版权边界
 
-公开仓库只放改写后的工程事实和来源标注，不放厂商原文长段。A–E 的逐字原文只存在于本地 `_kb-raw/`，用于核对数字，不随包发布。F/G/H 是教材通用结论的工程整理，按 `source` 可回溯。
+公开仓库只放改写后的工程事实和来源标注，不放厂商原文长段。A–E 的逐字原文只存在于本地 `_kb-raw/`，用于核对数字，不随包发布。F/G/H/I 是教材通用结论的工程整理，按 `source` 可回溯。
